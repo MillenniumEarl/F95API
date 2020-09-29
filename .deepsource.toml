@@ -9,3 +9,7 @@ enabled = true
     "nodejs",
     "mocha"
   ]
+
+[[transformers]]
+name = "prettier"
+enabled = true
