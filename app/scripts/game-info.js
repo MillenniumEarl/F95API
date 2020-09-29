@@ -1,17 +1,17 @@
+const UNKNOWN = 'Unknown';
+
 class GameInfo {
   constructor() {
-    this.UNKNOWN = 'Unknown';
-    
     /**
      * Game name
      * @type String
      */
-    this.name = this.UNKNOWN;
+    this.name = UNKNOWN;
     /**
      * Game author
      * @type String
      */
-    this.author = this.UNKNOWN;
+    this.author = UNKNOWN;
     /**
      * URL to the game's official conversation on the F95Zone portal
      * @type URL
@@ -21,17 +21,22 @@ class GameInfo {
      * Game description
      * @type String
      */
-    this.overview = this.UNKNOWN;
+    this.overview = UNKNOWN;
+    /**
+     * List of tags associated with the game
+     * @type String[]
+     */
+    this.tags = [];
     /**
      * Graphics engine used for game development
      * @type String
      */
-    this.engine = this.UNKNOWN;
+    this.engine = UNKNOWN;
     /**
      * Progress of the game
      * @type String
      */
-    this.status = this.UNKNOWN;
+    this.status = UNKNOWN;
     /**
      * Game description image URL
      * @type URL
@@ -41,17 +46,17 @@ class GameInfo {
      * Game version
      * @type String
      */
-    this.version = this.UNKNOWN;
+    this.version = UNKNOWN;
     /**
      * Last time the game underwent updates
      * @type String
      */
-    this.lastUpdate = this.UNKNOWN;
+    this.lastUpdate = UNKNOWN;
     /**
      * Last time the local copy of the game was run
      * @type String
      */
-    this.lastPlayed = this.UNKNOWN;
+    this.lastPlayed = UNKNOWN;
     /**
      * Specifies if the game is original or a mod
      * @type Boolean
@@ -61,7 +66,7 @@ class GameInfo {
      * Directory containing the local copy of the game
      * @type String
      */
-    this.gameDir = this.UNKNOWN;
+    this.gameDir = UNKNOWN;
   }
 
   /**

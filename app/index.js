@@ -1,6 +1,7 @@
 'use strict';
 const path = require('path');
 const fs = require('fs');
+const UserData = require('./scripts/user-data').UserData;
 const LoginResult = require('./scripts/login-result').LoginResult;
 const GameInfo = require('./scripts/game-info').GameInfo;
 const GameDownload = require('./scripts/game-download').GameDownload;
@@ -12,7 +13,8 @@ const urlExist = require('url-exist');
 const F95_BASE_URL = 'https://f95zone.to';
 const F95_SEARCH_URL = 'https://f95zone.to/search';
 const F95_LATEST_UPDATES = 'https://f95zone.to/latest';
-const F95_LOGIN_URL = 'https://f95zone.to/login'
+const F95_LOGIN_URL = 'https://f95zone.to/login';
+const F95_WATCHED_THREADS = 'https://f95zone.to/watched/threads';
 //#endregion
 
 //#region CSS Selectors
@@ -30,6 +32,16 @@ const THREAD_POSTS = 'article.message-body:first-child > div.bbWrapper:first-of-
 const GAME_TITLE = 'h1.p-title-value';
 const GAME_IMAGES = 'img[src^="https://attachments.f95zone.to"]';
 const LOGIN_MESSAGE_ERROR = 'div.blockMessage.blockMessage--error.blockMessage--iconic';
+const GAME_TAGS = 'a.tagItem';
+const USERNAME_ELEMENT = 'a[href="/account/"] > span.p-navgroup-linkText';
+const AVATAR_PIC = 'a[href="/account/"] > span.avatar > img[class^="avatar"]';
+const UNREAD_THREAD_CHECKBOX = 'input[type="checkbox"][name="unread"]';
+const ONLY_GAMES_THREAD_OPTION = 'select[name="nodes[]"] > option[value="2"]';
+const FILTER_THREADS_BUTTON = 'button[class="button--primary button"]';
+const GAME_TITLE_PREFIXES = 'h1.p-title-value > a.labelLink > span[dir="auto"]';
+const WATCHED_THREAD_URLS = 'a[href^="/threads/"][data-tp-primary]';
+const WATCHED_THREAD_NEXT_PAGE = 'a.pageNav-jump--next';
+const WATCHED_THREAD_FILTER_POPUP_BUTTON = 'a.filterBar-menuTrigger';
 //#endregion CSS Selectors
 
 //#region Game prefixes
@@ -83,15 +95,13 @@ let _debug = false;
  * 
  * @param {Boolean} value 
  */
-module.exports.debug = function(value){
+module.exports.debug = function (value) {
     _debug = value;
 }
-module.exports.isLogged = function() {
-     return _isLogged; 
+module.exports.isLogged = function () {
+    return _isLogged;
 };
 //#endregion Properties
-
-
 
 //#region Export methods
 /**
@@ -103,14 +113,14 @@ module.exports.isLogged = function() {
  * @returns {Promise<LoginResult>} Result of the operation
  */
 module.exports.login = async function (username, password) {
-    if(_isLogged){
-        if(_debug) console.log("Already logged in");
+    if (_isLogged) {
+        if (_debug) console.log("Already logged in");
         let result = new LoginResult();
         result.success = true;
         result.message = 'Already logged in';
         return result;
     }
-    
+
     // If cookies are loaded, use them to authenticate
     if (_cookies !== null) {
         if (_debug) console.log('Valid session, no need to re-authenticate');
@@ -150,7 +160,7 @@ module.exports.loadF95BaseData = async function () {
         return false;
     }
 
-    if(_debug) console.log('Loading base data...');
+    if (_debug) console.log('Loading base data...');
 
     // Prepare a new web page
     let browser = await prepareBrowser();
@@ -169,7 +179,7 @@ module.exports.loadF95BaseData = async function () {
     // Obtain statuses (disc/online)
     await page.waitForSelector(STATUS_ID_SELECTOR);
     _statuses = await loadValuesFromLatestPage(page, STATUSES_SAVE_PATH, STATUS_ID_SELECTOR, 'statuses');
-    
+
     await browser.close();
     if (_debug) console.log('Base data loaded');
     return true;
@@ -199,7 +209,8 @@ module.exports.getGameVersion = async function (info) {
  * You **must** be logged in to the portal before calling this method.
  * @param {String} name Name of the game searched
  * @param {Boolean} includeMods Indicates whether to also take mods into account when searching
- * @returns {Promise<GameInfo>} Information about the game searched or null if no game were found
+ * @returns {Promise<GameInfo[]>} List of information obtained where each item corresponds to 
+ * an identified game (in the case of homonymy). If no games were found, null is returned
  */
 module.exports.getGameData = async function (name, includeMods) {
     if (!_isLogged) {
@@ -209,19 +220,21 @@ module.exports.getGameData = async function (name, includeMods) {
 
     // Gets the search results of the game being searched for
     let browser = await prepareBrowser();
-    let infoList = await getSearchGameResults(browser, name, _cookies);
+    let urlList = await getSearchGameResults(browser, name, _cookies);
 
     // Process previous partial results
-    let result = null;
-    for (let info of infoList) {
+    let promiseList = [];
+    for (let url of urlList) {
+        // Start looking for information
+        promiseList.push(getGameInfo(browser, url));
+    }
+
+    // Filter for mods
+    let result = [];
+    for (let info of await Promise.all(promiseList)) {
         // Skip mods if not required
         if (info.isMod && !includeMods) continue;
-
-        // TODO
-        // What if there are more games with the same name?
-        // For the moment, return the first
-        result = await getGameInfo(browser, info);
-        break;
+        else result.push(info);
     }
 
     await browser.close();
@@ -233,12 +246,12 @@ module.exports.getGameData = async function (name, includeMods) {
  * @param {*} platform 
  * @param {*} url 
  */
-module.exports.getDownloadLink = async function(platform, url){
+module.exports.getDownloadLink = async function (platform, url) {
     if (!_isLogged) {
         console.warn('user not authenticated, unable to continue');
         return null;
     }
-    
+
     // Gets the search results of the game being searched for
     let browser = await prepareBrowser();
     getGameDownloadLink(browser, url);
@@ -246,11 +259,44 @@ module.exports.getDownloadLink = async function(platform, url){
 }
 /**
  * @public
- * Properly closes all instances opened by the API.
- * @returns {Promise<void>}
+ * Gets the data of the currently logged in user.
+ * @returns {Promise<UserData>} Data of the user currently logged in or null if an error arise
  */
-module.exports.close = async function() {
-    if(_debug) console.log("Closing F95API")
+module.exports.getUserData = async function () {
+    if (!_isLogged) {
+        console.warn('user not authenticated, unable to continue');
+        return null;
+    }
+
+    // Prepare a new web page
+    let browser = await prepareBrowser();
+    let page = await preparePage(browser); // Set new isolated page
+    await page.setCookie(..._cookies); // Set cookies to avoid login
+    await page.goto(F95_BASE_URL); // Go to base page
+
+    // Explicitly wait for the required items to load
+    await page.waitForSelector(USERNAME_ELEMENT);
+    await page.waitForSelector(AVATAR_PIC);
+
+    let threads = getUserWatchedGameThreads(browser);
+
+    let username = await page.evaluate((selector) =>
+        document.querySelector(selector).innerText,
+        USERNAME_ELEMENT);
+
+    let avatarSrc = await page.evaluate((selector) =>
+        document.querySelector(selector).getAttribute('src'),
+        AVATAR_PIC);
+
+    let ud = new UserData();
+    ud.username = username;
+    ud.avatarSrc = isStringAValidURL(avatarSrc) ? new URL(avatarSrc) : null;
+    ud.watchedThreads = await threads;
+
+    await page.close();
+    await browser.close();
+
+    return ud;
 }
 //#endregion
 
@@ -266,7 +312,7 @@ module.exports.close = async function() {
 async function prepareBrowser() {
     // Create a headless browser
     let browser = await puppeteer.launch({
-        headless: true,
+        headless: false,
     });
 
     return browser;
@@ -424,7 +470,7 @@ function isF95URL(url) {
  * @param {String} url String to check for correctness
  * @returns {Boolean} true if the string is a valid URL, false otherwise
  */
-function isStringAValidURL(url){
+function isStringAValidURL(url) {
     try {
         new URL(url);
         return true;
@@ -479,25 +525,68 @@ async function loginF95(browser, username, password) {
         if (errorMessage === 'Incorrect password. Please try again.') result.message = 'Incorrect password';
         else if (errorMessage === "The requested user '" + username + "' could not be found.") result.message = 'Incorrect username';
         else result.message = errorMessage;
-    }
-    else result.message = "Unknown error";
+    } else result.message = "Unknown error";
     await page.close(); // Close the page
 
     return result;
 }
 
 /**
- * @deprecated
+ * @private
+ * Gets the list of URLs of threads the user follows.
+ * @param {puppeteer.Browser} browser Browser object used for navigation
+ * @returns {Promise<URL[]>} URL list
  */
-async function getUserData(){
+async function getUserWatchedGameThreads(browser) {
+    let page = await preparePage(browser); // Set new isolated page
+    await page.goto(F95_WATCHED_THREADS); // Go to the thread page
 
-}
+    // Explicitly wait for the required items to load
+    await page.waitForSelector(WATCHED_THREAD_FILTER_POPUP_BUTTON);
 
-/**
- * @deprecated
- */
-async function getUserWatchedGameThreads(){
+    // Show the popup
+    await page.click(WATCHED_THREAD_FILTER_POPUP_BUTTON);
+    await page.waitForSelector(UNREAD_THREAD_CHECKBOX);
+    await page.waitForSelector(ONLY_GAMES_THREAD_OPTION);
+    await page.waitForSelector(FILTER_THREADS_BUTTON);
 
+    // Set the filters
+    await page.evaluate((selector) =>
+        document.querySelector(selector).removeAttribute('checked'),
+        UNREAD_THREAD_CHECKBOX); // Also read the threads already read
+
+    await page.click(ONLY_GAMES_THREAD_OPTION);
+
+    // Filter the threads
+    await page.click(FILTER_THREADS_BUTTON);
+    await page.waitForSelector(WATCHED_THREAD_URLS);
+
+    // Get the threads urls
+    let urls = [];
+    let nextPageExists = false;
+    do {
+        // Get all the URLs
+        for (let handle of await page.$$(WATCHED_THREAD_URLS)) {
+            let src = await page.evaluate((element) => element.href, handle);
+            // If 'unread' is left, it will redirect to the last unread post
+            let url = new URL(src.replace('/unread', ''));
+            urls.push(url);
+        }
+
+        nextPageExists = await page.evaluate((selector) =>
+            document.querySelector(selector),
+            WATCHED_THREAD_NEXT_PAGE);
+
+        // Click to next page
+        if (nextPageExists) {
+            await page.click(WATCHED_THREAD_NEXT_PAGE);
+            await page.waitForSelector(WATCHED_THREAD_URLS);
+        }
+    }
+    while (nextPageExists);
+
+    await page.close();
+    return urls;
 }
 //#endregion User
 
@@ -506,22 +595,25 @@ async function getUserWatchedGameThreads(){
  * @private
  * Get information from the game's main page.
  * @param {puppeteer.Browser} browser Browser object used for navigation
- * @param {GameInfo} info Partial game information
+ * @param {URL} url URL of the game/mod to extract data from
  * @return {Promise<GameInfo>} Complete information about the game you are looking for
  */
-async function getGameInfo(browser, info) {
-    if(_debug) console.log('Obtaining game info');
+async function getGameInfo(browser, url) {
+    if (_debug) console.log('Obtaining game info');
 
     // Verify the correctness of the URL
-    if (!isF95URL(info.f95url)) throw info.f95url + ' is not a valid F95Zone URL';
-    let exists = await urlExist(info.f95url.toString());
+    if (!isF95URL(url)) throw url + ' is not a valid F95Zone URL';
+    let exists = await urlExist(url.toString());
     if (!exists) return new GameInfo();
 
     let page = await preparePage(browser); // Set new isolated page
     await page.setCookie(..._cookies); // Set cookies to avoid login
-    await page.goto(info.f95url.toString(), {
+    await page.goto(url.toString(), {
         waitUntil: WAIT_STATEMENT
     }); // Go to the game page and wait until it loads
+
+    // Object to fill with information
+    let info = new GameInfo();
 
     // Get the game/mod name (without square brackets)
     let title = getGameTitle(page);
@@ -529,9 +621,15 @@ async function getGameInfo(browser, info) {
     // Get the game/mod author (without square brackets)
     let author = getGameAuthor(page);
 
+    // Get the game tags
+    let tags = getGameTags(page);
+
     // Get the game title image (the first is what we are searching)
     let previewSource = await getGamePreviewSource(page);
     if (previewSource === null) console.warn('Cannot find game preview image for ' + await title);
+
+    // Parse the prefixes
+    info = await parsePrefixes(page, info); // Fill status/engines/isMod
 
     // Gets the first post, where are listed all the game's informations
     let post = (await page.$$(THREAD_POSTS))[0];
@@ -553,12 +651,14 @@ async function getGameInfo(browser, info) {
     info.name = await title;
     info.author = await author;
     info.overview = overview;
+    info.tags = await tags;
+    info.f95url = url;
     info.version = info.isMod ? parsedInfos['MOD VERSION'] : parsedInfos['VERSION'];
     info.lastUpdate = info.isMod ? parsedInfos['UPDATED'] : parsedInfos['THREAD UPDATED'];
     info.previewSource = previewSource;
-    
+
     await page.close(); // Close the page
-    if(_debug) console.log('Founded data for ' + await title);
+    if (_debug) console.log('Founded data for ' + info.name);
     return info;
 }
 
@@ -640,9 +740,53 @@ async function getGameTitle(page) {
     const structuredTitle = HTMLParser.parse(titleHTML);
 
     // The last element **shoud be** the title without prefixes (engines, status, other...)
-    var gameTitle = structuredTitle.childNodes.pop().rawText;
+    let gameTitle = structuredTitle.childNodes.pop().rawText;
     const endTitleIndex = gameTitle.indexOf('[');
     return gameTitle.substring(0, endTitleIndex).trim();
+}
+
+/**
+ * @private
+ * Get the list of tags associated with the game.
+ * @param {puppeteer.Page} page Page containing the tags to be extrapolated
+ * @returns {Promise<String[]>} List of uppercase tags
+ */
+async function getGameTags(page) {
+    let tags = [];
+
+    // Get the game tags
+    for (let handle of await page.$$(GAME_TAGS)) {
+        let tag = await page.evaluate((element) => element.innerText, handle);
+        tags.push(tag.toUpperCase());
+    }
+    return tags;
+}
+
+/**
+ * @private
+ * Process the game title prefixes to extract information such as game status, 
+ * graphics engine used, and whether it is a mod or original game.
+ * @param {puppeteer.Page} page Page containing the prefixes to be extrapolated
+ * @param {GameInfo} info Object to assign the identified information to
+ * @returns {Promise<GameInfo>} GameInfo object passed in to which the identified information has been added
+ */
+async function parsePrefixes(page, info) {
+    // The 'Ongoing' status is not specified, only 'Abandoned'/'OnHold'/'Complete'
+    info.status = 'Ongoing';
+    for (let handle of await page.$$(GAME_TITLE_PREFIXES)) {
+        let value = await page.evaluate((element) => element.innerText, handle);
+
+        // Clean the prefix
+        let prefix = value.toUpperCase().replace('[', '').replace(']', '').trim();
+
+        // Getting infos...
+        if (_statuses.includes(prefix)) info.status = prefix;
+        else if (_engines.includes(prefix)) info.engine = prefix;
+
+        // This is not a game but a mod
+        else if (prefix === MOD_PREFIX) info.isMod = true;
+    }
+    return info;
 }
 
 /**
@@ -680,7 +824,7 @@ async function getGameDownloadLink(browser, url) {
  * Search the F95Zone portal to find possible conversations regarding the game you are looking for.
  * @param {puppeteer.Browser} browser Browser object used for navigation
  * @param {String} gamename Name of the game to search for
- * @returns {Promise<GameInfo[]>} List of information obtained from the preliminary research on the F95 portal
+ * @returns {Promise<URL[]>} List of URL of possible games  obtained from the preliminary research on the F95 portal
  */
 async function getSearchGameResults(browser, gamename) {
     if (_debug) console.log('Searching ' + gamename + ' on F95Zone');
@@ -690,10 +834,12 @@ async function getSearchGameResults(browser, gamename) {
     await page.goto(F95_SEARCH_URL, {
         waitUntil: WAIT_STATEMENT
     }); // Go to the search form and wait for it
+
     // Explicitly wait for the required items to load
     await page.waitForSelector(SEARCH_FORM_TEXTBOX);
     await page.waitForSelector(TITLE_ONLY_CHECKBOX);
     await page.waitForSelector(SEARCH_BUTTON);
+
     await page.type(SEARCH_FORM_TEXTBOX, gamename) // Type the game we desire
     await page.click(TITLE_ONLY_CHECKBOX) // Select only the thread with the game in the titles
     await Promise.all([
@@ -707,13 +853,13 @@ async function getSearchGameResults(browser, gamename) {
     let threadTitleList = await page.$$(THREAD_TITLE);
 
     // For each title extract the info about the conversation
-    if(_debug) console.log('Extracting info from conversation titles');
+    if (_debug) console.log('Extracting info from conversation titles');
     let results = [];
-    for (const title of threadTitleList) {
-        var info = await getSearchThreadInfo(page, title);
+    for (let title of threadTitleList) {
+        let gameUrl = await getOnlyGameThreads(page, title);
 
         // Append the game's informations
-        if (info !== null) results.push(info);
+        if (gameUrl !== null) results.push(gameUrl);
     }
     if (_debug) console.log('Find ' + results.length + ' conversations');
     await page.close(); // Close the page
@@ -723,42 +869,26 @@ async function getSearchGameResults(browser, gamename) {
 
 /**
  * @private
- * Starting from the title of a conversation on the F95 portal, 
- * he obtains basic information about the element (in case it is a game)
+ * Return the link of a conversation if it is a game or a mod
  * @param {puppeteer.Page} page Page containing the conversation to be analyzed
  * @param {puppeteer.ElementHandle} titleHandle Title of the conversation to be analyzed
- * @return {Promise<GameInfo>} Object containing the information obtained from the analysis or null if it is not a game conversation
+ * @return {Promise<URL>} URL of the game/mod
  */
-async function getSearchThreadInfo(page, titleHandle) {
-
-    let info = new GameInfo();
-
+async function getOnlyGameThreads(page, titleHandle) {
     // Get the URL of the thread from the title
     let relativeURLThread = await page.evaluate((element) => element.querySelector('a').href, titleHandle);
-    info.f95url = new URL(relativeURLThread, F95_BASE_URL);
+    let url = new URL(relativeURLThread, F95_BASE_URL);
 
-    // Select infos like the engine used for the game or it's status
-    // parsing the title
-    let elements = await titleHandle.$$('span[dir="auto"]');
-
-    // The 'Ongoing' status is not specified, only 'Abandoned'/'OnHold'/'Complete' are
-    info.status = 'Ongoing';
-    for (let element of elements) {
+    // Parse prefixes to ignore game recommendation
+    for (let element of await titleHandle.$$('span[dir="auto"]')) {
         // Elaborate the prefixes
         let prefix = await page.evaluate(element => element.textContent.toUpperCase(), element);
         prefix = prefix.replace('[', '').replace(']', '');
 
         // This is not a game nor a mod, we can exit
         if (prefix === GAME_RECOMMENDATION_PREFIX) return null;
-
-        // Getting infos...
-        else if (_statuses.includes(prefix)) info.status = prefix;
-        else if (_engines.includes(prefix)) info.engine = prefix;
-
-        // This is probably a mod for the game we are searching
-        else if (prefix === MOD_PREFIX) info.isMod = true;
     }
-    return info;
+    return url;
 }
 //#endregion Game search
 

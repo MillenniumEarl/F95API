@@ -1,6 +1,24 @@
+/**
+ * Class containing the data of the user currently connected to the F95Zone platform.
+ */
 class UserData {
-constructor(){
-    this.username = "";
-    this.avatarSrc = null;
+    constructor() {
+        /**
+         * User username.
+         * @type String
+         */
+        this.username = "";
+        /**
+         * Path to the user 's profile picture.
+         * @type URL
+         */
+        this.avatarSrc = null;
+        /**
+         * List of followed thread URLs.
+         * @type URL[]
+         */
+        this.watchedThreads = [];
+    }
 }
-}
+
+module.exports.UserData = UserData;
