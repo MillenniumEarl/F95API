@@ -1,0 +1,28 @@
+{
+  "name": "f95api",
+  "version": "1.0.0",
+  "description": "Unofficial Node JS module for scraping F95Zone platform",
+  "main": "./app/test.js",
+  "scripts": {
+    "unit-test": "nyc --reporter=text mocha",
+    "test": "node ./app/test.js",
+    "debug": "nodemon --inspect ."
+  },
+  "keywords": [
+    "f95zone",
+    "api",
+    "scraping",
+    "login",
+    "game",
+    "games"
+  ],
+  "author": "MillenniumEarl",
+  "devDependencies": {
+    "chai": "^4.2.0",
+    "mocha": "^8.1.3",
+    "node-html-parser": "^1.2.21",
+    "nyc": "^15.1.0",
+    "puppeteer": "^5.3.1",
+    "url-exist": "^2.0.2"
+  }
+}
