@@ -1,16 +1,18 @@
-const { debug, login, getGameData, loadF95BaseData, getUserData } = require("../app/index");
+const { debug, login, getGameData, loadF95BaseData, getUserData, logout } = require("../app/index");
 
-debug(true);
+//debug(true);
 main();
 
 async function main() {
     let loginResult = await login("MillenniumEarl", "f9vTcRNuvxj4YpK");
 
     if (loginResult.success) {
-        // await loadF95BaseData();
-        // let data = await getGameData("kingdom of deception", false);
-        // console.log(data.pop());
-        let data = await getUserData();
-        console.log(data);
+        await loadF95BaseData();
+        let gameData = await getGameData("kingdom of deception", false);
+        console.log(gameData.pop());
+
+        // let userData = await getUserData();
+        // console.log(userData);
     }
+    logout();
 }

@@ -67,6 +67,10 @@ class GameInfo {
      * @type String
      */
     this.gameDir = UNKNOWN;
+    /**
+     * 
+     */
+    this.downloadInfo = [];
   }
 
   /**
