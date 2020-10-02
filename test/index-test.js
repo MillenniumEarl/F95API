@@ -10,7 +10,7 @@ const PASSWORD = "f9vTcRNuvxj4YpK";
 const FAKE_USERNAME = "FakeUsername091276";
 const FAKE_PASSWORD = "fake_password";
 
-F95API.isolation(true);
+F95API.setIsolation(true);
 
 describe("Login without cookies", function () {
     //#region Set-up

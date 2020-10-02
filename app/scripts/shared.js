@@ -60,24 +60,28 @@ class Shared {
         return this._debug;
     }
     /**
-     * @returns {boolean}
+     * Indicates whether a user is logged in to the F95Zone platform or not.
+     * @returns {Boolean}
      */
     static get isLogged() {
         return this._isLogged;
     }
     /**
-     * @returns {object[]}
+     * List of cookies obtained from the F95Zone platform.
+     * @returns {bject[]}
      */
     static get cookies() {
         return this._cookies;
     }
     /**
+     * List of possible game engines used for development.
      * @returns {String[]}
      */
     static get engines() {
         return this._engines;
     }
     /**
+     * List of possible development states that a game can assume.
      * @returns {String[]}
      */
     static get statuses() {

@@ -30,21 +30,42 @@ module.exports.UserData = UserData;
 
 //#region Exposed properties
 /**
- * 
+ * Shows log messages and other useful functions for module debugging.
  * @param {Boolean} value 
  */
 module.exports.debug = function (value) {
     shared.debug = value;
 }
+/**
+ * @public
+ * Indicates whether a user is logged in to the F95Zone platform or not.
+ * @returns {String}
+ */
 module.exports.isLogged = function () {
     return shared.isLogged;
 };
-module.exports.isolation = function(value) {
+/**
+ * @public
+ * If true, it opens a new browser for each request 
+ * to the F95Zone platform, otherwise it reuses the same.
+ * @returns {String}
+ */
+module.exports.setIsolation = function(value) {
     shared.isolation = value;
 }
+/**
+ * @public
+ * Path to the cache directory
+ * @returns {String}
+ */
 module.exports.getCacheDir = function() {
     return shared.cacheDir;
 }
+/**
+ * @public
+ * Set path to the cache directory
+ * @returns {String}
+ */
 module.exports.setCacheDir = function(value) {
     shared.cacheDir = value;
 
@@ -222,6 +243,7 @@ module.exports.getGameData = async function (name, includeMods) {
 /**
  * @public
  * Gets the data of the currently logged in user.
+ * You **must** be logged in to the portal before calling this method.
  * @returns {Promise<UserData>} Data of the user currently logged in or null if an error arise
  */
 module.exports.getUserData = async function () {
@@ -265,7 +287,16 @@ module.exports.getUserData = async function () {
 
     return ud;
 }
+/**
+ * @public
+ * Logout from the current user.
+ * You **must** be logged in to the portal before calling this method.
+ */
 module.exports.logout = function() {
+    if (!shared.isLogged) {
+        console.warn('user not authenticated, unable to continue');
+        return info.version;
+    }
     shared.isLogged = false;
 }
 //#endregion
