@@ -9,6 +9,9 @@
   },
   "license": "UNLICENSED",
   "private": true,
+  "engines": {
+    "node": ">=0.10"
+  },
   "scripts": {
     "unit-test": "nyc --reporter=text mocha",
     "test": "node ./app/test.js",
