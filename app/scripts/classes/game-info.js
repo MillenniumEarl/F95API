@@ -1,7 +1,10 @@
+'use strict';
+
 const UNKNOWN = 'Unknown';
 
 class GameInfo {
   constructor() {
+    //#region Properties
     /**
      * Game name
      * @type String
@@ -68,9 +71,13 @@ class GameInfo {
      */
     this.gameDir = UNKNOWN;
     /**
-     * 
+     * Information on game file download links, 
+     * including information on hosting platforms 
+     * and operating system supported by the specific link
+     * @type GameDownload[]
      */
     this.downloadInfo = [];
+    //#endregion Properties
   }
 
   /**
@@ -89,7 +96,8 @@ class GameInfo {
       lastUpdate: this.lastUpdate,
       lastPlayed: this.lastPlayed,
       isMod: this.isMod,
-      gameDir: this.gameDir
+      gameDir: this.gameDir,
+      downloadInfo: this.downloadInfo
     }
   }
 
@@ -102,4 +110,4 @@ class GameInfo {
     return Object.assign(new GameInfo(), json);
   }
 }
-module.exports.GameInfo = GameInfo;
+module.exports = GameInfo;

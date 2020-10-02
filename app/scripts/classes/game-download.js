@@ -1,3 +1,5 @@
+'use strict';
+
 class GameDownload {
     constructor() {
         /**
@@ -30,7 +32,7 @@ class GameDownload {
 
     }
 }
-module.exports.GameDownload = GameDownload;
+module.exports = GameDownload;
 
 function downloadMEGA(url){
 

@@ -1,3 +1,5 @@
+'use strict';
+
 // Public modules from npm
 const puppeteer = require('puppeteer');
 

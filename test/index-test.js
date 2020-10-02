@@ -1,7 +1,6 @@
 const expect = require("chai").expect;
 const F95API = require("../app/index");
 const fs = require("fs");
-const { debug } = require("console");
 
 const COOKIES_SAVE_PATH = "./f95cache/cookies.json";
 const ENGINES_SAVE_PATH = "./f95cache/engines.json";
@@ -10,6 +9,8 @@ const USERNAME = "MillenniumEarl";
 const PASSWORD = "f9vTcRNuvxj4YpK";
 const FAKE_USERNAME = "FakeUsername091276";
 const FAKE_PASSWORD = "fake_password";
+
+F95API.isolation(true);
 
 describe("Login without cookies", function () {
     //#region Set-up
@@ -48,7 +49,7 @@ describe("Login with cookies", function () {
     //#region Set-up
     this.timeout(30000); // All tests in this suite get 30 seconds before timeout
 
-    before("Log in to create cookies", async function () {
+    before("Log in to create cookies then logout", async function () {
         // Runs once before the first test in this block
         if (!fs.existsSync(COOKIES_SAVE_PATH)) await F95API.login(USERNAME, PASSWORD); // Download cookies
         F95API.logout();
@@ -126,5 +127,52 @@ describe("Search game data", function () {
     it("Search game when not logged", async function () {
         const result = await F95API.getGameData("Kingdom of Deception", false);
         expect(result, "Without being logged should return null").to.be.null;
+    });
+});
+
+describe("Load user data", function () {
+    //#region Set-up
+    this.timeout(30000); // All tests in this suite get 30 seconds before timeout
+    //#endregion Set-up
+
+    it("Retrieve when logged", async function () {
+        // Login
+        await F95API.login(USERNAME, PASSWORD);
+
+        // Then retrieve user data
+        let data = await F95API.getUserData();
+
+        expect(data).to.exist;
+        expect(data.username).to.equal(USERNAME);
+    });
+    it("Retrieve when not logged", async function () {
+        // Logout
+        F95API.logout();
+
+        // Try to retrieve user data
+        let data = await F95API.getUserData();
+
+        expect(data).to.be.null;
+    });
+});
+
+describe("Check game version", function () {
+    //#region Set-up
+    this.timeout(30000); // All tests in this suite get 30 seconds before timeout
+    //#endregion Set-up
+
+    it("Get game version", async function () {
+        const loginResult = await F95API.login(USERNAME, PASSWORD);
+        expect(loginResult.success).to.be.true;
+
+        const loadResult = await F95API.loadF95BaseData();
+        expect(loadResult).to.be.true;
+
+        // This test depend on the data on F95Zone at 
+        // https://f95zone.to/threads/kingdom-of-deception-v0-10-8-hreinn-games.2733/
+        const result = (await F95API.getGameData("Kingdom of Deception", false))[0];
+
+        let version = await F95API.getGameVersion(result);
+        expect(version).to.be.equal(result.version);
     });
 });

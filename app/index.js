@@ -2,7 +2,6 @@
 
 // Core modules
 const fs = require('fs');
-const path = require('path');
 
 // Public modules from npm
 const urlExist = require('url-exist');
@@ -19,19 +18,15 @@ const {
     prepareBrowser,
     preparePage
 } = require('./scripts/puppeteer-helper.js');
-const GameInfo = require('./scripts/classes/game-info.js').GameInfo;
-const LoginResult = require('./scripts/classes/login-result.js').LoginResult;
-const UserData = require('./scripts/classes/user-data.js').UserData;
+const GameInfo = require('./scripts/classes/game-info.js');
+const LoginResult = require('./scripts/classes/login-result.js');
+const UserData = require('./scripts/classes/user-data.js');
 
-//#region Directories
-const CACHE_PATH = './f95cache';
-const COOKIES_SAVE_PATH = path.join(CACHE_PATH, 'cookies.json');
-const ENGINES_SAVE_PATH = path.join(CACHE_PATH, 'engines.json');
-const STATUSES_SAVE_PATH = path.join(CACHE_PATH, 'statuses.json');
-
-// Create directory if it doesn't exist
-if (!fs.existsSync(CACHE_PATH)) fs.mkdirSync(CACHE_PATH);
-//#endregion Directories
+//#region Expose classes
+module.exports.GameInfo = GameInfo;
+module.exports.LoginResult = LoginResult;
+module.exports.UserData = UserData;
+//#endregion Expose classes
 
 //#region Exposed properties
 /**
@@ -44,7 +39,23 @@ module.exports.debug = function (value) {
 module.exports.isLogged = function () {
     return shared.isLogged;
 };
+module.exports.isolation = function(value) {
+    shared.isolation = value;
+}
+module.exports.getCacheDir = function() {
+    return shared.cacheDir;
+}
+module.exports.setCacheDir = function(value) {
+    shared.cacheDir = value;
+
+    // Create directory if it doesn't exist
+    if (!fs.existsSync(shared.cacheDir)) fs.mkdirSync(shared.cacheDir);
+}
 //#endregion Exposed properties
+
+//#region Global variables
+var _browser = null;
+//#endregion
 
 //#region Export methods
 /**
@@ -77,7 +88,14 @@ module.exports.login = async function (username, password) {
 
     // Else, log in throught browser
     if (shared.debug) console.log('No saved sessions or expired session, login on the platform');
-    let browser = await prepareBrowser();
+
+    let browser = null;
+    if (shared.isolation) browser = await prepareBrowser();
+    else {
+        if (_browser === null) _browser = await prepareBrowser();
+        browser = _browser;
+    }
+
     let result = await loginF95(browser, username, password);
     shared.isLogged = result.success;
 
@@ -88,7 +106,7 @@ module.exports.login = async function (username, password) {
     } else {
         console.warn('Error during authentication: ' + result.message);
     }
-    await browser.close();
+    if (shared.isolation) await browser.close();
     return result;
 }
 /**
@@ -107,7 +125,13 @@ module.exports.loadF95BaseData = async function () {
     if (shared.debug) console.log('Loading base data...');
 
     // Prepare a new web page
-    let browser = await prepareBrowser();
+    let browser = null;
+    if (shared.isolation) browser = await prepareBrowser();
+    else {
+        if (_browser === null) _browser = await prepareBrowser();
+        browser = _browser;
+    }
+
     let page = await preparePage(browser); // Set new isolated page
     await page.setCookie(...shared.cookies); // Set cookies to avoid login
     
@@ -119,18 +143,18 @@ module.exports.loadF95BaseData = async function () {
     // Obtain engines (disc/online)
     await page.waitForSelector(constSelectors.ENGINE_ID_SELECTOR);
     shared.engines = await loadValuesFromLatestPage(page,
-        ENGINES_SAVE_PATH,
+        shared.enginesCachePath,
         constSelectors.ENGINE_ID_SELECTOR,
         'engines');
 
     // Obtain statuses (disc/online)
     await page.waitForSelector(constSelectors.STATUS_ID_SELECTOR);
     shared.statuses = await loadValuesFromLatestPage(page,
-        STATUSES_SAVE_PATH,
+        shared.statusesCachePath,
         constSelectors.STATUS_ID_SELECTOR,
         'statuses');
 
-    await browser.close();
+    if (shared.isolation) await browser.close();
     if (shared.debug) console.log('Base data loaded');
     return true;
 }
@@ -169,7 +193,12 @@ module.exports.getGameData = async function (name, includeMods) {
     }
 
     // Gets the search results of the game being searched for
-    let browser = await prepareBrowser();
+    let browser = null;
+    if (shared.isolation) browser = await prepareBrowser();
+    else {
+        if (_browser === null) _browser = await prepareBrowser();
+        browser = _browser;
+    }
     let urlList = await getSearchGameResults(browser, name);
 
     // Process previous partial results
@@ -187,7 +216,7 @@ module.exports.getGameData = async function (name, includeMods) {
         else result.push(info);
     }
 
-    await browser.close();
+    if (shared.isolation) await browser.close();
     return result;
 }
 /**
@@ -202,7 +231,12 @@ module.exports.getUserData = async function () {
     }
 
     // Prepare a new web page
-    let browser = await prepareBrowser();
+    let browser = null;
+    if (shared.isolation) browser = await prepareBrowser();
+    else {
+        if (_browser === null) _browser = await prepareBrowser();
+        browser = _browser;
+    }
     let page = await preparePage(browser); // Set new isolated page
     await page.setCookie(...shared.cookies); // Set cookies to avoid login
     await page.goto(constURLs.F95_BASE_URL); // Go to base page
@@ -227,7 +261,7 @@ module.exports.getUserData = async function () {
     ud.watchedThreads = await threads;
 
     await page.close();
-    await browser.close();
+    if (shared.isolation) await browser.close();
 
     return ud;
 }
@@ -247,9 +281,9 @@ module.exports.logout = function() {
  */
 function loadCookies() {
     // Check the existence of the cookie file
-    if (fs.existsSync(COOKIES_SAVE_PATH)) {
+    if (fs.existsSync(shared.cookiesCachePath)) {
         // Read cookies
-        let cookiesJSON = fs.readFileSync(COOKIES_SAVE_PATH);
+        let cookiesJSON = fs.readFileSync(shared.cookiesCachePath);
         let cookies = JSON.parse(cookiesJSON);
 
         // Check if the cookies have expired
@@ -376,7 +410,7 @@ async function loginF95(browser, username, password) {
     // Save cookies to avoid re-auth
     if (result.success) {
         let c = await page.cookies();
-        fs.writeFileSync(COOKIES_SAVE_PATH, JSON.stringify(c));
+        fs.writeFileSync(shared.cookiesCachePath, JSON.stringify(c));
         result.message = 'Authentication successful';
     }
     // Obtain the error message

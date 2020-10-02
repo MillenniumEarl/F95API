@@ -1,3 +1,5 @@
+'use strict';
+
 /**
  * Class containing the data of the user currently connected to the F95Zone platform.
  */
@@ -21,4 +23,4 @@ class UserData {
     }
 }
 
-module.exports.UserData = UserData;
+module.exports = UserData;

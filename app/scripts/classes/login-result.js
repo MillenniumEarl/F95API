@@ -1,3 +1,5 @@
+'use strict';
+
 /**
  * Object obtained in response to an attempt to login to the portal.
  */
@@ -15,4 +17,4 @@ class LoginResult {
         this.message = '';
     }
 }
-module.exports.LoginResult = LoginResult;
+module.exports = LoginResult;

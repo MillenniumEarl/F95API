@@ -1,3 +1,5 @@
+'use strict';
+
 // Public modules from npm
 const HTMLParser = require('node-html-parser');
 const puppeteer = require('puppeteer');
@@ -7,8 +9,8 @@ const urlExist = require('url-exist');
 const shared = require('./shared.js');
 const selectors = require('./costants/css-selectors.js');
 const { preparePage } = require('./puppeteer-helper.js');
-const GameDownload = require('./classes/game-download.js').GameDownload;
-const GameInfo = require('./classes/game-info.js').GameInfo;
+const GameDownload = require('./classes/game-download.js');
+const GameInfo = require('./classes/game-info.js');
 const { isStringAValidURL, isF95URL } = require('./urls-helper.js');
 
 /**
@@ -154,8 +156,8 @@ async function getGamePreviewSource(page) {
         // Get the firs image available
         let img = document.querySelector(selector);
 
-        if (img === null || img === undefined) return null;
-        else return img.getAttribute('src');
+        if (img) return img.getAttribute('src');
+        else return null;
     }, selectors.GAME_IMAGES);
 
     // Check if the URL is valid

@@ -1,6 +1,7 @@
+'use strict';
+
 // Modules from file
 const { F95_BASE_URL } = require('./costants/urls.js');
-
 
 /**
  * @protected
