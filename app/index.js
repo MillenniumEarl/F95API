@@ -295,7 +295,7 @@ module.exports.getUserData = async function () {
 module.exports.logout = function() {
     if (!shared.isLogged) {
         console.warn('user not authenticated, unable to continue');
-        return info.version;
+        return;
     }
     shared.isLogged = false;
 }
