@@ -1,3 +1,5 @@
+"use strict"
+
 const expect = require("chai").expect;
 const F95API = require("../app/index");
 const fs = require("fs");

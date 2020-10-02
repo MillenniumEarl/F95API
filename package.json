@@ -10,7 +10,7 @@
   "license": "UNLICENSED",
   "private": true,
   "engines": {
-    "node": ">=0.10"
+    "node": ">=10.0"
   },
   "scripts": {
     "unit-test": "nyc --reporter=text mocha",
