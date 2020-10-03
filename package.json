@@ -13,7 +13,8 @@
     "node": ">=10.0"
   },
   "scripts": {
-    "unit-test": "nyc --reporter=text mocha",
+    "unit-test-mocha": "nyc --reporter=text mocha",
+    "report-coverage": "nyc report --reporter=text-lcov > coverage.lcov && codecov -t 38ad72bf-a29d-4c2e-9827-96cbe037afd2",
     "test": "node ./test/test.js",
     "deploy": "npm pack"
   },

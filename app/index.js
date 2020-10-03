@@ -9,7 +9,7 @@ const urlExist = require("url-exist");
 // Modules from file
 const shared = require("./scripts/shared.js");
 const constURLs = require("./scripts/costants/urls.js");
-const constSelectors = require("./scripts/costants/css-selectors.js");
+const selectors = require("./scripts/costants/css-selectors.js");
 const { isStringAValidURL } = require("./scripts/urls-helper.js");
 const gameScraper = require("./scripts/game-scraper.js");
 const {
@@ -20,13 +20,13 @@ const GameInfo = require("./scripts/classes/game-info.js");
 const LoginResult = require("./scripts/classes/login-result.js");
 const UserData = require("./scripts/classes/user-data.js");
 
-//#region Expose classes
+//#region Export classes
 module.exports.GameInfo = GameInfo;
 module.exports.LoginResult = LoginResult;
 module.exports.UserData = UserData;
-//#endregion Expose classes
+//#endregion Export classes
 
-//#region Exposed properties
+//#region Export properties
 /**
  * Shows log messages and other useful functions for module debugging.
  * @param {Boolean} value
@@ -70,7 +70,7 @@ module.exports.setCacheDir = function (value) {
   // Create directory if it doesn't exist
   if (!fs.existsSync(shared.cacheDir)) fs.mkdirSync(shared.cacheDir);
 };
-//#endregion Exposed properties
+//#endregion Export properties
 
 //#region Global variables
 var _browser = null;
@@ -161,20 +161,20 @@ module.exports.loadF95BaseData = async function () {
   });
 
   // Obtain engines (disc/online)
-  await page.waitForSelector(constSelectors.ENGINE_ID_SELECTOR);
+  await page.waitForSelector(selectors.ENGINE_ID_SELECTOR);
   shared.engines = await loadValuesFromLatestPage(
     page,
     shared.enginesCachePath,
-    constSelectors.ENGINE_ID_SELECTOR,
+    selectors.ENGINE_ID_SELECTOR,
     "engines"
   );
 
   // Obtain statuses (disc/online)
-  await page.waitForSelector(constSelectors.STATUS_ID_SELECTOR);
+  await page.waitForSelector(selectors.STATUS_ID_SELECTOR);
   shared.statuses = await loadValuesFromLatestPage(
     page,
     shared.statusesCachePath,
-    constSelectors.STATUS_ID_SELECTOR,
+    selectors.STATUS_ID_SELECTOR,
     "statuses"
   );
 
@@ -267,21 +267,21 @@ module.exports.getUserData = async function () {
   await page.goto(constURLs.F95_BASE_URL); // Go to base page
 
   // Explicitly wait for the required items to load
-  await page.waitForSelector(constSelectors.USERNAME_ELEMENT);
-  await page.waitForSelector(constSelectors.AVATAR_PIC);
+  await page.waitForSelector(selectors.USERNAME_ELEMENT);
+  await page.waitForSelector(selectors.AVATAR_PIC);
 
   let threads = getUserWatchedGameThreads(browser);
 
   let username = await page.evaluate(
     /* istanbul ignore next */ (selector) =>
       document.querySelector(selector).innerText,
-    constSelectors.USERNAME_ELEMENT
+    selectors.USERNAME_ELEMENT
   );
 
   let avatarSrc = await page.evaluate(
     /* istanbul ignore next */ (selector) =>
       document.querySelector(selector).getAttribute("src"),
-    constSelectors.AVATAR_PIC
+    selectors.AVATAR_PIC
   );
 
   let ud = new UserData();
@@ -441,12 +441,12 @@ async function loginF95(browser, username, password) {
   await page.goto(constURLs.F95_LOGIN_URL); // Go to login page
 
   // Explicitly wait for the required items to load
-  await page.waitForSelector(constSelectors.USERNAME_INPUT);
-  await page.waitForSelector(constSelectors.PASSWORD_INPUT);
-  await page.waitForSelector(constSelectors.LOGIN_BUTTON);
-  await page.type(constSelectors.USERNAME_INPUT, username); // Insert username
-  await page.type(constSelectors.PASSWORD_INPUT, password); // Insert password
-  await page.click(constSelectors.LOGIN_BUTTON); // Click on the login button
+  await page.waitForSelector(selectors.USERNAME_INPUT);
+  await page.waitForSelector(selectors.PASSWORD_INPUT);
+  await page.waitForSelector(selectors.LOGIN_BUTTON);
+  await page.type(selectors.USERNAME_INPUT, username); // Insert username
+  await page.type(selectors.PASSWORD_INPUT, password); // Insert password
+  await page.click(selectors.LOGIN_BUTTON); // Click on the login button
   await page.waitForNavigation({
     waitUntil: shared.WAIT_STATEMENT,
   }); // Wait for page to load
@@ -458,7 +458,7 @@ async function loginF95(browser, username, password) {
   result.success = await page.evaluate(
     /* istanbul ignore next */ (selector) =>
       document.querySelector(selector) !== null,
-    constSelectors.AVATAR_INFO
+    selectors.AVATAR_INFO
   );
 
   // Save cookies to avoid re-auth
@@ -472,13 +472,13 @@ async function loginF95(browser, username, password) {
     await page.evaluate(
       /* istanbul ignore next */ (selector) =>
         document.querySelector(selector) !== null,
-      constSelectors.LOGIN_MESSAGE_ERROR
+      selectors.LOGIN_MESSAGE_ERROR
     )
   ) {
     let errorMessage = await page.evaluate(
       /* istanbul ignore next */ (selector) =>
         document.querySelector(selector).innerText,
-      constSelectors.LOGIN_MESSAGE_ERROR
+      selectors.LOGIN_MESSAGE_ERROR
     );
 
     if (errorMessage === "Incorrect password. Please try again.") {
@@ -505,33 +505,33 @@ async function getUserWatchedGameThreads(browser) {
   await page.goto(constURLs.F95_WATCHED_THREADS); // Go to the thread page
 
   // Explicitly wait for the required items to load
-  await page.waitForSelector(constSelectors.WATCHED_THREAD_FILTER_POPUP_BUTTON);
+  await page.waitForSelector(selectors.WATCHED_THREAD_FILTER_POPUP_BUTTON);
 
   // Show the popup
-  await page.click(constSelectors.WATCHED_THREAD_FILTER_POPUP_BUTTON);
-  await page.waitForSelector(constSelectors.UNREAD_THREAD_CHECKBOX);
-  await page.waitForSelector(constSelectors.ONLY_GAMES_THREAD_OPTION);
-  await page.waitForSelector(constSelectors.FILTER_THREADS_BUTTON);
+  await page.click(selectors.WATCHED_THREAD_FILTER_POPUP_BUTTON);
+  await page.waitForSelector(selectors.UNREAD_THREAD_CHECKBOX);
+  await page.waitForSelector(selectors.ONLY_GAMES_THREAD_OPTION);
+  await page.waitForSelector(selectors.FILTER_THREADS_BUTTON);
 
   // Set the filters
   await page.evaluate(
     /* istanbul ignore next */ (selector) =>
       document.querySelector(selector).removeAttribute("checked"),
-    constSelectors.UNREAD_THREAD_CHECKBOX
+    selectors.UNREAD_THREAD_CHECKBOX
   ); // Also read the threads already read
 
-  await page.click(constSelectors.ONLY_GAMES_THREAD_OPTION);
+  await page.click(selectors.ONLY_GAMES_THREAD_OPTION);
 
   // Filter the threads
-  await page.click(constSelectors.FILTER_THREADS_BUTTON);
-  await page.waitForSelector(constSelectors.WATCHED_THREAD_URLS);
+  await page.click(selectors.FILTER_THREADS_BUTTON);
+  await page.waitForSelector(selectors.WATCHED_THREAD_URLS);
 
   // Get the threads urls
   let urls = [];
   let nextPageExists = false;
   do {
     // Get all the URLs
-    for (let handle of await page.$$(constSelectors.WATCHED_THREAD_URLS)) {
+    for (let handle of await page.$$(selectors.WATCHED_THREAD_URLS)) {
       let src = await page.evaluate(
         /* istanbul ignore next */ (element) => element.href,
         handle
@@ -543,13 +543,13 @@ async function getUserWatchedGameThreads(browser) {
 
     nextPageExists = await page.evaluate(
       /* istanbul ignore next */ (selector) => document.querySelector(selector),
-      constSelectors.WATCHED_THREAD_NEXT_PAGE
+      selectors.WATCHED_THREAD_NEXT_PAGE
     );
 
     // Click to next page
     if (nextPageExists) {
-      await page.click(constSelectors.WATCHED_THREAD_NEXT_PAGE);
-      await page.waitForSelector(constSelectors.WATCHED_THREAD_URLS);
+      await page.click(selectors.WATCHED_THREAD_NEXT_PAGE);
+      await page.waitForSelector(selectors.WATCHED_THREAD_URLS);
     }
   } while (nextPageExists);
 
@@ -576,19 +576,19 @@ async function getSearchGameResults(browser, gamename) {
   }); // Go to the search form and wait for it
 
   // Explicitly wait for the required items to load
-  await page.waitForSelector(constSelectors.SEARCH_FORM_TEXTBOX);
-  await page.waitForSelector(constSelectors.TITLE_ONLY_CHECKBOX);
-  await page.waitForSelector(constSelectors.SEARCH_BUTTON);
+  await page.waitForSelector(selectors.SEARCH_FORM_TEXTBOX);
+  await page.waitForSelector(selectors.TITLE_ONLY_CHECKBOX);
+  await page.waitForSelector(selectors.SEARCH_BUTTON);
 
-  await page.type(constSelectors.SEARCH_FORM_TEXTBOX, gamename); // Type the game we desire
-  await page.click(constSelectors.TITLE_ONLY_CHECKBOX); // Select only the thread with the game in the titles
-  await page.click(constSelectors.SEARCH_BUTTON); // Execute search
+  await page.type(selectors.SEARCH_FORM_TEXTBOX, gamename); // Type the game we desire
+  await page.click(selectors.TITLE_ONLY_CHECKBOX); // Select only the thread with the game in the titles
+  await page.click(selectors.SEARCH_BUTTON); // Execute search
   await page.waitForNavigation({
     waitUntil: shared.WAIT_STATEMENT,
   }); // Wait for page to load
 
   // Select all conversation titles
-  let threadTitleList = await page.$$(constSelectors.THREAD_TITLE);
+  let threadTitleList = await page.$$(selectors.THREAD_TITLE);
 
   // For each title extract the info about the conversation
   if (shared.debug) console.log("Extracting info from conversation titles");
