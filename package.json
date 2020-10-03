@@ -14,7 +14,7 @@
   },
   "scripts": {
     "unit-test": "nyc --reporter=text mocha",
-    "test": "node ./app/test.js",
+    "test": "node ./test/test.js",
     "deploy": "npm pack"
   },
   "keywords": [

@@ -290,7 +290,7 @@ function extractGameHostingData(platform, text) {
     const LINK_OPEN = '<a';
     const LINK_CLOSE = '</a>';
     const HREF_START = 'href="';
-    const HREF_END = '\"';
+    const HREF_END = '"';
     const TAG_CLOSE = '>';
 
     // Identify the individual platforms
