@@ -8,7 +8,7 @@ const {
 /**
  * @protected
  * Check if the url belongs to the domain of the F95 platform.
- * @param {URL} url URL to check
+ * @param {String} url URL to check
  * @returns {Boolean} true if the url belongs to the domain, false otherwise
  */
 module.exports.isF95URL = function(url) {

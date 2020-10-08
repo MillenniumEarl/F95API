@@ -17,7 +17,7 @@ class GameInfo {
     this.author = UNKNOWN;
     /**
      * URL to the game's official conversation on the F95Zone portal
-     * @type URL
+     * @type String
      */
     this.f95url = null;
     /**
@@ -42,7 +42,7 @@ class GameInfo {
     this.status = UNKNOWN;
     /**
      * Game description image URL
-     * @type URL
+     * @type String
      */
     this.previewSource = null;
     /**

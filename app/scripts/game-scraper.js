@@ -17,7 +17,7 @@ const { isStringAValidURL, isF95URL } = require("./urls-helper.js");
  * @protected
  * Get information from the game's main page.
  * @param {puppeteer.Browser} browser Browser object used for navigation
- * @param {URL} url URL of the game/mod to extract data from
+ * @param {String} url URL (String) of the game/mod to extract data from
  * @return {Promise<GameInfo>} Complete information about the game you are looking for
  */
 module.exports.getGameInfo = async function (browser, url) {
@@ -25,12 +25,12 @@ module.exports.getGameInfo = async function (browser, url) {
 
   // Verify the correctness of the URL
   if (!isF95URL(url)) throw url + " is not a valid F95Zone URL";
-  let exists = await urlExist(url.toString());
+  let exists = await urlExist(url);
   if (!exists) return new GameInfo();
 
   let page = await preparePage(browser); // Set new isolated page
   await page.setCookie(...shared.cookies); // Set cookies to avoid login
-  await page.goto(url.toString(), {
+  await page.goto(url, {
     waitUntil: shared.WAIT_STATEMENT,
   }); // Go to the game page and wait until it loads
 
@@ -157,7 +157,7 @@ function parseConversationPage(text) {
  * @private
  * Gets the URL of the image used as a preview for the game in the conversation.
  * @param {puppeteer.Page} page Page containing the URL to be extrapolated
- * @returns {Promise<URL>} URL of the image or null if failed to get it
+ * @returns {Promise<String>} URL (String) of the image or null if failed to get it
  */
 async function getGamePreviewSource(page) {
   let src = await page.evaluate(
@@ -172,7 +172,7 @@ async function getGamePreviewSource(page) {
   );
 
   // Check if the URL is valid
-  return isStringAValidURL(src) ? new URL(src) : null;
+  return isStringAValidURL(src) ? src : null;
 }
 
 /**
@@ -364,7 +364,7 @@ function extractGameHostingData(platform, text) {
     if (isStringAValidURL(link)) {
       let gd = new GameDownload();
       gd.hosting = hosting.toUpperCase();
-      gd.link = new URL(link);
+      gd.link = link;
       gd.supportedOS = platform.toUpperCase();
 
       downloadData.push(gd);

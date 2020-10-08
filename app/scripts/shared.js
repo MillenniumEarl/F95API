@@ -68,7 +68,7 @@ class Shared {
     }
     /**
      * List of cookies obtained from the F95Zone platform.
-     * @returns {bject[]}
+     * @returns {Object[]}
      */
     static get cookies() {
         return this._cookies;

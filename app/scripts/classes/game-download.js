@@ -11,7 +11,7 @@ class GameDownload {
         /**
          * @public
          * Link to game files
-         * @type URL
+         * @type String
          */
         this.link = null;
         /**

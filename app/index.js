@@ -195,7 +195,7 @@ module.exports.getGameVersion = async function (info) {
     return info.version;
   }
 
-  let urlExists = await urlExist(info.f95url.toString());
+  let urlExists = await urlExist(info.f95url);
 
   // F95 change URL at every game update, so if the URL is the same no update is available
   if (urlExists) return info.version;
@@ -286,7 +286,7 @@ module.exports.getUserData = async function () {
 
   let ud = new UserData();
   ud.username = username;
-  ud.avatarSrc = isStringAValidURL(avatarSrc) ? new URL(avatarSrc) : null;
+  ud.avatarSrc = isStringAValidURL(avatarSrc) ? avatarSrc : null;
   ud.watchedThreads = await threads;
 
   await page.close();
@@ -504,7 +504,7 @@ async function loginF95(browser, username, password) {
  * @private
  * Gets the list of URLs of threads the user follows.
  * @param {puppeteer.Browser} browser Browser object used for navigation
- * @returns {Promise<URL[]>} URL list
+ * @returns {Promise<String[]>} URL list
  */
 async function getUserWatchedGameThreads(browser) {
   let page = await preparePage(browser); // Set new isolated page
@@ -543,7 +543,7 @@ async function getUserWatchedGameThreads(browser) {
         handle
       );
       // If 'unread' is left, it will redirect to the last unread post
-      let url = new URL(src.replace("/unread", ""));
+      let url = src.replace("/unread", "");
       urls.push(url);
     }
 
@@ -570,7 +570,7 @@ async function getUserWatchedGameThreads(browser) {
  * Search the F95Zone portal to find possible conversations regarding the game you are looking for.
  * @param {puppeteer.Browser} browser Browser object used for navigation
  * @param {String} gamename Name of the game to search for
- * @returns {Promise<URL[]>} List of URL of possible games  obtained from the preliminary research on the F95 portal
+ * @returns {Promise<String[]>} List of URL of possible games  obtained from the preliminary research on the F95 portal
  */
 async function getSearchGameResults(browser, gamename) {
   if (shared.debug) console.log("Searching " + gamename + " on F95Zone");
@@ -615,7 +615,7 @@ async function getSearchGameResults(browser, gamename) {
  * Return the link of a conversation if it is a game or a mod
  * @param {puppeteer.Page} page Page containing the conversation to be analyzed
  * @param {puppeteer.ElementHandle} titleHandle Title of the conversation to be analyzed
- * @return {Promise<URL>} URL of the game/mod
+ * @return {Promise<String>} URL of the game/mod
  */
 async function getOnlyGameThreads(page, titleHandle) {
   const GAME_RECOMMENDATION_PREFIX = "RECOMMENDATION";
@@ -625,7 +625,7 @@ async function getOnlyGameThreads(page, titleHandle) {
     /* istanbul ignore next */ (element) => element.querySelector("a").href,
     titleHandle
   );
-  let url = new URL(relativeURLThread, constURLs.F95_BASE_URL);
+  let url = new URL(relativeURLThread, constURLs.F95_BASE_URL).toString();
 
   // Parse prefixes to ignore game recommendation
   for (let element of await titleHandle.$$('span[dir="auto"]')) {

@@ -12,7 +12,7 @@ class UserData {
         this.username = "";
         /**
          * Path to the user's profile picture.
-         * @type URL
+         * @type String
          */
         this.avatarSrc = null;
         /**
