@@ -296,7 +296,7 @@ module.exports.getUserData = async function () {
 };
 /**
  * @public
- * Logout from the current user.
+ * Logout from the current user and gracefully close shared browser.
  * You **must** be logged in to the portal before calling this method.
  */
 module.exports.logout = function () {
@@ -305,6 +305,12 @@ module.exports.logout = function () {
     return;
   }
   shared.isLogged = false;
+
+  // Gracefully close shared browser
+  if (!shared.isolation) {
+    _browser.close()
+    .then(() => _browser = null);
+  }
 };
 //#endregion
 
