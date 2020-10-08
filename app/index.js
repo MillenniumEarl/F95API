@@ -8,8 +8,8 @@ const urlExist = require("url-exist");
 
 // Modules from file
 const shared = require("./scripts/shared.js");
-const constURLs = require("./scripts/costants/urls.js");
-const selectors = require("./scripts/costants/css-selectors.js");
+const constURLs = require("./scripts/constants/urls.js");
+const selectors = require("./scripts/constants/css-selectors.js");
 const { isStringAValidURL } = require("./scripts/urls-helper.js");
 const gameScraper = require("./scripts/game-scraper.js");
 const {

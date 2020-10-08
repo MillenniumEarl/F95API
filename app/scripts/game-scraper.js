@@ -7,7 +7,7 @@ const urlExist = require("url-exist");
 
 // Modules from file
 const shared = require("./shared.js");
-const selectors = require("./costants/css-selectors.js");
+const selectors = require("./constants/css-selectors.js");
 const { preparePage } = require("./puppeteer-helper.js");
 const GameDownload = require("./classes/game-download.js");
 const GameInfo = require("./classes/game-info.js");
