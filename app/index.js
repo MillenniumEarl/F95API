@@ -307,7 +307,7 @@ module.exports.logout = function () {
   shared.isLogged = false;
 
   // Gracefully close shared browser
-  if (!shared.isolation) {
+  if (!shared.isolation && _browser !== null) {
     _browser.close()
     .then(() => _browser = null);
   }
