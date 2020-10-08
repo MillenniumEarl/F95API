@@ -1,24 +1,19 @@
 {
+  "main": "./app/index.js",
   "name": "f95api",
   "version": "1.0.0",
+  "author": {
+    "name": "Millennium Earl"
+  },
   "description": "Unofficial Node JS module for scraping F95Zone platform",
-  "main": "./app/index.js",
   "repository": {
     "type": "git",
     "url": "https://github.com/MillenniumEarl/F95API.git"
   },
   "license": "UNLICENSED",
   "private": true,
-  "engines": {
-    "node": ">=10.0"
-  },
-  "scripts": {
-    "unit-test-mocha": "nyc --reporter=text mocha",
-    "report-coverage": "nyc report --reporter=text-lcov > coverage.lcov && codecov -t 38ad72bf-a29d-4c2e-9827-96cbe037afd2",
-    "test": "node ./test/test.js",
-    "deploy": "npm pack"
-  },
   "keywords": [
+    "f95",
     "f95zone",
     "api",
     "scraping",
@@ -26,7 +21,15 @@
     "game",
     "games"
   ],
-  "author": "MillenniumEarl",
+  "scripts": {
+    "unit-test-mocha": "nyc --reporter=text mocha",
+    "report-coverage": "nyc report --reporter=text-lcov > coverage.lcov && codecov -t 38ad72bf-a29d-4c2e-9827-96cbe037afd2",
+    "test": "node ./test/test.js",
+    "deploy": "npm pack"
+  },
+  "engines": {
+    "node": ">=10.0"
+  },
   "dependencies": {
     "node-html-parser": "^1.2.21",
     "puppeteer": "^5.3.1",
