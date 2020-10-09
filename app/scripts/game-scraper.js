@@ -3,7 +3,6 @@
 // Public modules from npm
 const HTMLParser = require("node-html-parser");
 const puppeteer = require("puppeteer");
-const urlExist = require("url-exist");
 
 // Modules from file
 const shared = require("./shared.js");
@@ -11,7 +10,7 @@ const selectors = require("./constants/css-selectors.js");
 const { preparePage } = require("./puppeteer-helper.js");
 const GameDownload = require("./classes/game-download.js");
 const GameInfo = require("./classes/game-info.js");
-const { isStringAValidURL, isF95URL } = require("./urls-helper.js");
+const { isStringAValidURL, isF95URL, urlExists } = require("./urls-helper.js");
 
 /**
  * @protected
@@ -25,7 +24,7 @@ module.exports.getGameInfo = async function (browser, url) {
 
   // Verify the correctness of the URL
   if (!isF95URL(url)) throw url + " is not a valid F95Zone URL";
-  let exists = await urlExist(url);
+  let exists = await urlExists(url);
   if (!exists) return new GameInfo();
 
   let page = await preparePage(browser); // Set new isolated page

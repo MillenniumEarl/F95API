@@ -42,7 +42,7 @@ module.exports.isStringAValidURL = function (url) {
  * @returns {Promise<Boolean>} true if the URL exists, false otherwise
  */
 module.exports.urlExists = async function (url, checkRedirect) {
-  if (!this.isStringAValidURL(url)) {
+  if (!exports.isStringAValidURL(url)) {
     return false;
   }
 
