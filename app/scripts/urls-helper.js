@@ -2,7 +2,7 @@
 
 // Public modules from npm
 const ky = require("ky-universal").create({
-    throwHttpErrors: false
+  throwHttpErrors: false,
 });
 
 // Modules from file
@@ -25,14 +25,14 @@ module.exports.isF95URL = function (url) {
  * @param {String} url String to check for correctness
  * @returns {Boolean} true if the string is a valid URL, false otherwise
  */
-module.exports.isStringAValidURL = function(url) {
-    try {
-        new URL(url);
-        return true;
-    } catch (err) {
-        return false;
-    }
-}
+module.exports.isStringAValidURL = function (url) {
+  try {
+    new URL(url);
+    return true;
+  } catch (err) {
+    return false;
+  }
+};
 
 /**
  * @public
@@ -41,20 +41,20 @@ module.exports.isStringAValidURL = function(url) {
  * @param {Boolean} checkRedirect If true, the function will consider redirects a violation and return false
  * @returns {Promise<Boolean>} true if the URL exists, false otherwise
  */
-module.exports.urlExists = async function(url, checkRedirect) {
-    if (!this.isStringAValidURL(url)) {
-        return false
-    }
+module.exports.urlExists = async function (url, checkRedirect) {
+  if (!this.isStringAValidURL(url)) {
+    return false;
+  }
 
-    const response = await ky.head(url);
-    let valid = response !== undefined && !/4\d\d/.test(response.status);
+  const response = await ky.head(url);
+  let valid = response !== undefined && !/4\d\d/.test(response.status);
 
-    if(!valid) return false;
+  if (!valid) return false;
 
-    if(checkRedirect) {
-        if (response.url === url) valid = true;
-        else valid = false;
-    }
-    
-    return valid;
-}
+  if (checkRedirect) {
+    if (response.url === url) valid = true;
+    else valid = false;
+  }
+
+  return valid;
+};
