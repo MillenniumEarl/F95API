@@ -1,4 +1,4 @@
-'use strict';
+"use strict";
 
 // Public modules from npm
 const isUrl = require("is-url-superb");
@@ -7,9 +7,7 @@ const ky = require("ky-universal").create({
 });
 
 // Modules from file
-const {
-    F95_BASE_URL
-} = require('./constants/urls.js');
+const { F95_BASE_URL } = require("./constants/urls.js");
 
 /**
  * @protected
@@ -17,10 +15,10 @@ const {
  * @param {String} url URL to check
  * @returns {Boolean} true if the url belongs to the domain, false otherwise
  */
-module.exports.isF95URL = function(url) {
-    if (url.toString().startsWith(F95_BASE_URL)) return true;
-    else return false;
-}
+module.exports.isF95URL = function (url) {
+  if (url.toString().startsWith(F95_BASE_URL)) return true;
+  else return false;
+};
 
 /**
  * @protected

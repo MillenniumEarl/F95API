@@ -1,6 +1,6 @@
-'use strict';
+"use strict";
 
-const UNKNOWN = 'Unknown';
+const UNKNOWN = "Unknown";
 
 class GameInfo {
   constructor() {
@@ -71,8 +71,8 @@ class GameInfo {
      */
     this.gameDir = UNKNOWN;
     /**
-     * Information on game file download links, 
-     * including information on hosting platforms 
+     * Information on game file download links,
+     * including information on hosting platforms
      * and operating system supported by the specific link
      * @type GameDownload[]
      */
@@ -97,8 +97,8 @@ class GameInfo {
       lastPlayed: this.lastPlayed,
       isMod: this.isMod,
       gameDir: this.gameDir,
-      downloadInfo: this.downloadInfo
-    }
+      downloadInfo: this.downloadInfo,
+    };
   }
 
   /**

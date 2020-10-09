@@ -305,8 +305,7 @@ module.exports.logout = function () {
 
   // Gracefully close shared browser
   if (!shared.isolation && _browser !== null) {
-    _browser.close()
-    .then(() => _browser = null);
+    _browser.close().then(() => (_browser = null));
   }
 };
 //#endregion
