@@ -196,7 +196,7 @@ module.exports.getGameVersion = async function (info) {
 
   // F95 change URL at every game update, so if the URL is the same no update is available
   if (exists) return info.version;
-  else return await module.exports.getGameData(info.name, info.isMod).version;
+  else return (await module.exports.getGameData(info.name, info.isMod)).version;
 };
 /**
  * @public
