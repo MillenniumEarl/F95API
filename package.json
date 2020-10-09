@@ -1,7 +1,7 @@
 {
   "main": "./app/index.js",
   "name": "f95api",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "author": {
     "name": "Millennium Earl"
   },
@@ -31,7 +31,6 @@
     "node": ">=10.0"
   },
   "dependencies": {
-    "is-url-superb": "^4.0.0",
     "ky-universal": "^0.8.2",
     "node-html-parser": "^1.2.21",
     "puppeteer": "^5.3.1"

@@ -1,7 +1,6 @@
 "use strict";
 
 // Public modules from npm
-const isUrl = require("is-url-superb");
 const ky = require("ky-universal").create({
     throwHttpErrors: false
 });
@@ -43,7 +42,7 @@ module.exports.isStringAValidURL = function(url) {
  * @returns {Promise<Boolean>} true if the URL exists, false otherwise
  */
 module.exports.urlExists = async function(url, checkRedirect) {
-    if (!isUrl(url)) {
+    if (!this.isStringAValidURL(url)) {
         return false
     }
 
