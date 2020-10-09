@@ -1,5 +1,11 @@
 'use strict';
 
+// Public modules from npm
+const isUrl = require("is-url-superb");
+const ky = require("ky-universal").create({
+    throwHttpErrors: false
+});
+
 // Modules from file
 const {
     F95_BASE_URL
@@ -29,4 +35,29 @@ module.exports.isStringAValidURL = function(url) {
     } catch (err) {
         return false;
     }
+}
+
+/**
+ * @public
+ * Check if a particular URL is valid and reachable on the web.
+ * @param {String} url URL to check
+ * @param {Boolean} checkRedirect If true, the function will consider redirects a violation and return false
+ * @returns {Promise<Boolean>} true if the URL exists, false otherwise
+ */
+module.exports.urlExists = async function(url, checkRedirect) {
+    if (!isUrl(url)) {
+        return false
+    }
+
+    const response = await ky.head(url);
+    let valid = response !== undefined && !/4\d\d/.test(response.status);
+
+    if(!valid) return false;
+
+    if(checkRedirect) {
+        if (response.url === url) valid = true;
+        else valid = false;
+    }
+    
+    return valid;
 }

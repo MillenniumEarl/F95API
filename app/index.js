@@ -3,14 +3,11 @@
 // Core modules
 const fs = require("fs");
 
-// Public modules from npm
-const urlExist = require("url-exist");
-
 // Modules from file
 const shared = require("./scripts/shared.js");
 const constURLs = require("./scripts/constants/urls.js");
 const selectors = require("./scripts/constants/css-selectors.js");
-const { isStringAValidURL } = require("./scripts/urls-helper.js");
+const { isStringAValidURL, urlExists } = require("./scripts/urls-helper.js");
 const gameScraper = require("./scripts/game-scraper.js");
 const {
   prepareBrowser,
@@ -195,10 +192,10 @@ module.exports.getGameVersion = async function (info) {
     return info.version;
   }
 
-  let urlExists = await urlExist(info.f95url);
+  let exists = await urlExists(info.f95url);
 
   // F95 change URL at every game update, so if the URL is the same no update is available
-  if (urlExists) return info.version;
+  if (exists) return info.version;
   else return await module.exports.getGameData(info.name, info.isMod).version;
 };
 /**
