@@ -41,7 +41,7 @@ module.exports.getGameInfo = async function (browser, url) {
   let author = getGameAuthor(page);
   let tags = getGameTags(page);
   let previewSource = getGamePreviewSource(page);
-  let downloadData = getGameDownloadLink(page);
+  //let downloadData = getGameDownloadLink(page);
   info = await parsePrefixes(page, info); // Fill status/engines/isMod
   let structuredText = await getMainPostStructuredText(page);
   let overview = getOverview(structuredText, info.isMod);
@@ -60,7 +60,11 @@ module.exports.getGameInfo = async function (browser, url) {
     ? parsedInfos["UPDATED"]
     : parsedInfos["THREAD UPDATED"];
   info.previewSource = await previewSource;
-  info.downloadInfo = await downloadData;
+  //info.downloadInfo = await downloadData;
+  /* Downloading games without going directly to 
+  * the platform appears to be prohibited by 
+  * the guidelines. It is therefore useless to 
+  * keep the links for downloading the games. */
 
   await page.close(); // Close the page
   if (shared.debug) console.log("Founded data for " + info.name);
