@@ -17,7 +17,7 @@ const { isStringAValidURL, isF95URL, urlExists } = require("./urls-helper.js");
  * Get information from the game's main page.
  * @param {puppeteer.Browser} browser Browser object used for navigation
  * @param {String} url URL (String) of the game/mod to extract data from
- * @return {Promise<GameInfo>} Complete information about the game you are 
+ * @return {Promise<GameInfo>} Complete information about the game you are
  * looking for or null if the URL doesn't exists
  */
 module.exports.getGameInfo = async function (browser, url) {
@@ -61,10 +61,10 @@ module.exports.getGameInfo = async function (browser, url) {
     : parsedInfos["THREAD UPDATED"];
   info.previewSource = await previewSource;
   //info.downloadInfo = await downloadData;
-  /* Downloading games without going directly to 
-  * the platform appears to be prohibited by 
-  * the guidelines. It is therefore useless to 
-  * keep the links for downloading the games. */
+  /* Downloading games without going directly to
+   * the platform appears to be prohibited by
+   * the guidelines. It is therefore useless to
+   * keep the links for downloading the games. */
 
   await page.close(); // Close the page
   if (shared.debug) console.log("Founded data for " + info.name);

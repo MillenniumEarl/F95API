@@ -4,7 +4,7 @@
 const fs = require("fs");
 
 // Public modules from npm
-const { File } = require('megajs');
+const { File } = require("megajs");
 
 // Modules from file
 const { prepareBrowser, preparePage } = require("../puppeteer-helper.js");
@@ -41,8 +41,10 @@ class GameDownload {
    * @return {Promise<Boolean>} Result of the operation
    */
   async download(path) {
-    if (this.link.includes("mega.nz")) return await downloadMEGA(this.link, path);
-    else if (this.link.includes("nopy.to")) return await downloadNOPY(this.link, path);
+    if (this.link.includes("mega.nz"))
+      return await downloadMEGA(this.link, path);
+    else if (this.link.includes("nopy.to"))
+      return await downloadNOPY(this.link, path);
   }
 }
 module.exports = GameDownload;
@@ -83,9 +85,9 @@ async function downloadNOPY(url, savepath) {
   await page.waitForSelector("#download");
 
   // Set the save path
-  await page._client.send('Page.setDownloadBehavior', {
-    behavior: 'allow',
-    downloadPath: path.basename(path.dirname(savepath)) // Is a directory
+  await page._client.send("Page.setDownloadBehavior", {
+    behavior: "allow",
+    downloadPath: path.basename(path.dirname(savepath)), // Is a directory
   });
 
   // Obtain the download button and click it
@@ -94,8 +96,8 @@ async function downloadNOPY(url, savepath) {
 
   // Await for all the connections to close
   await page.waitForNavigation({
-    waitUntil: 'networkidle0',
-    timeout: 0 // Disable timeout
+    waitUntil: "networkidle0",
+    timeout: 0, // Disable timeout
   });
 
   // Close browser and page
