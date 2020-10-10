@@ -181,22 +181,20 @@ module.exports.loadF95BaseData = async function () {
 };
 /**
  * @public
- * Returns the currently online version of the specified game.
+ * Chek if exists a new version of the game.
  * You **must** be logged in to the portal before calling this method.
  * @param {GameInfo} info Information about the game to get the version for
- * @returns {Promise<String>} Currently online version of the specified game
+ * @returns {Promise<Boolean>} true if an update is available, false otherwise
  */
-module.exports.getGameVersion = async function (info) {
+module.exports.chekIfGameHasUpdate = async function (info) {
   if (!shared.isLogged) {
     console.warn("user not authenticated, unable to continue");
     return info.version;
   }
 
-  let exists = await urlExists(info.f95url, true);
-
-  // F95 change URL at every game update, so if the URL is the same no update is available
-  if (exists) return info.version;
-  else return (await module.exports.getGameData(info.name, info.isMod)).version;
+  // F95 change URL at every game update, 
+  // so if the URL is the same no update is available
+  return await urlExists(info.f95url, true);
 };
 /**
  * @public

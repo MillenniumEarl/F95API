@@ -159,12 +159,12 @@ describe("Load user data", function () {
   });
 });
 
-describe("Check game version", function () {
+describe("Check game update", function () {
   //#region Set-up
   this.timeout(30000); // All tests in this suite get 30 seconds before timeout
   //#endregion Set-up
 
-  it("Get game version", async function () {
+  it("Get game update", async function () {
     const loginResult = await F95API.login(USERNAME, PASSWORD);
     expect(loginResult.success).to.be.true;
 
@@ -175,7 +175,7 @@ describe("Check game version", function () {
     // https://f95zone.to/threads/kingdom-of-deception-v0-10-8-hreinn-games.2733/
     const result = (await F95API.getGameData("Kingdom of Deception", false))[0];
 
-    let version = await F95API.getGameVersion(result);
-    expect(version).to.be.equal(result.version);
+    let update = await F95API.chekIfGameHasUpdate(result);
+    expect(update).to.be.false;
   });
 });
