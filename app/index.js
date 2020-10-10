@@ -194,7 +194,7 @@ module.exports.chekIfGameHasUpdate = async function (info) {
 
   // F95 change URL at every game update, 
   // so if the URL is the same no update is available
-  return await !urlExists(info.f95url, true);
+  return !(await urlExists(info.f95url, true));
 };
 /**
  * @public
