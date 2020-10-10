@@ -17,7 +17,7 @@ const { isStringAValidURL, isF95URL, urlExists } = require("./urls-helper.js");
  * Get information from the game's main page.
  * @param {puppeteer.Browser} browser Browser object used for navigation
  * @param {String} url URL (String) of the game/mod to extract data from
- * @return {Promise<GameInfo>} Complete information about the game you are 
+ * @return {Promise<GameInfo>} Complete information about the game you are
  * looking for or null if the URL doesn't exists
  */
 module.exports.getGameInfo = async function (browser, url) {

@@ -7,7 +7,11 @@ const fs = require("fs");
 const shared = require("./scripts/shared.js");
 const constURLs = require("./scripts/constants/urls.js");
 const selectors = require("./scripts/constants/css-selectors.js");
-const { isStringAValidURL, urlExists, isF95URL } = require("./scripts/urls-helper.js");
+const {
+  isStringAValidURL,
+  urlExists,
+  isF95URL,
+} = require("./scripts/urls-helper.js");
 const gameScraper = require("./scripts/game-scraper.js");
 const {
   prepareBrowser,
@@ -192,7 +196,7 @@ module.exports.chekIfGameHasUpdate = async function (info) {
     return info.version;
   }
 
-  // F95 change URL at every game update, 
+  // F95 change URL at every game update,
   // so if the URL is the same no update is available
   return await urlExists(info.f95url, true);
 };
@@ -252,7 +256,7 @@ module.exports.getGameDataFromURL = async function (url) {
   }
 
   // Check URL
-  if(!urlExists(url)) return null;
+  if (!urlExists(url)) return null;
   if (!isF95URL(url)) throw url + " is not a valid F95Zone URL";
 
   // Gets the search results of the game being searched for
