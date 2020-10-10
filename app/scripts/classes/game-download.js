@@ -4,7 +4,7 @@
 const fs = require("fs");
 
 // Public modules from npm
-const { File } = require('megajs');
+//const { File } = require('megajs');
 
 // Modules from file
 const { prepareBrowser, preparePage } = require("../puppeteer-helper.js");
