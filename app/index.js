@@ -7,7 +7,7 @@ const fs = require("fs");
 const shared = require("./scripts/shared.js");
 const constURLs = require("./scripts/constants/urls.js");
 const selectors = require("./scripts/constants/css-selectors.js");
-const { isStringAValidURL, urlExists } = require("./scripts/urls-helper.js");
+const { isStringAValidURL, urlExists, isF95URL } = require("./scripts/urls-helper.js");
 const gameScraper = require("./scripts/game-scraper.js");
 const {
   prepareBrowser,
@@ -234,6 +234,37 @@ module.exports.getGameData = async function (name, includeMods) {
     if (info.isMod && !includeMods) continue;
     else result.push(info);
   }
+
+  if (shared.isolation) await browser.close();
+  return result;
+};
+/**
+ * @public
+ * Starting from the url, it gets all the information about the game you are looking for.
+ * You **must** be logged in to the portal before calling this method.
+ * @param {String} url URL of the game to obtain information of
+ * @returns {Promise<GameInfo>} Information about the game. If no game was found, null is returned
+ */
+module.exports.getGameDataFromURL = async function (url) {
+  if (!shared.isLogged) {
+    console.warn("user not authenticated, unable to continue");
+    return null;
+  }
+
+  // Check URL
+  if(!urlExists(url)) return null;
+  if (!isF95URL(url)) throw url + " is not a valid F95Zone URL";
+
+  // Gets the search results of the game being searched for
+  let browser = null;
+  if (shared.isolation) browser = await prepareBrowser();
+  else {
+    if (_browser === null) _browser = await prepareBrowser();
+    browser = _browser;
+  }
+
+  // Get game data
+  let result = await gameScraper.getGameInfo(browser, url);
 
   if (shared.isolation) await browser.close();
   return result;

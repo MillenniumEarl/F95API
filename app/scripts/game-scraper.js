@@ -17,7 +17,8 @@ const { isStringAValidURL, isF95URL, urlExists } = require("./urls-helper.js");
  * Get information from the game's main page.
  * @param {puppeteer.Browser} browser Browser object used for navigation
  * @param {String} url URL (String) of the game/mod to extract data from
- * @return {Promise<GameInfo>} Complete information about the game you are looking for
+ * @return {Promise<GameInfo>} Complete information about the game you are 
+ * looking for or null if the URL doesn't exists
  */
 module.exports.getGameInfo = async function (browser, url) {
   if (shared.debug) console.log("Obtaining game info");
@@ -25,7 +26,7 @@ module.exports.getGameInfo = async function (browser, url) {
   // Verify the correctness of the URL
   if (!isF95URL(url)) throw url + " is not a valid F95Zone URL";
   let exists = await urlExists(url);
-  if (!exists) return new GameInfo();
+  if (!exists) return null;
 
   let page = await preparePage(browser); // Set new isolated page
   await page.setCookie(...shared.cookies); // Set cookies to avoid login
