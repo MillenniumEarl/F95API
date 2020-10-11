@@ -10,17 +10,17 @@ const {
 const GameDownload = require("../app/scripts/classes/game-download.js");
 
 debug(true);
-//main();
+main();
 //downloadGameNOPY();
-downloadGameMEGA();
+//downloadGameMEGA();
 
 async function main() {
   let loginResult = await login("MillenniumEarl", "f9vTcRNuvxj4YpK");
 
   if (loginResult.success) {
     await loadF95BaseData();
-    let gameData = await getGameData("kingdom of deception", false);
-    console.log(gameData.pop());
+    let gameData = await getGameData("champion", false);
+    console.log(gameData);
 
     // let userData = await getUserData();
     // console.log(userData);

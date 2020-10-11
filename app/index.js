@@ -235,6 +235,7 @@ module.exports.getGameData = async function (name, includeMods) {
   let result = [];
   for (let info of await Promise.all(promiseList)) {
     // Skip mods if not required
+    if(!info) continue;
     if (info.isMod && !includeMods) continue;
     else result.push(info);
   }
