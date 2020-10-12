@@ -482,7 +482,7 @@ async function loginF95(browser, username, password) {
   await page.waitForNavigation({
     waitUntil: shared.WAIT_STATEMENT,
   }); // Wait for page to load
-  
+
   // Prepare result
   let result = new LoginResult();
 

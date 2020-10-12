@@ -3,8 +3,8 @@
 const expect = require("chai").expect;
 const F95API = require("../app/index");
 const fs = require("fs");
-const sleep = require('sleep');
-const dotenv = require('dotenv');
+const sleep = require("sleep");
+const dotenv = require("dotenv");
 dotenv.config();
 
 const COOKIES_SAVE_PATH = "./f95cache/cookies.json";
@@ -26,9 +26,9 @@ describe("Login without cookies", function () {
   //#region Set-up
   this.timeout(30000); // All tests in this suite get 30 seconds before timeout
 
-  before("Set isolation", function() {
+  before("Set isolation", function () {
     F95API.setIsolation(true);
-  })
+  });
 
   beforeEach("Remove all cookies", function () {
     // Runs before each test in this block
@@ -42,7 +42,7 @@ describe("Login without cookies", function () {
   it("Test with valid credentials", async function () {
     // Gain exclusive use of the cookies
     while (testOrder !== 0) randomSleep();
-    
+
     const result = await F95API.login(USERNAME, PASSWORD);
     expect(result.success).to.be.true;
     expect(result.message).equal("Authentication successful");
@@ -221,7 +221,8 @@ describe("Check game update", function () {
 
     // This test depend on the data on F95Zone at
     // https://f95zone.to/threads/perverted-education-v0-9701-april-ryan.1854/
-    let url = "https://f95zone.to/threads/perverted-education-v0-9701-april-ryan.1854/";
+    let url =
+      "https://f95zone.to/threads/perverted-education-v0-9701-april-ryan.1854/";
     const result = await F95API.getGameDataFromURL(url);
     result.version = "0.9600";
 
