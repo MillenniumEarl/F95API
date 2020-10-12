@@ -3,47 +3,81 @@
 const expect = require("chai").expect;
 const F95API = require("../app/index");
 const fs = require("fs");
+const sleep = require('sleep');
+const dotenv = require('dotenv');
+dotenv.config();
 
 const COOKIES_SAVE_PATH = "./f95cache/cookies.json";
 const ENGINES_SAVE_PATH = "./f95cache/engines.json";
 const STATUSES_SAVE_PATH = "./f95cache/statuses.json";
-const USERNAME = "MillenniumEarl";
-const PASSWORD = "f9vTcRNuvxj4YpK";
+const USERNAME = process.env.F95_USERNAME;
+const PASSWORD = process.env.F95_PASSWORD;
 const FAKE_USERNAME = "FakeUsername091276";
 const FAKE_PASSWORD = "fake_password";
 
-F95API.setIsolation(true);
+F95API.debug(false);
+
+function randomSleep() {
+  let random = Math.floor(Math.random() * 500) + 50;
+  sleep.msleep(500 + random);
+}
 
 describe("Login without cookies", function () {
   //#region Set-up
   this.timeout(30000); // All tests in this suite get 30 seconds before timeout
 
+  before("Set isolation", function() {
+    F95API.setIsolation(true);
+  })
+
   beforeEach("Remove all cookies", function () {
     // Runs before each test in this block
     if (fs.existsSync(COOKIES_SAVE_PATH)) fs.unlinkSync(COOKIES_SAVE_PATH);
-    F95API.logout();
+    if (F95API.isLogged()) F95API.logout();
   });
   //#endregion Set-up
 
+  let testOrder = 0;
+
   it("Test with valid credentials", async function () {
+    // Gain exclusive use of the cookies
+    while (testOrder !== 0) randomSleep();
+    
     const result = await F95API.login(USERNAME, PASSWORD);
     expect(result.success).to.be.true;
     expect(result.message).equal("Authentication successful");
+
+    testOrder = 1;
   });
   it("Test with invalid username", async function () {
+    // Gain exclusive use of the cookies
+    while (testOrder !== 1) randomSleep();
+
     const result = await F95API.login(FAKE_USERNAME, FAKE_PASSWORD);
     expect(result.success).to.be.false;
     expect(result.message).to.equal("Incorrect username");
+
+    testOrder = 2;
   });
   it("Test with invalid password", async function () {
+    // Gain exclusive use of the cookies
+    while (testOrder !== 2) randomSleep();
+
     const result = await F95API.login(USERNAME, FAKE_PASSWORD);
     expect(result.success).to.be.false;
     expect(result.message).to.equal("Incorrect password");
+
+    testOrder = 3;
   });
   it("Test with invalid credentials", async function () {
+    // Gain exclusive use of the cookies
+    while (testOrder !== 3) randomSleep();
+
     const result = await F95API.login(FAKE_USERNAME, FAKE_PASSWORD);
     expect(result.success).to.be.false;
     expect(result.message).to.equal("Incorrect username"); // It should first check the username
+
+    testOrder = 4;
   });
 });
 
@@ -55,7 +89,7 @@ describe("Login with cookies", function () {
     // Runs once before the first test in this block
     if (!fs.existsSync(COOKIES_SAVE_PATH))
       await F95API.login(USERNAME, PASSWORD); // Download cookies
-    F95API.logout();
+    if (F95API.isLogged()) F95API.logout();
   });
   //#endregion Set-up
 
@@ -92,7 +126,7 @@ describe("Load base data without cookies", function () {
   });
 
   it("Without login", async function () {
-    F95API.logout();
+    if (F95API.isLogged()) F95API.logout();
     let result = await F95API.loadF95BaseData();
     expect(result).to.be.false;
   });
@@ -104,7 +138,7 @@ describe("Search game data", function () {
 
   beforeEach("Prepare API", function () {
     // Runs once before the first test in this block
-    F95API.logout();
+    if (F95API.isLogged()) F95API.logout();
   });
   //#endregion Set-up
 
@@ -117,7 +151,9 @@ describe("Search game data", function () {
 
     // This test depend on the data on F95Zone at
     // https://f95zone.to/threads/kingdom-of-deception-v0-10-8-hreinn-games.2733/
-    const result = (await F95API.getGameData("Kingdom of Deception", false))[0];
+    const gamesList = await F95API.getGameData("Kingdom of Deception", false);
+    expect(gamesList.length, "Should find only the game").to.equal(1);
+    const result = gamesList[0];
     let src = "https://attachments.f95zone.to/2018/09/162821_f9nXfwF.png";
 
     // Test only the main information
@@ -125,7 +161,7 @@ describe("Search game data", function () {
     expect(result.author).to.equal("Hreinn Games");
     expect(result.isMod, "Should be false").to.be.false;
     expect(result.engine).to.equal("REN'PY");
-    // expect(result.previewSource).to.equal(src); could be null -> Why sometimes doesn't get the image?
+    expect(result.previewSource).to.equal(src); // Could be null -> Why sometimes doesn't get the image?
   });
   it("Search game when not logged", async function () {
     const result = await F95API.getGameData("Kingdom of Deception", false);
@@ -150,7 +186,7 @@ describe("Load user data", function () {
   });
   it("Retrieve when not logged", async function () {
     // Logout
-    F95API.logout();
+    if (F95API.isLogged()) F95API.logout();
 
     // Try to retrieve user data
     let data = await F95API.getUserData();
@@ -164,7 +200,7 @@ describe("Check game update", function () {
   this.timeout(30000); // All tests in this suite get 30 seconds before timeout
   //#endregion Set-up
 
-  it("Get game update", async function () {
+  it("Get online game and verify that no update exists", async function () {
     const loginResult = await F95API.login(USERNAME, PASSWORD);
     expect(loginResult.success).to.be.true;
 
@@ -177,5 +213,19 @@ describe("Check game update", function () {
 
     let update = await F95API.chekIfGameHasUpdate(result);
     expect(update).to.be.false;
+  });
+
+  it("Verify that update exists from old URL", async function () {
+    const loginResult = await F95API.login(USERNAME, PASSWORD);
+    expect(loginResult.success).to.be.true;
+
+    // This test depend on the data on F95Zone at
+    // https://f95zone.to/threads/perverted-education-v0-9701-april-ryan.1854/
+    let url = "https://f95zone.to/threads/perverted-education-v0-9701-april-ryan.1854/";
+    const result = await F95API.getGameDataFromURL(url);
+    result.version = "0.9600";
+
+    let update = await F95API.chekIfGameHasUpdate(result);
+    expect(update).to.be.true;
   });
 });

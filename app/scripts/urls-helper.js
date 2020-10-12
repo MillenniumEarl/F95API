@@ -30,6 +30,8 @@ module.exports.isStringAValidURL = function (url) {
     new URL(url);
     return true;
   } catch (err) {
+    console.error(err);
+    console.log(url);
     return false;
   }
 };

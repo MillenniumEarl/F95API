@@ -71,6 +71,36 @@ module.exports.getGameInfo = async function (browser, url) {
   return info;
 };
 
+/**
+ * Obtain the game version without parsing again all the data of the game.
+ * @param {puppeteer.Browser} browser Browser object used for navigation
+ * @param {GameInfo} info Information about the game
+ * @returns {Promise<String>} Online version of the game
+ */
+module.exports.getGameVersionFromTitle = async function(browser, info) {
+  let page = await preparePage(browser); // Set new isolated page
+  await page.setCookie(...shared.cookies); // Set cookies to avoid login
+  await page.goto(info.f95url, {
+    waitUntil: shared.WAIT_STATEMENT,
+  }); // Go to the game page and wait until it loads
+
+  // Get the title
+  let titleHTML = await page.evaluate(
+    /* istanbul ignore next */
+    (selector) =>
+    document.querySelector(selector).innerHTML,
+    selectors.GAME_TITLE
+  );
+  let title = HTMLParser.parse(titleHTML).childNodes.pop().rawText;
+
+  // The title is in the following format: [PREFIXES] NAME GAME [VERSION] [AUTHOR]
+  let startIndex = title.indexOf("[") + 1;
+  let endIndex = title.indexOf("]", startIndex);
+  let version = title.substring(startIndex, endIndex).trim().toUpperCase();
+  if(version.startsWith("V")) version = version.replace("V", ""); // Replace only the first occurrence
+  return version;
+}
+
 //#region Private methods
 /**
  * @private

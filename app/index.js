@@ -113,12 +113,8 @@ module.exports.login = async function (username, password) {
   if (shared.debug)
     console.log("No saved sessions or expired session, login on the platform");
 
-  let browser = null;
-  if (shared.isolation) browser = await prepareBrowser();
-  else {
-    if (_browser === null) _browser = await prepareBrowser();
-    browser = _browser;
-  }
+  if (_browser === null && !shared.isolation) _browser = await prepareBrowser();
+  let browser = shared.isolation ? await prepareBrowser() : _browser;
 
   let result = await loginF95(browser, username, password);
   shared.isLogged = result.success;
@@ -141,7 +137,7 @@ module.exports.login = async function (username, password) {
  * @returns {Promise<Boolean>} Result of the operation
  */
 module.exports.loadF95BaseData = async function () {
-  if (!shared.isLogged) {
+  if (!shared.isLogged || !shared.cookies) {
     console.warn("User not authenticated, unable to continue");
     return false;
   }
@@ -149,12 +145,8 @@ module.exports.loadF95BaseData = async function () {
   if (shared.debug) console.log("Loading base data...");
 
   // Prepare a new web page
-  let browser = null;
-  if (shared.isolation) browser = await prepareBrowser();
-  else {
-    if (_browser === null) _browser = await prepareBrowser();
-    browser = _browser;
-  }
+  if (_browser === null && !shared.isolation) _browser = await prepareBrowser();
+  let browser = shared.isolation ? await prepareBrowser() : _browser;
 
   let page = await preparePage(browser); // Set new isolated page
   await page.setCookie(...shared.cookies); // Set cookies to avoid login
@@ -194,14 +186,25 @@ module.exports.loadF95BaseData = async function () {
  * @returns {Promise<Boolean>} true if an update is available, false otherwise
  */
 module.exports.chekIfGameHasUpdate = async function (info) {
-  if (!shared.isLogged) {
+  if (!shared.isLogged || !shared.cookies) {
     console.warn("user not authenticated, unable to continue");
     return info.version;
   }
 
   // F95 change URL at every game update,
-  // so if the URL is the same no update is available
-  return !(await urlExists(info.f95url, true));
+  // so if the URL is different an update is available
+  let exists = await urlExists(info.f95url, true);
+  if (!exists) return true;
+
+  // Parse version from title
+  if (_browser === null && !shared.isolation) _browser = await prepareBrowser();
+  let browser = shared.isolation ? await prepareBrowser() : _browser;
+
+  let onlineVersion = await scraper.getGameVersionFromTitle(browser, info);
+
+  if (shared.isolation) await browser.close();
+
+  return onlineVersion.toUpperCase() !== info.version.toUpperCase();
 };
 /**
  * @public
@@ -213,18 +216,14 @@ module.exports.chekIfGameHasUpdate = async function (info) {
  * an identified game (in the case of homonymy). If no games were found, null is returned
  */
 module.exports.getGameData = async function (name, includeMods) {
-  if (!shared.isLogged) {
+  if (!shared.isLogged || !shared.cookies) {
     console.warn("user not authenticated, unable to continue");
     return null;
   }
 
   // Gets the search results of the game being searched for
-  let browser = null;
-  if (shared.isolation) browser = await prepareBrowser();
-  else {
-    if (_browser === null) _browser = await prepareBrowser();
-    browser = _browser;
-  }
+  if (_browser === null && !shared.isolation) _browser = await prepareBrowser();
+  let browser = shared.isolation ? await prepareBrowser() : _browser;
   let urlList = await searcher.getSearchGameResults(browser, name);
 
   // Process previous partial results
@@ -254,7 +253,7 @@ module.exports.getGameData = async function (name, includeMods) {
  * @returns {Promise<GameInfo>} Information about the game. If no game was found, null is returned
  */
 module.exports.getGameDataFromURL = async function (url) {
-  if (!shared.isLogged) {
+  if (!shared.isLogged || !shared.cookies) {
     console.warn("user not authenticated, unable to continue");
     return null;
   }
@@ -264,12 +263,8 @@ module.exports.getGameDataFromURL = async function (url) {
   if (!isF95URL(url)) throw url + " is not a valid F95Zone URL";
 
   // Gets the search results of the game being searched for
-  let browser = null;
-  if (shared.isolation) browser = await prepareBrowser();
-  else {
-    if (_browser === null) _browser = await prepareBrowser();
-    browser = _browser;
-  }
+  if (_browser === null && !shared.isolation) _browser = await prepareBrowser();
+  let browser = shared.isolation ? await prepareBrowser() : _browser;
 
   // Get game data
   let result = await scraper.getGameInfo(browser, url);
@@ -284,18 +279,14 @@ module.exports.getGameDataFromURL = async function (url) {
  * @returns {Promise<UserData>} Data of the user currently logged in or null if an error arise
  */
 module.exports.getUserData = async function () {
-  if (!shared.isLogged) {
+  if (!shared.isLogged || !shared.cookies) {
     console.warn("user not authenticated, unable to continue");
     return null;
   }
 
   // Prepare a new web page
-  let browser = null;
-  if (shared.isolation) browser = await prepareBrowser();
-  else {
-    if (_browser === null) _browser = await prepareBrowser();
-    browser = _browser;
-  }
+  if (_browser === null && !shared.isolation) _browser = await prepareBrowser();
+  let browser = shared.isolation ? await prepareBrowser() : _browser;
   let page = await preparePage(browser); // Set new isolated page
   await page.setCookie(...shared.cookies); // Set cookies to avoid login
   await page.goto(constURLs.F95_BASE_URL); // Go to base page
@@ -333,8 +324,8 @@ module.exports.getUserData = async function () {
  * Logout from the current user and gracefully close shared browser.
  * You **must** be logged in to the portal before calling this method.
  */
-module.exports.logout = function () {
-  if (!shared.isLogged) {
+module.exports.logout = async function () {
+  if (!shared.isLogged || !shared.cookies) {
     console.warn("user not authenticated, unable to continue");
     return;
   }
@@ -342,7 +333,8 @@ module.exports.logout = function () {
 
   // Gracefully close shared browser
   if (!shared.isolation && _browser !== null) {
-    _browser.close().then(() => (_browser = null));
+    await _browser.close();
+    _browser = null;
   }
 };
 //#endregion
@@ -483,13 +475,14 @@ async function loginF95(browser, username, password) {
   await page.waitForSelector(selectors.USERNAME_INPUT);
   await page.waitForSelector(selectors.PASSWORD_INPUT);
   await page.waitForSelector(selectors.LOGIN_BUTTON);
+
   await page.type(selectors.USERNAME_INPUT, username); // Insert username
   await page.type(selectors.PASSWORD_INPUT, password); // Insert password
   await page.click(selectors.LOGIN_BUTTON); // Click on the login button
   await page.waitForNavigation({
     waitUntil: shared.WAIT_STATEMENT,
   }); // Wait for page to load
-
+  
   // Prepare result
   let result = new LoginResult();
 

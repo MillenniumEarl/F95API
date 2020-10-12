@@ -1,7 +1,7 @@
 {
   "main": "./app/index.js",
   "name": "f95api",
-  "version": "1.1.2",
+  "version": "1.2.3",
   "author": {
     "name": "Millennium Earl"
   },
@@ -22,9 +22,9 @@
     "games"
   ],
   "scripts": {
-    "unit-test-mocha": "nyc --reporter=text mocha",
+    "unit-test-mocha": "nyc --reporter=text mocha './test/index-test.js'",
     "report-coverage": "nyc report --reporter=text-lcov > coverage.lcov && codecov -t 38ad72bf-a29d-4c2e-9827-96cbe037afd2",
-    "test": "node ./test/test.js",
+    "test": "node ./test/user-test.js",
     "deploy": "npm pack"
   },
   "engines": {
@@ -38,7 +38,9 @@
   },
   "devDependencies": {
     "chai": "^4.2.0",
+    "dotenv": "^8.2.0",
     "mocha": "^8.1.3",
-    "nyc": "^15.1.0"
+    "nyc": "^15.1.0",
+    "sleep": "^6.3.0"
   }
 }

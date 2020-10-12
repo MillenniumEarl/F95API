@@ -36,7 +36,8 @@ module.exports.preparePage = async function(browser) {
     await page.setRequestInterception(true);
     page.on('request', (request) => {
         if (request.resourceType() === 'image') request.abort();
-        // else if(request.resourceType == 'font') request.abort();
+        else if(request.resourceType == 'font') request.abort();
+        // else if (request.resourceType() == 'stylesheet') request.abort();
         // else if(request.resourceType == 'media') request.abort();
         else request.continue();
     });

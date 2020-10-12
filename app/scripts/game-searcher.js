@@ -70,7 +70,7 @@ async function getOnlyGameThreads(page, divHandle) {
     
     // Get the forum where the thread was posted
     let forum = await getMembershipForum(page, forumHandle);
-    if(forum !== "GAMES") return null;
+    if(forum !== "GAMES" && forum != "MODS") return null;
 
     // Get the URL of the thread from the title
     return await getThreadURL(page, titleHandle);
