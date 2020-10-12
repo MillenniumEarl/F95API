@@ -12,11 +12,14 @@ const {
   urlExists,
   isF95URL,
 } = require("./scripts/urls-helper.js");
-const gameScraper = require("./scripts/game-scraper.js");
+const scraper = require("./scripts/game-scraper.js");
 const {
   prepareBrowser,
   preparePage,
 } = require("./scripts/puppeteer-helper.js");
+const searcher = require("./scripts/game-searcher.js");
+
+// Classes from file
 const GameInfo = require("./scripts/classes/game-info.js");
 const LoginResult = require("./scripts/classes/login-result.js");
 const UserData = require("./scripts/classes/user-data.js");
@@ -222,20 +225,20 @@ module.exports.getGameData = async function (name, includeMods) {
     if (_browser === null) _browser = await prepareBrowser();
     browser = _browser;
   }
-  let urlList = await getSearchGameResults(browser, name);
+  let urlList = await searcher.getSearchGameResults(browser, name);
 
   // Process previous partial results
   let promiseList = [];
   for (let url of urlList) {
     // Start looking for information
-    promiseList.push(gameScraper.getGameInfo(browser, url));
+    promiseList.push(scraper.getGameInfo(browser, url));
   }
 
   // Filter for mods
   let result = [];
   for (let info of await Promise.all(promiseList)) {
     // Skip mods if not required
-    if(!info) continue;
+    if (!info) continue;
     if (info.isMod && !includeMods) continue;
     else result.push(info);
   }
@@ -269,7 +272,7 @@ module.exports.getGameDataFromURL = async function (url) {
   }
 
   // Get game data
-  let result = await gameScraper.getGameInfo(browser, url);
+  let result = await scraper.getGameInfo(browser, url);
 
   if (shared.isolation) await browser.close();
   return result;
@@ -593,84 +596,5 @@ async function getUserWatchedGameThreads(browser) {
   return urls;
 }
 //#endregion User
-
-//#region Game search
-/**
- * @private
- * Search the F95Zone portal to find possible conversations regarding the game you are looking for.
- * @param {puppeteer.Browser} browser Browser object used for navigation
- * @param {String} gamename Name of the game to search for
- * @returns {Promise<String[]>} List of URL of possible games  obtained from the preliminary research on the F95 portal
- */
-async function getSearchGameResults(browser, gamename) {
-  if (shared.debug) console.log("Searching " + gamename + " on F95Zone");
-
-  let page = await preparePage(browser); // Set new isolated page
-  await page.setCookie(...shared.cookies); // Set cookies to avoid login
-  await page.goto(constURLs.F95_SEARCH_URL, {
-    waitUntil: shared.WAIT_STATEMENT,
-  }); // Go to the search form and wait for it
-
-  // Explicitly wait for the required items to load
-  await page.waitForSelector(selectors.SEARCH_FORM_TEXTBOX);
-  await page.waitForSelector(selectors.TITLE_ONLY_CHECKBOX);
-  await page.waitForSelector(selectors.SEARCH_BUTTON);
-
-  await page.type(selectors.SEARCH_FORM_TEXTBOX, gamename); // Type the game we desire
-  await page.click(selectors.TITLE_ONLY_CHECKBOX); // Select only the thread with the game in the titles
-  await page.click(selectors.SEARCH_BUTTON); // Execute search
-  await page.waitForNavigation({
-    waitUntil: shared.WAIT_STATEMENT,
-  }); // Wait for page to load
-
-  // Select all conversation titles
-  let threadTitleList = await page.$$(selectors.THREAD_TITLE);
-
-  // For each title extract the info about the conversation
-  if (shared.debug) console.log("Extracting info from conversation titles");
-  let results = [];
-  for (let title of threadTitleList) {
-    let gameUrl = await getOnlyGameThreads(page, title);
-
-    // Append the game's informations
-    if (gameUrl !== null) results.push(gameUrl);
-  }
-  if (shared.debug) console.log("Find " + results.length + " conversations");
-  await page.close(); // Close the page
-
-  return results;
-}
-/**
- * @private
- * Return the link of a conversation if it is a game or a mod
- * @param {puppeteer.Page} page Page containing the conversation to be analyzed
- * @param {puppeteer.ElementHandle} titleHandle Title of the conversation to be analyzed
- * @return {Promise<String>} URL of the game/mod
- */
-async function getOnlyGameThreads(page, titleHandle) {
-  const GAME_RECOMMENDATION_PREFIX = "RECOMMENDATION";
-
-  // Get the URL of the thread from the title
-  let relativeURLThread = await page.evaluate(
-    /* istanbul ignore next */ (element) => element.querySelector("a").href,
-    titleHandle
-  );
-  let url = new URL(relativeURLThread, constURLs.F95_BASE_URL).toString();
-
-  // Parse prefixes to ignore game recommendation
-  for (let element of await titleHandle.$$('span[dir="auto"]')) {
-    // Elaborate the prefixes
-    let prefix = await page.evaluate(
-      /* istanbul ignore next */ (element) => element.textContent.toUpperCase(),
-      element
-    );
-    prefix = prefix.replace("[", "").replace("]", "");
-
-    // This is not a game nor a mod, we can exit
-    if (prefix === GAME_RECOMMENDATION_PREFIX) return null;
-  }
-  return url;
-}
-//#endregion Game search
 
 //#endregion Private methods

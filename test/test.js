@@ -19,7 +19,7 @@ async function main() {
 
   if (loginResult.success) {
     await loadF95BaseData();
-    let gameData = await getGameData("champion", false);
+    let gameData = await getGameData("detective girl of the steam city", false);
     console.log(gameData);
 
     // let userData = await getUserData();

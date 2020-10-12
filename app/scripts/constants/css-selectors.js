@@ -23,5 +23,7 @@ module.exports = Object.freeze({
     WATCHED_THREAD_FILTER_POPUP_BUTTON: 'a.filterBar-menuTrigger',
     WATCHED_THREAD_NEXT_PAGE: 'a.pageNav-jump--next',
     WATCHED_THREAD_URLS: 'a[href^="/threads/"][data-tp-primary]',
-    DOWNLOAD_LINKS_CONTAINER: 'span[style="font-size: 18px"]'
+    DOWNLOAD_LINKS_CONTAINER: 'span[style="font-size: 18px"]',
+    SEARCH_THREADS_RESULTS_BODY: "div.contentRow-main",
+    SEARCH_THREADS_MEMBERSHIP: "li > a:not(.username)"
 });
