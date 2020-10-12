@@ -77,7 +77,7 @@ module.exports.getGameInfo = async function (browser, url) {
  * @param {GameInfo} info Information about the game
  * @returns {Promise<String>} Online version of the game
  */
-module.exports.getGameVersionFromTitle = async function(browser, info) {
+module.exports.getGameVersionFromTitle = async function (browser, info) {
   let page = await preparePage(browser); // Set new isolated page
   await page.setCookie(...shared.cookies); // Set cookies to avoid login
   await page.goto(info.f95url, {
@@ -87,8 +87,7 @@ module.exports.getGameVersionFromTitle = async function(browser, info) {
   // Get the title
   let titleHTML = await page.evaluate(
     /* istanbul ignore next */
-    (selector) =>
-    document.querySelector(selector).innerHTML,
+    (selector) => document.querySelector(selector).innerHTML,
     selectors.GAME_TITLE
   );
   let title = HTMLParser.parse(titleHTML).childNodes.pop().rawText;
@@ -97,9 +96,9 @@ module.exports.getGameVersionFromTitle = async function(browser, info) {
   let startIndex = title.indexOf("[") + 1;
   let endIndex = title.indexOf("]", startIndex);
   let version = title.substring(startIndex, endIndex).trim().toUpperCase();
-  if(version.startsWith("V")) version = version.replace("V", ""); // Replace only the first occurrence
+  if (version.startsWith("V")) version = version.replace("V", ""); // Replace only the first occurrence
   return version;
-}
+};
 
 //#region Private methods
 /**
