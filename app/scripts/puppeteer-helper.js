@@ -15,6 +15,7 @@ const shared = require("./shared.js");
 module.exports.prepareBrowser = async function () {
   // Create a headless browser
   let browser = await puppeteer.launch({
+    executablePath: shared.chromiumLocalPath,
     headless: !shared.debug, // Use GUI when debug = true
   });
 

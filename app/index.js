@@ -74,6 +74,14 @@ module.exports.setCacheDir = function (value) {
   // Create directory if it doesn't exist
   if (!fs.existsSync(shared.cacheDir)) fs.mkdirSync(shared.cacheDir);
 };
+/**
+ * @public
+ * Set local chromium path.
+ * @returns {String}
+ */
+module.exports.setChromiumPath = function (value) {
+  shared.chromiumLocalPath = value;
+};
 //#endregion Export properties
 
 //#region Global variables
@@ -90,6 +98,7 @@ var _browser = null;
  * @returns {Promise<LoginResult>} Result of the operation
  */
 module.exports.login = async function (username, password) {
+  
   if (shared.isLogged) {
     if (shared.debug) console.log("Already logged in");
     let result = new LoginResult();
@@ -137,6 +146,7 @@ module.exports.login = async function (username, password) {
  * @returns {Promise<Boolean>} Result of the operation
  */
 module.exports.loadF95BaseData = async function () {
+  
   if (!shared.isLogged || !shared.cookies) {
     console.warn("User not authenticated, unable to continue");
     return false;
@@ -186,6 +196,7 @@ module.exports.loadF95BaseData = async function () {
  * @returns {Promise<Boolean>} true if an update is available, false otherwise
  */
 module.exports.chekIfGameHasUpdate = async function (info) {
+  
   if (!shared.isLogged || !shared.cookies) {
     console.warn("user not authenticated, unable to continue");
     return info.version;
@@ -216,6 +227,7 @@ module.exports.chekIfGameHasUpdate = async function (info) {
  * an identified game (in the case of homonymy). If no games were found, null is returned
  */
 module.exports.getGameData = async function (name, includeMods) {
+  
   if (!shared.isLogged || !shared.cookies) {
     console.warn("user not authenticated, unable to continue");
     return null;
@@ -253,6 +265,7 @@ module.exports.getGameData = async function (name, includeMods) {
  * @returns {Promise<GameInfo>} Information about the game. If no game was found, null is returned
  */
 module.exports.getGameDataFromURL = async function (url) {
+  
   if (!shared.isLogged || !shared.cookies) {
     console.warn("user not authenticated, unable to continue");
     return null;
@@ -279,6 +292,7 @@ module.exports.getGameDataFromURL = async function (url) {
  * @returns {Promise<UserData>} Data of the user currently logged in or null if an error arise
  */
 module.exports.getUserData = async function () {
+  
   if (!shared.isLogged || !shared.cookies) {
     console.warn("user not authenticated, unable to continue");
     return null;
@@ -325,6 +339,7 @@ module.exports.getUserData = async function () {
  * You **must** be logged in to the portal before calling this method.
  */
 module.exports.logout = async function () {
+  
   if (!shared.isLogged || !shared.cookies) {
     console.warn("user not authenticated, unable to continue");
     return;
