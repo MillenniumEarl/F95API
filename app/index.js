@@ -489,8 +489,8 @@ async function loginF95(browser, username, password) {
   await Promise.all([
     page.click(selectors.LOGIN_BUTTON), // Click on the login button
     page.waitForNavigation({
-      waitUntil: shared.WAIT_STATEMENT
-    }) // Wait for page to load
+      waitUntil: shared.WAIT_STATEMENT,
+    }), // Wait for page to load
   ]);
 
   // Prepare result
