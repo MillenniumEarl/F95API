@@ -32,11 +32,13 @@ module.exports.getSearchGameResults = async function (browser, gamename) {
 
   await page.type(selectors.SEARCH_FORM_TEXTBOX, gamename); // Type the game we desire
   await page.click(selectors.TITLE_ONLY_CHECKBOX); // Select only the thread with the game in the titles
-  await page.click(selectors.SEARCH_BUTTON); // Execute search
-  await page.waitForNavigation({
-    waitUntil: shared.WAIT_STATEMENT,
-  }); // Wait for page to load
-
+  await Promise.all([
+    page.click(selectors.SEARCH_BUTTON), // Execute search
+    page.waitForNavigation({
+      waitUntil: shared.WAIT_STATEMENT,
+    }) // Wait for page to load
+  ]);
+  
   // Select all conversation titles
   let resultsThread = await page.$$(selectors.SEARCH_THREADS_RESULTS_BODY);
 

@@ -486,10 +486,12 @@ async function loginF95(browser, username, password) {
 
   await page.type(selectors.USERNAME_INPUT, username); // Insert username
   await page.type(selectors.PASSWORD_INPUT, password); // Insert password
-  await page.click(selectors.LOGIN_BUTTON); // Click on the login button
-  await page.waitForNavigation({
-    waitUntil: shared.WAIT_STATEMENT,
-  }); // Wait for page to load
+  await Promise.all([
+    page.click(selectors.LOGIN_BUTTON), // Click on the login button
+    page.waitForNavigation({
+      waitUntil: shared.WAIT_STATEMENT
+    }) // Wait for page to load
+  ]);
 
   // Prepare result
   let result = new LoginResult();
