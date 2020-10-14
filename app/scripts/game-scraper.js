@@ -61,6 +61,7 @@ module.exports.getGameInfo = async function (browser, url) {
     ? parsedInfos["UPDATED"]
     : parsedInfos["THREAD UPDATED"];
   info.previewSource = await previewSource;
+  info.changelog = await changelog;
   //info.downloadInfo = await downloadData;
   /* Downloading games without going directly to
    * the platform appears to be prohibited by
@@ -285,7 +286,7 @@ async function parsePrefixes(page, info) {
  * @private
  * Get the last changelog available for the game.
  * @param {puppeteer.Page} page Page containing the changelog
- * @returns {String} Changelog for the last version
+ * @returns {Promise<String>} Changelog for the last version
  */
 async function getLastChangelog(page) {
   // Gets the first post, where are listed all the game's informations
