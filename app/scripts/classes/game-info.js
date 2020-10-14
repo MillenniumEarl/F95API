@@ -66,6 +66,11 @@ class GameInfo {
      */
     this.isMod = false;
     /**
+     * Changelog for the last version.
+     * @type String
+     */
+    this.changelog = null;
+    /**
      * Directory containing the local copy of the game
      * @type String
      */
@@ -96,6 +101,7 @@ class GameInfo {
       lastUpdate: this.lastUpdate,
       lastPlayed: this.lastPlayed,
       isMod: this.isMod,
+      changelog: this.changelog,
       gameDir: this.gameDir,
       downloadInfo: this.downloadInfo,
     };

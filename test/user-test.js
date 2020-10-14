@@ -18,7 +18,7 @@ async function main() {
 
   if (loginResult.success) {
     await loadF95BaseData();
-    let gameData = await getGameData("brothel king", false);
+    let gameData = await getGameData("queen's brothel", false);
     console.log(gameData);
 
     // let userData = await getUserData();

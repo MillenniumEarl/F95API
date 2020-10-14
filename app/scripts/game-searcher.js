@@ -8,6 +8,7 @@ const shared = require("./shared.js");
 const constURLs = require("./constants/urls.js");
 const selectors = require("./constants/css-selectors.js");
 const { preparePage } = require("./puppeteer-helper.js");
+const { isF95URL } = require("./urls-helper.js");
 
 /**
  * @protected
@@ -116,6 +117,10 @@ async function getThreadURL(page, handle) {
     (e) => e.querySelector("a").href,
     handle
   );
+
+  // Some game already have a full URL
+  if (isF95URL(relativeURLThread)) return relativeURLThread;
+
   let urlThread = new URL(relativeURLThread, constURLs.F95_BASE_URL).toString();
   return urlThread;
 }

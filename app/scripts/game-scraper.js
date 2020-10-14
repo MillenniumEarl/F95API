@@ -46,6 +46,7 @@ module.exports.getGameInfo = async function (browser, url) {
   let structuredText = await getMainPostStructuredText(page);
   let overview = getOverview(structuredText, info.isMod);
   let parsedInfos = parseConversationPage(structuredText);
+  let changelog = getLastChangelog(page);
 
   // Fill in the GameInfo element with the information obtained
   info.name = await title;
@@ -278,6 +279,26 @@ async function parsePrefixes(page, info) {
     else if (prefix === MOD_PREFIX) info.isMod = true;
   }
   return info;
+}
+
+/**
+ * @private
+ * Get the last changelog available for the game.
+ * @param {puppeteer.Page} page Page containing the changelog
+ * @returns {String} Changelog for the last version
+ */
+async function getLastChangelog(page) {
+  // Gets the first post, where are listed all the game's informations
+  let post = (await page.$$(selectors.THREAD_POSTS))[0];
+  
+  let spoiler = await post.$(selectors.THREAD_LAST_CHANGELOG);
+  let changelogHTML = await page.evaluate(
+    /* istanbul ignore next */
+    (e) => e.innerText,
+    spoiler
+  );
+  let parsedText = HTMLParser.parse(changelogHTML).structuredText;
+  return parsedText;
 }
 
 /**
