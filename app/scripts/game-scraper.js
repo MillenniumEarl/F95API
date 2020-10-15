@@ -292,9 +292,9 @@ async function parsePrefixes(page, info) {
 async function getLastChangelog(page) {
   // Gets the first post, where are listed all the game's informations
   let post = (await page.$$(selectors.THREAD_POSTS))[0];
-  
+
   let spoiler = await post.$(selectors.THREAD_LAST_CHANGELOG);
-  if(!spoiler) return null;
+  if (!spoiler) return null;
 
   let changelogHTML = await page.evaluate(
     /* istanbul ignore next */
