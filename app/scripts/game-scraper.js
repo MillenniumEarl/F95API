@@ -61,7 +61,8 @@ module.exports.getGameInfo = async function (browser, url) {
     ? parsedInfos["UPDATED"]
     : parsedInfos["THREAD UPDATED"];
   info.previewSource = await previewSource;
-  info.changelog = await changelog;
+  let temp = await changelog;
+  info.changelog = temp ? temp : "Unknown changelog";
   //info.downloadInfo = await downloadData;
   /* Downloading games without going directly to
    * the platform appears to be prohibited by
@@ -286,20 +287,22 @@ async function parsePrefixes(page, info) {
  * @private
  * Get the last changelog available for the game.
  * @param {puppeteer.Page} page Page containing the changelog
- * @returns {Promise<String>} Changelog for the last version
+ * @returns {Promise<String>} Changelog for the last version or null if no changelog is found
  */
 async function getLastChangelog(page) {
   // Gets the first post, where are listed all the game's informations
   let post = (await page.$$(selectors.THREAD_POSTS))[0];
   
   let spoiler = await post.$(selectors.THREAD_LAST_CHANGELOG);
+  if(!spoiler) return null;
+
   let changelogHTML = await page.evaluate(
     /* istanbul ignore next */
     (e) => e.innerText,
     spoiler
   );
   let parsedText = HTMLParser.parse(changelogHTML).structuredText;
-  return parsedText;
+  return parsedText.replace("Spolier", "").trim();
 }
 
 /**
