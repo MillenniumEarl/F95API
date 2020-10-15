@@ -302,7 +302,7 @@ async function getLastChangelog(page) {
     spoiler
   );
   let parsedText = HTMLParser.parse(changelogHTML).structuredText;
-  return parsedText.replace("Spolier", "").trim();
+  return parsedText.replace("Spoiler", "").trim();
 }
 
 /**
