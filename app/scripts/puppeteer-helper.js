@@ -25,7 +25,7 @@ module.exports.prepareBrowser = async function () {
       headless: !shared.debug, // Use GUI when debug = true
     });
   }
-  
+
   return browser;
 };
 
