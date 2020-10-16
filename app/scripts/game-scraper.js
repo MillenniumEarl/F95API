@@ -398,7 +398,8 @@ function extractGameHostingData(platform, text) {
 
   // Find the end of the container
   if (endIndex === -1)
-    endIndex = text.indexOf(CONTAINER_SPAN_CLOSE, startIndex) +
+    endIndex =
+      text.indexOf(CONTAINER_SPAN_CLOSE, startIndex) +
       CONTAINER_SPAN_CLOSE.length;
 
   text = text.substring(startIndex, endIndex);
