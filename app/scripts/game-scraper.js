@@ -56,9 +56,9 @@ module.exports.getGameInfo = async function (browser, url) {
   info.f95url = url;
   info.version = info.isMod
     ? parsedInfos["MOD VERSION"]
-    : parsedInfos["VERSION"];
+    : parsedInfos.VERSION;
   info.lastUpdate = info.isMod
-    ? parsedInfos["UPDATED"]
+    ? parsedInfos.UPDATED
     : parsedInfos["THREAD UPDATED"];
   info.previewSource = await previewSource;
   info.changelog = (await changelog) || "Unknown changelog";
