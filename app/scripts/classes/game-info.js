@@ -1,6 +1,6 @@
-'use strict';
+"use strict";
 
-const UNKNOWN = 'Unknown';
+const UNKNOWN = "Unknown";
 
 class GameInfo {
   constructor() {

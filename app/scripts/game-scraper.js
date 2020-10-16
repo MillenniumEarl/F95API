@@ -1,16 +1,16 @@
-'use strict';
+"use strict";
 
 // Public modules from npm
-const HTMLParser = require('node-html-parser');
-const puppeteer = require('puppeteer'); // skipcq: JS-0128
+const HTMLParser = require("node-html-parser");
+const puppeteer = require("puppeteer"); // skipcq: JS-0128
 
 // Modules from file
-const shared = require('./shared.js');
-const selectors = require('./constants/css-selectors.js');
-const { preparePage } = require('./puppeteer-helper.js');
-const GameDownload = require('./classes/game-download.js');
-const GameInfo = require('./classes/game-info.js');
-const { isStringAValidURL, isF95URL, urlExists } = require('./urls-helper.js');
+const shared = require("./shared.js");
+const selectors = require("./constants/css-selectors.js");
+const { preparePage } = require("./puppeteer-helper.js");
+const GameDownload = require("./classes/game-download.js");
+const GameInfo = require("./classes/game-info.js");
+const { isStringAValidURL, isF95URL, urlExists } = require("./urls-helper.js");
 
 /**
  * @protected
@@ -21,10 +21,10 @@ const { isStringAValidURL, isF95URL, urlExists } = require('./urls-helper.js');
  * looking for or null if the URL doesn't exists
  */
 module.exports.getGameInfo = async function (browser, url) {
-  if (shared.debug) console.log('Obtaining game info');
+  if (shared.debug) console.log("Obtaining game info");
 
   // Verify the correctness of the URL
-  if (!isF95URL(url)) throw new Error(url + ' is not a valid F95Zone URL');
+  if (!isF95URL(url)) throw new Error(url + " is not a valid F95Zone URL");
   const exists = await urlExists(url);
   if (!exists) return null;
 
@@ -59,7 +59,7 @@ module.exports.getGameInfo = async function (browser, url) {
     ? parsedInfos.UPDATED
     : parsedInfos.THREAD_UPDATED;
   info.previewSource = await previewSource;
-  info.changelog = (await changelog) || 'Unknown changelog';
+  info.changelog = (await changelog) || "Unknown changelog";
   //info.downloadInfo = await downloadData;
   /* Downloading games without going directly to
    * the platform appears to be prohibited by
@@ -67,7 +67,7 @@ module.exports.getGameInfo = async function (browser, url) {
    * keep the links for downloading the games. */
 
   await page.close(); // Close the page
-  if (shared.debug) console.log('Founded data for ' + info.name);
+  if (shared.debug) console.log("Founded data for " + info.name);
   return info;
 };
 
@@ -93,10 +93,10 @@ module.exports.getGameVersionFromTitle = async function (browser, info) {
   const title = HTMLParser.parse(titleHTML).childNodes.pop().rawText;
 
   // The title is in the following format: [PREFIXES] NAME GAME [VERSION] [AUTHOR]
-  const startIndex = title.indexOf('[') + 1;
-  const endIndex = title.indexOf(']', startIndex);
+  const startIndex = title.indexOf("[") + 1;
+  const endIndex = title.indexOf("]", startIndex);
   let version = title.substring(startIndex, endIndex).trim().toUpperCase();
-  if (version.startsWith('V')) version = version.replace('V', ''); // Replace only the first occurrence
+  if (version.startsWith("V")) version = version.replace("V", ""); // Replace only the first occurrence
   return version;
 };
 
@@ -112,9 +112,9 @@ module.exports.getGameVersionFromTitle = async function (browser, info) {
 function getOverview(text, isMod) {
   // Get overview (different parsing for game and mod)
   let overviewEndIndex;
-  if (isMod) overviewEndIndex = text.indexOf('Updated');
-  else overviewEndIndex = text.indexOf('Thread Updated');
-  return text.substring(0, overviewEndIndex).replace('Overview:\n', '').trim();
+  if (isMod) overviewEndIndex = text.indexOf("Updated");
+  else overviewEndIndex = text.indexOf("Thread Updated");
+  return text.substring(0, overviewEndIndex).replace("Overview:\n", "").trim();
 }
 
 /**
@@ -156,7 +156,7 @@ async function getGameAuthor(page) {
   const gameTitle = structuredTitle.childNodes.pop().rawText;
 
   // The last square brackets contain the author
-  const startTitleIndex = gameTitle.lastIndexOf('[') + 1;
+  const startTitleIndex = gameTitle.lastIndexOf("[") + 1;
   return gameTitle.substring(startTitleIndex, gameTitle.length - 1).trim();
 }
 
@@ -171,17 +171,17 @@ function parseConversationPage(text) {
   const dataPairs = {};
 
   // The information searched in the game post are one per line
-  const splittedText = text.split('\n');
+  const splittedText = text.split("\n");
   for (const line of splittedText) {
-    if (!line.includes(':')) continue;
+    if (!line.includes(":")) continue;
 
     // Create pair key/value
-    const splitted = line.split(':');
-    const key = splitted[0].trim().toUpperCase().replaceAll(' ', '_'); // Uppercase to avoid mismatch
+    const splitted = line.split(":");
+    const key = splitted[0].trim().toUpperCase().replaceAll(" ", "_"); // Uppercase to avoid mismatch
     const value = splitted[1].trim();
 
     // Add pair to the dict if valid
-    if (value !== '') dataPairs[key] = value;
+    if (value !== "") dataPairs[key] = value;
   }
 
   return dataPairs;
@@ -200,7 +200,7 @@ async function getGamePreviewSource(page) {
       // Get the firs image available
       const img = document.querySelector(selector);
 
-      if (img) return img.getAttribute('src');
+      if (img) return img.getAttribute("src");
       else return null;
     },
     selectors.GAME_IMAGES
@@ -227,7 +227,7 @@ async function getGameTitle(page) {
 
   // The last element **shoud be** the title without prefixes (engines, status, other...)
   const gameTitle = structuredTitle.childNodes.pop().rawText;
-  const endTitleIndex = gameTitle.indexOf('[');
+  const endTitleIndex = gameTitle.indexOf("[");
   return gameTitle.substring(0, endTitleIndex).trim();
 }
 
@@ -261,10 +261,10 @@ async function getGameTags(page) {
  * @returns {Promise<GameInfo>} GameInfo object passed in to which the identified information has been added
  */
 async function parsePrefixes(page, info) {
-  const MOD_PREFIX = 'MOD';
+  const MOD_PREFIX = "MOD";
 
   // The 'Ongoing' status is not specified, only 'Abandoned'/'OnHold'/'Complete'
-  info.status = 'Ongoing';
+  info.status = "Ongoing";
   for (const handle of await page.$$(selectors.GAME_TITLE_PREFIXES)) {
     const value = await page.evaluate(
       /* istanbul ignore next */
@@ -273,7 +273,7 @@ async function parsePrefixes(page, info) {
     );
 
     // Clean the prefix
-    const prefix = value.toUpperCase().replace('[', '').replace(']', '').trim();
+    const prefix = value.toUpperCase().replace("[", "").replace("]", "").trim();
 
     // Getting infos...
     if (shared.statuses.includes(prefix)) info.status = prefix;
@@ -303,7 +303,7 @@ async function getLastChangelog(page) {
     spoiler
   );
   const parsedText = HTMLParser.parse(changelogHTML).structuredText;
-  return parsedText.replace('Spoiler', '').trim();
+  return parsedText.replace("Spoiler", "").trim();
 }
 
 /**
@@ -316,17 +316,17 @@ async function getLastChangelog(page) {
 async function getGameDownloadLink(page) {
   // Most used hosting platforms
   const hostingPlatforms = [
-    'MEGA',
-    'NOPY',
-    'FILESUPLOAD',
-    'MIXDROP',
-    'UPLOADHAVEN',
-    'PIXELDRAIN',
-    'FILESFM',
+    "MEGA",
+    "NOPY",
+    "FILESUPLOAD",
+    "MIXDROP",
+    "UPLOADHAVEN",
+    "PIXELDRAIN",
+    "FILESFM",
   ];
 
   // Supported OS platforms
-  const platformOS = ['WIN', 'LINUX', 'MAC', 'ALL'];
+  const platformOS = ["WIN", "LINUX", "MAC", "ALL"];
 
   // Gets the <span> which contains the download links
   const temp = await page.$$(selectors.DOWNLOAD_LINKS_CONTAINER);
@@ -383,13 +383,13 @@ async function getGameDownloadLink(page) {
  * @returns {GameDownload[]} List of game download links for the selected platform
  */
 function extractGameHostingData(platform, text) {
-  const PLATFORM_BOLD_OPEN = '<b>';
-  const CONTAINER_SPAN_CLOSE = '</span>';
-  const LINK_OPEN = '<a';
-  const LINK_CLOSE = '</a>';
-  const HREF_START = 'href=\'';
-  const HREF_END = '\'';
-  const TAG_CLOSE = '>';
+  const PLATFORM_BOLD_OPEN = "<b>";
+  const CONTAINER_SPAN_CLOSE = "</span>";
+  const LINK_OPEN = "<a";
+  const LINK_CLOSE = "</a>";
+  const HREF_START = "href='";
+  const HREF_END = "'";
+  const TAG_CLOSE = ">";
 
   // Identify the individual platforms
   let startIndex = text.indexOf(platform.toLowerCase());

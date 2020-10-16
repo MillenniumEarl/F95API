@@ -1,28 +1,28 @@
-'use strict';
+"use strict";
 
 // Core modules
-const fs = require('fs');
+const fs = require("fs");
 
 // Modules from file
-const shared = require('./scripts/shared.js');
-const constURLs = require('./scripts/constants/urls.js');
-const selectors = require('./scripts/constants/css-selectors.js');
+const shared = require("./scripts/shared.js");
+const constURLs = require("./scripts/constants/urls.js");
+const selectors = require("./scripts/constants/css-selectors.js");
 const {
   isStringAValidURL,
   urlExists,
   isF95URL,
-} = require('./scripts/urls-helper.js');
-const scraper = require('./scripts/game-scraper.js');
+} = require("./scripts/urls-helper.js");
+const scraper = require("./scripts/game-scraper.js");
 const {
   prepareBrowser,
   preparePage,
-} = require('./scripts/puppeteer-helper.js');
-const searcher = require('./scripts/game-searcher.js');
+} = require("./scripts/puppeteer-helper.js");
+const searcher = require("./scripts/game-searcher.js");
 
 // Classes from file
-const GameInfo = require('./scripts/classes/game-info.js');
-const LoginResult = require('./scripts/classes/login-result.js');
-const UserData = require('./scripts/classes/user-data.js');
+const GameInfo = require("./scripts/classes/game-info.js");
+const LoginResult = require("./scripts/classes/login-result.js");
+const UserData = require("./scripts/classes/user-data.js");
 
 //#region Export classes
 module.exports.GameInfo = GameInfo;
@@ -99,27 +99,27 @@ var _browser = null;
  */
 module.exports.login = async function (username, password) {
   if (shared.isLogged) {
-    if (shared.debug) console.log('Already logged in');
+    if (shared.debug) console.log("Already logged in");
     const result = new LoginResult();
     result.success = true;
-    result.message = 'Already logged in';
+    result.message = "Already logged in";
     return result;
   }
 
   // If cookies are loaded, use them to authenticate
   shared.cookies = loadCookies();
   if (shared.cookies !== null) {
-    if (shared.debug) console.log('Valid session, no need to re-authenticate');
+    if (shared.debug) console.log("Valid session, no need to re-authenticate");
     shared.isLogged = true;
     const result = new LoginResult();
     result.success = true;
-    result.message = 'Logged with cookies';
+    result.message = "Logged with cookies";
     return result;
   }
 
   // Else, log in throught browser
   if (shared.debug)
-    console.log('No saved sessions or expired session, login on the platform');
+    console.log("No saved sessions or expired session, login on the platform");
 
   if (_browser === null && !shared.isolation) _browser = await prepareBrowser();
   const browser = shared.isolation ? await prepareBrowser() : _browser;
@@ -130,9 +130,9 @@ module.exports.login = async function (username, password) {
   if (result.success) {
     // Reload cookies
     shared.cookies = loadCookies();
-    if (shared.debug) console.log('User logged in through the platform');
+    if (shared.debug) console.log("User logged in through the platform");
   } else {
-    console.warn('Error during authentication: ' + result.message);
+    console.warn("Error during authentication: " + result.message);
   }
   if (shared.isolation) await browser.close();
   return result;
@@ -146,11 +146,11 @@ module.exports.login = async function (username, password) {
  */
 module.exports.loadF95BaseData = async function () {
   if (!shared.isLogged || !shared.cookies) {
-    console.warn('User not authenticated, unable to continue');
+    console.warn("User not authenticated, unable to continue");
     return false;
   }
 
-  if (shared.debug) console.log('Loading base data...');
+  if (shared.debug) console.log("Loading base data...");
 
   // Prepare a new web page
   if (_browser === null && !shared.isolation) _browser = await prepareBrowser();
@@ -170,7 +170,7 @@ module.exports.loadF95BaseData = async function () {
     page,
     shared.enginesCachePath,
     selectors.ENGINE_ID_SELECTOR,
-    'engines'
+    "engines"
   );
 
   // Obtain statuses (disc/online)
@@ -179,11 +179,11 @@ module.exports.loadF95BaseData = async function () {
     page,
     shared.statusesCachePath,
     selectors.STATUS_ID_SELECTOR,
-    'statuses'
+    "statuses"
   );
 
   if (shared.isolation) await browser.close();
-  if (shared.debug) console.log('Base data loaded');
+  if (shared.debug) console.log("Base data loaded");
   return true;
 };
 /**
@@ -195,7 +195,7 @@ module.exports.loadF95BaseData = async function () {
  */
 module.exports.chekIfGameHasUpdate = async function (info) {
   if (!shared.isLogged || !shared.cookies) {
-    console.warn('user not authenticated, unable to continue');
+    console.warn("user not authenticated, unable to continue");
     return info.version;
   }
 
@@ -225,7 +225,7 @@ module.exports.chekIfGameHasUpdate = async function (info) {
  */
 module.exports.getGameData = async function (name, includeMods) {
   if (!shared.isLogged || !shared.cookies) {
-    console.warn('user not authenticated, unable to continue');
+    console.warn("user not authenticated, unable to continue");
     return null;
   }
 
@@ -262,13 +262,13 @@ module.exports.getGameData = async function (name, includeMods) {
  */
 module.exports.getGameDataFromURL = async function (url) {
   if (!shared.isLogged || !shared.cookies) {
-    console.warn('user not authenticated, unable to continue');
+    console.warn("user not authenticated, unable to continue");
     return null;
   }
 
   // Check URL
   if (!urlExists(url)) return null;
-  if (!isF95URL(url)) throw new Error(url + ' is not a valid F95Zone URL');
+  if (!isF95URL(url)) throw new Error(url + " is not a valid F95Zone URL");
 
   // Gets the search results of the game being searched for
   if (_browser === null && !shared.isolation) _browser = await prepareBrowser();
@@ -288,7 +288,7 @@ module.exports.getGameDataFromURL = async function (url) {
  */
 module.exports.getUserData = async function () {
   if (!shared.isLogged || !shared.cookies) {
-    console.warn('user not authenticated, unable to continue');
+    console.warn("user not authenticated, unable to continue");
     return null;
   }
 
@@ -313,7 +313,7 @@ module.exports.getUserData = async function () {
 
   const avatarSrc = await page.evaluate(
     /* istanbul ignore next */ (selector) =>
-      document.querySelector(selector).getAttribute('src'),
+      document.querySelector(selector).getAttribute("src"),
     selectors.AVATAR_PIC
   );
 
@@ -334,7 +334,7 @@ module.exports.getUserData = async function () {
  */
 module.exports.logout = async function () {
   if (!shared.isLogged || !shared.cookies) {
-    console.warn('user not authenticated, unable to continue');
+    console.warn("user not authenticated, unable to continue");
     return;
   }
   shared.isLogged = false;
@@ -385,14 +385,14 @@ function isCookieExpired(cookie) {
   // Ignore cookies that never expire
   const expirationUnixTimestamp = cookie.expire;
 
-  if (expirationUnixTimestamp !== '-1') {
+  if (expirationUnixTimestamp !== "-1") {
     // Convert UNIX epoch timestamp to normal Date
     const expirationDate = new Date(expirationUnixTimestamp * 1000);
 
     if (expirationDate < Date.now()) {
       if (shared.debug)
         console.log(
-          'Cookie ' + cookie.name + ' expired, you need to re-authenticate'
+          "Cookie " + cookie.name + " expired, you need to re-authenticate"
         );
       expiredCookies = true;
     }
@@ -421,7 +421,7 @@ async function loadValuesFromLatestPage(
   elementRequested
 ) {
   // If the values already exist they are loaded from disk without having to connect to F95
-  if (shared.debug) console.log('Load ' + elementRequested + ' from disk...');
+  if (shared.debug) console.log("Load " + elementRequested + " from disk...");
   if (fs.existsSync(path)) {
     const valueJSON = fs.readFileSync(path);
     return JSON.parse(valueJSON);
@@ -429,11 +429,11 @@ async function loadValuesFromLatestPage(
 
   // Otherwise, connect and download the data from the portal
   if (shared.debug)
-    console.log('No ' + elementRequested + ' cached, downloading...');
+    console.log("No " + elementRequested + " cached, downloading...");
   const values = await getValuesFromLatestPage(
     page,
     selector,
-    'Getting ' + elementRequested + ' from page'
+    "Getting " + elementRequested + " from page"
   );
   fs.writeFileSync(path, JSON.stringify(values));
   return values;
@@ -507,7 +507,7 @@ async function loginF95(browser, username, password) {
   if (result.success) {
     const c = await page.cookies();
     fs.writeFileSync(shared.cookiesCachePath, JSON.stringify(c));
-    result.message = 'Authentication successful';
+    result.message = "Authentication successful";
   } else if (
     // Obtain the error message
     await page.evaluate(
@@ -522,15 +522,15 @@ async function loginF95(browser, username, password) {
       selectors.LOGIN_MESSAGE_ERROR
     );
 
-    if (errorMessage === 'Incorrect password. Please try again.') {
-      result.message = 'Incorrect password';
+    if (errorMessage === "Incorrect password. Please try again.") {
+      result.message = "Incorrect password";
     } else if (
       errorMessage ===
       'The requested user "' + username + '" could not be found.'
     ) {
-      result.message = 'Incorrect username';
+      result.message = "Incorrect username";
     } else result.message = errorMessage;
-  } else result.message = 'Unknown error';
+  } else result.message = "Unknown error";
 
   await page.close(); // Close the page
   return result;
@@ -557,7 +557,7 @@ async function getUserWatchedGameThreads(browser) {
   // Set the filters
   await page.evaluate(
     /* istanbul ignore next */ (selector) =>
-      document.querySelector(selector).removeAttribute('checked'),
+      document.querySelector(selector).removeAttribute("checked"),
     selectors.UNREAD_THREAD_CHECKBOX
   ); // Also read the threads already read
 
@@ -578,7 +578,7 @@ async function getUserWatchedGameThreads(browser) {
         handle
       );
       // If 'unread' is left, it will redirect to the last unread post
-      const url = src.replace('/unread', '');
+      const url = src.replace("/unread", "");
       urls.push(url);
     }
 

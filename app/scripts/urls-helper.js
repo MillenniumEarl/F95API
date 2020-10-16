@@ -1,12 +1,12 @@
-'use strict';
+"use strict";
 
 // Public modules from npm
-const ky = require('ky-universal').create({
+const ky = require("ky-universal").create({
   throwHttpErrors: false,
 });
 
 // Modules from file
-const { F95_BASE_URL } = require('./constants/urls.js');
+const { F95_BASE_URL } = require("./constants/urls.js");
 
 /**
  * @protected
