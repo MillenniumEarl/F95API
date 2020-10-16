@@ -25,10 +25,10 @@ module.exports.getGameInfo = async function (browser, url) {
 
   // Verify the correctness of the URL
   if (!isF95URL(url)) throw url + " is not a valid F95Zone URL";
-  let exists = await urlExists(url);
+  const exists = await urlExists(url);
   if (!exists) return null;
 
-  let page = await preparePage(browser); // Set new isolated page
+  const page = await preparePage(browser); // Set new isolated page
   await page.setCookie(...shared.cookies); // Set cookies to avoid login
   await page.goto(url, {
     waitUntil: shared.WAIT_STATEMENT,
@@ -37,16 +37,16 @@ module.exports.getGameInfo = async function (browser, url) {
   // It asynchronously searches for the elements and
   // then waits at the end to compile the object to be returned
   let info = new GameInfo();
-  let title = getGameTitle(page);
-  let author = getGameAuthor(page);
-  let tags = getGameTags(page);
-  let previewSource = getGamePreviewSource(page);
+  const title = getGameTitle(page);
+  const author = getGameAuthor(page);
+  const tags = getGameTags(page);
+  const previewSource = getGamePreviewSource(page);
   //let downloadData = getGameDownloadLink(page);
   info = await parsePrefixes(page, info); // Fill status/engines/isMod
-  let structuredText = await getMainPostStructuredText(page);
-  let overview = getOverview(structuredText, info.isMod);
-  let parsedInfos = parseConversationPage(structuredText);
-  let changelog = getLastChangelog(page);
+  const structuredText = await getMainPostStructuredText(page);
+  const overview = getOverview(structuredText, info.isMod);
+  const parsedInfos = parseConversationPage(structuredText);
+  const changelog = getLastChangelog(page);
 
   // Fill in the GameInfo element with the information obtained
   info.name = await title;
@@ -80,23 +80,23 @@ module.exports.getGameInfo = async function (browser, url) {
  * @returns {Promise<String>} Online version of the game
  */
 module.exports.getGameVersionFromTitle = async function (browser, info) {
-  let page = await preparePage(browser); // Set new isolated page
+  const page = await preparePage(browser); // Set new isolated page
   await page.setCookie(...shared.cookies); // Set cookies to avoid login
   await page.goto(info.f95url, {
     waitUntil: shared.WAIT_STATEMENT,
   }); // Go to the game page and wait until it loads
 
   // Get the title
-  let titleHTML = await page.evaluate(
+  const titleHTML = await page.evaluate(
     /* istanbul ignore next */
     (selector) => document.querySelector(selector).innerHTML,
     selectors.GAME_TITLE
   );
-  let title = HTMLParser.parse(titleHTML).childNodes.pop().rawText;
+  const title = HTMLParser.parse(titleHTML).childNodes.pop().rawText;
 
   // The title is in the following format: [PREFIXES] NAME GAME [VERSION] [AUTHOR]
-  let startIndex = title.indexOf("[") + 1;
-  let endIndex = title.indexOf("]", startIndex);
+  const startIndex = title.indexOf("[") + 1;
+  const endIndex = title.indexOf("]", startIndex);
   let version = title.substring(startIndex, endIndex).trim().toUpperCase();
   if (version.startsWith("V")) version = version.replace("V", ""); // Replace only the first occurrence
   return version;
@@ -128,10 +128,10 @@ function getOverview(text, isMod) {
  */
 async function getMainPostStructuredText(page) {
   // Gets the first post, where are listed all the game's informations
-  let post = (await page.$$(selectors.THREAD_POSTS))[0];
+  const post = (await page.$$(selectors.THREAD_POSTS))[0];
 
   // The info are plain text so we need to parse the HTML code
-  let bodyHTML = await page.evaluate(
+  const bodyHTML = await page.evaluate(
     /* istanbul ignore next */ (mainPost) => mainPost.innerHTML,
     post
   );
@@ -146,18 +146,18 @@ async function getMainPostStructuredText(page) {
  */
 async function getGameAuthor(page) {
   // Get the game/mod name (without square brackets)
-  let titleHTML = await page.evaluate(
+  const titleHTML = await page.evaluate(
     /* istanbul ignore next */ (selector) =>
       document.querySelector(selector).innerHTML,
     selectors.GAME_TITLE
   );
-  let structuredTitle = HTMLParser.parse(titleHTML);
+  const structuredTitle = HTMLParser.parse(titleHTML);
 
   // The last element **shoud be** the title without prefixes (engines, status, other...)
-  let gameTitle = structuredTitle.childNodes.pop().rawText;
+  const gameTitle = structuredTitle.childNodes.pop().rawText;
 
   // The last square brackets contain the author
-  let startTitleIndex = gameTitle.lastIndexOf("[") + 1;
+  const startTitleIndex = gameTitle.lastIndexOf("[") + 1;
   return gameTitle.substring(startTitleIndex, gameTitle.length - 1).trim();
 }
 
@@ -169,17 +169,17 @@ async function getGameAuthor(page) {
  * @returns {Object} Dictionary of information
  */
 function parseConversationPage(text) {
-  let dataPairs = {};
+  const dataPairs = {};
 
   // The information searched in the game post are one per line
-  let splittedText = text.split("\n");
-  for (let line of splittedText) {
+  const splittedText = text.split("\n");
+  for (const line of splittedText) {
     if (!line.includes(":")) continue;
 
     // Create pair key/value
-    let splitted = line.split(":");
-    let key = splitted[0].trim().toUpperCase(); // Uppercase to avoid mismatch
-    let value = splitted[1].trim();
+    const splitted = line.split(":");
+    const key = splitted[0].trim().toUpperCase(); // Uppercase to avoid mismatch
+    const value = splitted[1].trim();
 
     // Add pair to the dict if valid
     if (value != "") dataPairs[key] = value;
@@ -195,10 +195,10 @@ function parseConversationPage(text) {
  * @returns {Promise<String>} URL (String) of the image or null if failed to get it
  */
 async function getGamePreviewSource(page) {
-  let src = await page.evaluate(
+  const src = await page.evaluate(
     /* istanbul ignore next */ (selector) => {
       // Get the firs image available
-      let img = document.querySelector(selector);
+      const img = document.querySelector(selector);
 
       if (img) return img.getAttribute("src");
       else return null;
@@ -218,16 +218,16 @@ async function getGamePreviewSource(page) {
  */
 async function getGameTitle(page) {
   // Get the game/mod name (without square brackets)
-  let titleHTML = await page.evaluate(
+  const titleHTML = await page.evaluate(
     /* istanbul ignore next */ (selector) =>
       document.querySelector(selector).innerHTML,
     selectors.GAME_TITLE
   );
-  let structuredTitle = HTMLParser.parse(titleHTML);
+  const structuredTitle = HTMLParser.parse(titleHTML);
 
   // The last element **shoud be** the title without prefixes (engines, status, other...)
-  let gameTitle = structuredTitle.childNodes.pop().rawText;
-  let endTitleIndex = gameTitle.indexOf("[");
+  const gameTitle = structuredTitle.childNodes.pop().rawText;
+  const endTitleIndex = gameTitle.indexOf("[");
   return gameTitle.substring(0, endTitleIndex).trim();
 }
 
@@ -238,11 +238,11 @@ async function getGameTitle(page) {
  * @returns {Promise<String[]>} List of uppercase tags
  */
 async function getGameTags(page) {
-  let tags = [];
+  const tags = [];
 
   // Get the game tags
-  for (let handle of await page.$$(selectors.GAME_TAGS)) {
-    let tag = await page.evaluate(
+  for (const handle of await page.$$(selectors.GAME_TAGS)) {
+    const tag = await page.evaluate(
       /* istanbul ignore next */ (element) => element.innerText,
       handle
     );
@@ -264,14 +264,14 @@ async function parsePrefixes(page, info) {
 
   // The 'Ongoing' status is not specified, only 'Abandoned'/'OnHold'/'Complete'
   info.status = "Ongoing";
-  for (let handle of await page.$$(selectors.GAME_TITLE_PREFIXES)) {
-    let value = await page.evaluate(
+  for (const handle of await page.$$(selectors.GAME_TITLE_PREFIXES)) {
+    const value = await page.evaluate(
       /* istanbul ignore next */ (element) => element.innerText,
       handle
     );
 
     // Clean the prefix
-    let prefix = value.toUpperCase().replace("[", "").replace("]", "").trim();
+    const prefix = value.toUpperCase().replace("[", "").replace("]", "").trim();
 
     // Getting infos...
     if (shared.statuses.includes(prefix)) info.status = prefix;
@@ -290,17 +290,17 @@ async function parsePrefixes(page, info) {
  */
 async function getLastChangelog(page) {
   // Gets the first post, where are listed all the game's informations
-  let post = (await page.$$(selectors.THREAD_POSTS))[0];
+  const post = (await page.$$(selectors.THREAD_POSTS))[0];
 
-  let spoiler = await post.$(selectors.THREAD_LAST_CHANGELOG);
+  const spoiler = await post.$(selectors.THREAD_LAST_CHANGELOG);
   if (!spoiler) return null;
 
-  let changelogHTML = await page.evaluate(
+  const changelogHTML = await page.evaluate(
     /* istanbul ignore next */
     (e) => e.innerText,
     spoiler
   );
-  let parsedText = HTMLParser.parse(changelogHTML).structuredText;
+  const parsedText = HTMLParser.parse(changelogHTML).structuredText;
   return parsedText.replace("Spoiler", "").trim();
 }
 
@@ -312,7 +312,7 @@ async function getLastChangelog(page) {
  */
 async function getGameDownloadLink(page) {
   // Most used hosting platforms
-  let hostingPlatforms = [
+  const hostingPlatforms = [
     "MEGA",
     "NOPY",
     "FILESUPLOAD",
@@ -323,19 +323,19 @@ async function getGameDownloadLink(page) {
   ];
 
   // Supported OS platforms
-  let platformOS = ["WIN", "LINUX", "MAC", "ALL"];
+  const platformOS = ["WIN", "LINUX", "MAC", "ALL"];
 
   // Gets the <span> which contains the download links
-  let temp = await page.$$(selectors.DOWNLOAD_LINKS_CONTAINER);
+  const temp = await page.$$(selectors.DOWNLOAD_LINKS_CONTAINER);
   if (temp.length === 0) return [];
 
   // Look for the container that contains the links
   // It is necessary because the same css selector
   // also identifies other elements on the page
   let container = null;
-  for (let candidate of temp) {
+  for (const candidate of temp) {
     if (container !== null) break;
-    let upperText = (
+    const upperText = (
       await page.evaluate(
         /* istanbul ignore next */ (e) => e.innerText,
         candidate
@@ -343,7 +343,7 @@ async function getGameDownloadLink(page) {
     ).toUpperCase();
 
     // Search if the container contains the name of a hosting platform
-    for (let p of hostingPlatforms) {
+    for (const p of hostingPlatforms) {
       if (upperText.includes(p)) {
         container = candidate;
         break;
@@ -353,7 +353,7 @@ async function getGameDownloadLink(page) {
   if (container === null) return [];
 
   // Extract the HTML text from the container
-  let searchText = (
+  const searchText = (
     await page.evaluate(
       /* istanbul ignore next */ (e) => e.innerHTML,
       container
@@ -361,9 +361,9 @@ async function getGameDownloadLink(page) {
   ).toLowerCase();
 
   // Parse the download links
-  let downloadData = [];
-  for (let platform of platformOS) {
-    let data = extractGameHostingData(platform, searchText);
+  const downloadData = [];
+  for (const platform of platformOS) {
+    const data = extractGameHostingData(platform, searchText);
     downloadData.push(...data);
   }
   return downloadData;
@@ -397,29 +397,30 @@ function extractGameHostingData(platform, text) {
 
   // Find the end of the container
   if (endIndex === -1)
-    endIndex = text.indexOf(CONTAINER_SPAN_CLOSE, startIndex) +
+    endIndex =
+      text.indexOf(CONTAINER_SPAN_CLOSE, startIndex) +
       CONTAINER_SPAN_CLOSE.length;
 
   text = text.substring(startIndex, endIndex);
 
-  let downloadData = [];
-  let linkTags = text.split(LINK_OPEN);
-  for (let tag of linkTags) {
+  const downloadData = [];
+  const linkTags = text.split(LINK_OPEN);
+  for (const tag of linkTags) {
     // Ignore non-link string
     if (!tag.includes(HREF_START)) continue;
 
     // Find the hosting platform name
     startIndex = tag.indexOf(TAG_CLOSE) + TAG_CLOSE.length;
     endIndex = tag.indexOf(LINK_CLOSE, startIndex);
-    let hosting = tag.substring(startIndex, endIndex);
+    const hosting = tag.substring(startIndex, endIndex);
 
     // Find the 'href' attribute
     startIndex = tag.indexOf(HREF_START) + HREF_START.length;
     endIndex = tag.indexOf(HREF_END, startIndex);
-    let link = tag.substring(startIndex, endIndex);
+    const link = tag.substring(startIndex, endIndex);
 
     if (isStringAValidURL(link)) {
-      let gd = new GameDownload();
+      const gd = new GameDownload();
       gd.hosting = hosting.toUpperCase();
       gd.link = link;
       gd.supportedOS = platform.toUpperCase();
