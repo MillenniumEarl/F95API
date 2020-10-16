@@ -61,11 +61,11 @@ module.exports.getGameInfo = async function (browser, url) {
   info.tags = await tags;
   info.f95url = url;
   info.version = info.isMod ?
-    parsedInfos["MOD VERSION"] :
+    parsedInfos["MOD_VERSION"] :
     parsedInfos["VERSION"];
   info.lastUpdate = info.isMod ?
     parsedInfos["UPDATED"] :
-    parsedInfos["THREAD UPDATED"];
+    parsedInfos["THREAD_UPDATED"];
   info.previewSource = await previewSource;
   info.changelog = (await changelog) || "Unknown changelog";
   //info.downloadInfo = await downloadData;
@@ -186,7 +186,7 @@ function parseConversationPage(text) {
 
     // Create pair key/value
     const splitted = line.split(":");
-    const key = splitted[0].trim().toUpperCase(); // Uppercase to avoid mismatch
+    const key = splitted[0].trim().toUpperCase().replaceAll(" ", "_"); // Uppercase to avoid mismatch
     const value = splitted[1].trim();
 
     // Add pair to the dict if valid
