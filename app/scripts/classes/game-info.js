@@ -1,6 +1,6 @@
-'use strict';
+"use strict";
 
-const UNKNOWN = 'Unknown';
+const UNKNOWN = "Unknown";
 
 class GameInfo {
   constructor() {
@@ -103,7 +103,7 @@ class GameInfo {
       isMod: this.isMod,
       changelog: this.changelog,
       gameDir: this.gameDir,
-      downloadInfo: this.downloadInfo
+      downloadInfo: this.downloadInfo,
     };
   }
 

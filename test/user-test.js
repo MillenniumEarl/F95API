@@ -5,7 +5,7 @@ const {
   getGameData,
   loadF95BaseData,
   getUserData,
-  logout
+  logout,
 } = require("../app/index.js");
 const GameDownload = require("../app/scripts/classes/game-download.js");
 

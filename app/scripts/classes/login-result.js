@@ -1,4 +1,4 @@
-'use strict';
+"use strict";
 
 /**
  * Object obtained in response to an attempt to login to the portal.
@@ -14,7 +14,7 @@ class LoginResult {
      * Login response message
      * @type String
      */
-    this.message = '';
+    this.message = "";
   }
 }
 module.exports = LoginResult;
