@@ -490,7 +490,7 @@ async function loginF95(browser, username, password) {
     page.click(selectors.LOGIN_BUTTON), // Click on the login button
     page.waitForNavigation({
       waitUntil: shared.WAIT_STATEMENT
-    }), // Wait for page to load
+    }) // Wait for page to load
   ]);
 
   // Prepare result

@@ -37,7 +37,7 @@ module.exports.getSearchGameResults = async function (browser, gamename) {
     page.click(selectors.SEARCH_BUTTON), // Execute search
     page.waitForNavigation({
       waitUntil: shared.WAIT_STATEMENT
-    }), // Wait for page to load
+    }) // Wait for page to load
   ]);
 
   // Select all conversation titles
