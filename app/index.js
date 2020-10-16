@@ -383,7 +383,7 @@ function isCookieExpired(cookie) {
   let expiredCookies = false;
 
   // Ignore cookies that never expire
-  const expirationUnixTimestamp = cookie["expire"];
+  const expirationUnixTimestamp = cookie.expire;
 
   if (expirationUnixTimestamp !== "-1") {
     // Convert UNIX epoch timestamp to normal Date
@@ -392,7 +392,7 @@ function isCookieExpired(cookie) {
     if (expirationDate < Date.now()) {
       if (shared.debug)
         console.log(
-          "Cookie " + cookie["name"] + " expired, you need to re-authenticate"
+          "Cookie " + cookie.name + " expired, you need to re-authenticate"
         );
       expiredCookies = true;
     }
