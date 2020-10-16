@@ -1,7 +1,7 @@
 {
   "main": "./app/index.js",
   "name": "f95api",
-  "version": "1.2.3",
+  "version": "1.2.4",
   "author": {
     "name": "Millennium Earl"
   },

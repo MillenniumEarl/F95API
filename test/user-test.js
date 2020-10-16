@@ -11,7 +11,6 @@ const GameDownload = require("../app/scripts/classes/game-download.js");
 
 debug(true);
 main();
-//downloadGameNOPY();
 //downloadGameMEGA();
 
 async function main() {
@@ -19,22 +18,13 @@ async function main() {
 
   if (loginResult.success) {
     await loadF95BaseData();
-    let gameData = await getGameData("employee benefits", false);
+    let gameData = await getGameData("queen's brothel", false);
     console.log(gameData);
 
     // let userData = await getUserData();
     // console.log(userData);
   }
   logout();
-}
-
-async function downloadGameNOPY() {
-  let gd = new GameDownload();
-  gd.hosting = "NOPY";
-  gd.link = "https://nopy.to/50jmNQbo/Kingdom_of_Deception-pc0.10.8.zip";
-  let savepath = join(__dirname, "Kingdom_of_Deception-pc0.10.8.zip");
-  let result = await gd.download(savepath);
-  console.log(result);
 }
 
 async function downloadGameMEGA() {

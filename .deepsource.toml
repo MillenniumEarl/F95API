@@ -13,6 +13,7 @@ enabled = true
     "nodejs",
     "mocha"
   ]
+  style_guide = "standard"
 
 [[transformers]]
 name = "prettier"
