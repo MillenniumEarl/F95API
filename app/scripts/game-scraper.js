@@ -7,16 +7,10 @@ const puppeteer = require("puppeteer"); // skipcq: JS-0128
 // Modules from file
 const shared = require("./shared.js");
 const selectors = require("./constants/css-selectors.js");
-const {
-  preparePage
-} = require("./puppeteer-helper.js");
+const { preparePage } = require("./puppeteer-helper.js");
 const GameDownload = require("./classes/game-download.js");
 const GameInfo = require("./classes/game-info.js");
-const {
-  isStringAValidURL,
-  isF95URL,
-  urlExists
-} = require("./urls-helper.js");
+const { isStringAValidURL, isF95URL, urlExists } = require("./urls-helper.js");
 
 /**
  * @protected
@@ -60,12 +54,10 @@ module.exports.getGameInfo = async function (browser, url) {
   info.overview = overview;
   info.tags = await tags;
   info.f95url = url;
-  info.version = info.isMod ?
-    parsedInfos["MOD_VERSION"] :
-    parsedInfos["VERSION"];
-  info.lastUpdate = info.isMod ?
-    parsedInfos["UPDATED"] :
-    parsedInfos["THREAD_UPDATED"];
+  info.version = info.isMod ? parsedInfos.MOD_VERSION : parsedInfos.VERSION;
+  info.lastUpdate = info.isMod
+    ? parsedInfos.UPDATED
+    : parsedInfos.THREAD_UPDATED;
   info.previewSource = await previewSource;
   info.changelog = (await changelog) || "Unknown changelog";
   //info.downloadInfo = await downloadData;
@@ -155,8 +147,7 @@ async function getGameAuthor(page) {
   // Get the game/mod name (without square brackets)
   const titleHTML = await page.evaluate(
     /* istanbul ignore next */
-    (selector) =>
-    document.querySelector(selector).innerHTML,
+    (selector) => document.querySelector(selector).innerHTML,
     selectors.GAME_TITLE
   );
   const structuredTitle = HTMLParser.parse(titleHTML);
@@ -229,8 +220,7 @@ async function getGameTitle(page) {
   // Get the game/mod name (without square brackets)
   const titleHTML = await page.evaluate(
     /* istanbul ignore next */
-    (selector) =>
-    document.querySelector(selector).innerHTML,
+    (selector) => document.querySelector(selector).innerHTML,
     selectors.GAME_TITLE
   );
   const structuredTitle = HTMLParser.parse(titleHTML);
@@ -413,8 +403,8 @@ function extractGameHostingData(platform, text) {
   // Find the end of the container
   if (endIndex === -1)
     endIndex =
-    text.indexOf(CONTAINER_SPAN_CLOSE, startIndex) +
-    CONTAINER_SPAN_CLOSE.length;
+      text.indexOf(CONTAINER_SPAN_CLOSE, startIndex) +
+      CONTAINER_SPAN_CLOSE.length;
 
   text = text.substring(startIndex, endIndex);
 
