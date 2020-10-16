@@ -63,7 +63,7 @@ async function downloadMEGA(url, savepath) {
   const link = await page.$('a.host_link');
   await link.click();
   await page.goto(url, {
-    waitUntil: shared.WAIT_STATEMENT,
+    waitUntil: shared.WAIT_STATEMENT
   }); // Go to the game page and wait until it loads
 
   // Obtain the URL after the redirect
@@ -89,7 +89,7 @@ async function downloadNOPY(url, savepath) {
   // Set the save path
   await page._client.send('Page.setDownloadBehavior', {
     behavior: 'allow',
-    downloadPath: path.basename(path.dirname(savepath)), // Is a directory
+    downloadPath: path.basename(path.dirname(savepath)) // It's a directory
   });
 
   // Obtain the download button and click it
@@ -99,7 +99,7 @@ async function downloadNOPY(url, savepath) {
   // Await for all the connections to close
   await page.waitForNavigation({
     waitUntil: 'networkidle0',
-    timeout: 0, // Disable timeout
+    timeout: 0 // Disable timeout
   });
 
   // Close browser and page

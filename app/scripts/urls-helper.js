@@ -2,7 +2,7 @@
 
 // Public modules from npm
 const ky = require('ky-universal').create({
-  throwHttpErrors: false,
+  throwHttpErrors: false
 });
 
 // Modules from file

@@ -103,7 +103,7 @@ class GameInfo {
       isMod: this.isMod,
       changelog: this.changelog,
       gameDir: this.gameDir,
-      downloadInfo: this.downloadInfo,
+      downloadInfo: this.downloadInfo
     };
   }
 

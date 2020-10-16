@@ -10,12 +10,12 @@ const selectors = require('./scripts/constants/css-selectors.js');
 const {
   isStringAValidURL,
   urlExists,
-  isF95URL,
+  isF95URL
 } = require('./scripts/urls-helper.js');
 const scraper = require('./scripts/game-scraper.js');
 const {
   prepareBrowser,
-  preparePage,
+  preparePage
 } = require('./scripts/puppeteer-helper.js');
 const searcher = require('./scripts/game-searcher.js');
 
@@ -161,7 +161,7 @@ module.exports.loadF95BaseData = async function () {
 
   // Go to latest update page and wait for it to load
   await page.goto(constURLs.F95_LATEST_UPDATES, {
-    waitUntil: shared.WAIT_STATEMENT,
+    waitUntil: shared.WAIT_STATEMENT
   });
 
   // Obtain engines (disc/online)
@@ -489,7 +489,7 @@ async function loginF95(browser, username, password) {
   await Promise.all([
     page.click(selectors.LOGIN_BUTTON), // Click on the login button
     page.waitForNavigation({
-      waitUntil: shared.WAIT_STATEMENT,
+      waitUntil: shared.WAIT_STATEMENT
     }), // Wait for page to load
   ]);
 

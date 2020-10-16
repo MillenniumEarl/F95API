@@ -31,7 +31,7 @@ module.exports.getGameInfo = async function (browser, url) {
   const page = await preparePage(browser); // Set new isolated page
   await page.setCookie(...shared.cookies); // Set cookies to avoid login
   await page.goto(url, {
-    waitUntil: shared.WAIT_STATEMENT,
+    waitUntil: shared.WAIT_STATEMENT
   }); // Go to the game page and wait until it loads
 
   // It asynchronously searches for the elements and
@@ -81,7 +81,7 @@ module.exports.getGameVersionFromTitle = async function (browser, info) {
   const page = await preparePage(browser); // Set new isolated page
   await page.setCookie(...shared.cookies); // Set cookies to avoid login
   await page.goto(info.f95url, {
-    waitUntil: shared.WAIT_STATEMENT,
+    waitUntil: shared.WAIT_STATEMENT
   }); // Go to the game page and wait until it loads
 
   // Get the title
@@ -322,7 +322,7 @@ async function getGameDownloadLink(page) {
     'MIXDROP',
     'UPLOADHAVEN',
     'PIXELDRAIN',
-    'FILESFM',
+    'FILESFM'
   ];
 
   // Supported OS platforms

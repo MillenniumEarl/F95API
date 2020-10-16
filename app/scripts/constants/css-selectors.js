@@ -28,5 +28,5 @@ module.exports = Object.freeze({
   DOWNLOAD_LINKS_CONTAINER: 'span[style="font-size: 18px"]',
   SEARCH_THREADS_RESULTS_BODY: 'div.contentRow-main',
   SEARCH_THREADS_MEMBERSHIP: 'li > a:not(.username)',
-  THREAD_LAST_CHANGELOG: 'div.bbCodeBlock-content > div:first-of-type',
+  THREAD_LAST_CHANGELOG: 'div.bbCodeBlock-content > div:first-of-type'
 });

@@ -23,7 +23,7 @@ module.exports.getSearchGameResults = async function (browser, gamename) {
   const page = await preparePage(browser); // Set new isolated page
   await page.setCookie(...shared.cookies); // Set cookies to avoid login
   await page.goto(constURLs.F95_SEARCH_URL, {
-    waitUntil: shared.WAIT_STATEMENT,
+    waitUntil: shared.WAIT_STATEMENT
   }); // Go to the search form and wait for it
 
   // Explicitly wait for the required items to load
@@ -36,7 +36,7 @@ module.exports.getSearchGameResults = async function (browser, gamename) {
   await Promise.all([
     page.click(selectors.SEARCH_BUTTON), // Execute search
     page.waitForNavigation({
-      waitUntil: shared.WAIT_STATEMENT,
+      waitUntil: shared.WAIT_STATEMENT
     }), // Wait for page to load
   ]);
 

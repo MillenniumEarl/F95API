@@ -18,11 +18,11 @@ module.exports.prepareBrowser = async function () {
   if (shared.chromiumLocalPath) {
     browser = await puppeteer.launch({
       executablePath: shared.chromiumLocalPath,
-      headless: !shared.debug, // Use GUI when debug = true
+      headless: !shared.debug // Use GUI when debug = true
     });
   } else {
     browser = await puppeteer.launch({
-      headless: !shared.debug, // Use GUI when debug = true
+      headless: !shared.debug // Use GUI when debug = true
     });
   }
 
