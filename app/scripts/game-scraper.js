@@ -2,15 +2,21 @@
 
 // Public modules from npm
 const HTMLParser = require("node-html-parser");
-const puppeteer = require("puppeteer");
+const puppeteer = require("puppeteer"); // skipcq: JS-0128
 
 // Modules from file
 const shared = require("./shared.js");
 const selectors = require("./constants/css-selectors.js");
-const { preparePage } = require("./puppeteer-helper.js");
+const {
+  preparePage
+} = require("./puppeteer-helper.js");
 const GameDownload = require("./classes/game-download.js");
 const GameInfo = require("./classes/game-info.js");
-const { isStringAValidURL, isF95URL, urlExists } = require("./urls-helper.js");
+const {
+  isStringAValidURL,
+  isF95URL,
+  urlExists
+} = require("./urls-helper.js");
 
 /**
  * @protected
@@ -24,7 +30,7 @@ module.exports.getGameInfo = async function (browser, url) {
   if (shared.debug) console.log("Obtaining game info");
 
   // Verify the correctness of the URL
-  if (!isF95URL(url)) throw url + " is not a valid F95Zone URL";
+  if (!isF95URL(url)) throw new Error(url + " is not a valid F95Zone URL");
   const exists = await urlExists(url);
   if (!exists) return null;
 
@@ -130,7 +136,8 @@ async function getMainPostStructuredText(page) {
 
   // The info are plain text so we need to parse the HTML code
   const bodyHTML = await page.evaluate(
-    /* istanbul ignore next */ (mainPost) => mainPost.innerHTML,
+    /* istanbul ignore next */
+    (mainPost) => mainPost.innerHTML,
     post
   );
   return HTMLParser.parse(bodyHTML).structuredText;
@@ -145,8 +152,9 @@ async function getMainPostStructuredText(page) {
 async function getGameAuthor(page) {
   // Get the game/mod name (without square brackets)
   const titleHTML = await page.evaluate(
-    /* istanbul ignore next */ (selector) =>
-      document.querySelector(selector).innerHTML,
+    /* istanbul ignore next */
+    (selector) =>
+    document.querySelector(selector).innerHTML,
     selectors.GAME_TITLE
   );
   const structuredTitle = HTMLParser.parse(titleHTML);
@@ -194,7 +202,8 @@ function parseConversationPage(text) {
  */
 async function getGamePreviewSource(page) {
   const src = await page.evaluate(
-    /* istanbul ignore next */ (selector) => {
+    /* istanbul ignore next */
+    (selector) => {
       // Get the firs image available
       const img = document.querySelector(selector);
 
@@ -217,8 +226,9 @@ async function getGamePreviewSource(page) {
 async function getGameTitle(page) {
   // Get the game/mod name (without square brackets)
   const titleHTML = await page.evaluate(
-    /* istanbul ignore next */ (selector) =>
-      document.querySelector(selector).innerHTML,
+    /* istanbul ignore next */
+    (selector) =>
+    document.querySelector(selector).innerHTML,
     selectors.GAME_TITLE
   );
   const structuredTitle = HTMLParser.parse(titleHTML);
@@ -241,7 +251,8 @@ async function getGameTags(page) {
   // Get the game tags
   for (const handle of await page.$$(selectors.GAME_TAGS)) {
     const tag = await page.evaluate(
-      /* istanbul ignore next */ (element) => element.innerText,
+      /* istanbul ignore next */
+      (element) => element.innerText,
       handle
     );
     tags.push(tag.toUpperCase());
@@ -264,7 +275,8 @@ async function parsePrefixes(page, info) {
   info.status = "Ongoing";
   for (const handle of await page.$$(selectors.GAME_TITLE_PREFIXES)) {
     const value = await page.evaluate(
-      /* istanbul ignore next */ (element) => element.innerText,
+      /* istanbul ignore next */
+      (element) => element.innerText,
       handle
     );
 
@@ -308,6 +320,7 @@ async function getLastChangelog(page) {
  * @param {puppeteer.Page} page Page containing the links to be extrapolated
  * @returns {Promise<GameDownload[]>} List of objects used for game download
  */
+// skipcq: JS-0128
 async function getGameDownloadLink(page) {
   // Most used hosting platforms
   const hostingPlatforms = [
@@ -335,7 +348,8 @@ async function getGameDownloadLink(page) {
     if (container !== null) break;
     const upperText = (
       await page.evaluate(
-        /* istanbul ignore next */ (e) => e.innerText,
+        /* istanbul ignore next */
+        (e) => e.innerText,
         candidate
       )
     ).toUpperCase();
@@ -353,7 +367,8 @@ async function getGameDownloadLink(page) {
   // Extract the HTML text from the container
   const searchText = (
     await page.evaluate(
-      /* istanbul ignore next */ (e) => e.innerHTML,
+      /* istanbul ignore next */
+      (e) => e.innerHTML,
       container
     )
   ).toLowerCase();
@@ -396,8 +411,8 @@ function extractGameHostingData(platform, text) {
   // Find the end of the container
   if (endIndex === -1)
     endIndex =
-      text.indexOf(CONTAINER_SPAN_CLOSE, startIndex) +
-      CONTAINER_SPAN_CLOSE.length;
+    text.indexOf(CONTAINER_SPAN_CLOSE, startIndex) +
+    CONTAINER_SPAN_CLOSE.length;
 
   text = text.substring(startIndex, endIndex);
 

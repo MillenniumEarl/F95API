@@ -1,7 +1,7 @@
 "use strict";
 
 // Public modules from npm
-const puppeteer = require("puppeteer");
+const puppeteer = require("puppeteer"); // skipcq: JS-0128
 
 // Modules from file
 const shared = require("./shared.js");
