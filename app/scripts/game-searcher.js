@@ -1,14 +1,14 @@
-'use strict';
+"use strict";
 
 // Public modules from npm
-const puppeteer = require('puppeteer'); // skipcq: JS-0128
+const puppeteer = require("puppeteer"); // skipcq: JS-0128
 
 // Modules from file
-const shared = require('./shared.js');
-const constURLs = require('./constants/urls.js');
-const selectors = require('./constants/css-selectors.js');
-const { preparePage } = require('./puppeteer-helper.js');
-const { isF95URL } = require('./urls-helper.js');
+const shared = require("./shared.js");
+const constURLs = require("./constants/urls.js");
+const selectors = require("./constants/css-selectors.js");
+const { preparePage } = require("./puppeteer-helper.js");
+const { isF95URL } = require("./urls-helper.js");
 
 /**
  * @protected
@@ -18,12 +18,12 @@ const { isF95URL } = require('./urls-helper.js');
  * @returns {Promise<String[]>} List of URL of possible games  obtained from the preliminary research on the F95 portal
  */
 module.exports.getSearchGameResults = async function (browser, gamename) {
-  if (shared.debug) console.log('Searching ' + gamename + ' on F95Zone');
+  if (shared.debug) console.log("Searching " + gamename + " on F95Zone");
 
   const page = await preparePage(browser); // Set new isolated page
   await page.setCookie(...shared.cookies); // Set cookies to avoid login
   await page.goto(constURLs.F95_SEARCH_URL, {
-    waitUntil: shared.WAIT_STATEMENT
+    waitUntil: shared.WAIT_STATEMENT,
   }); // Go to the search form and wait for it
 
   // Explicitly wait for the required items to load
@@ -36,7 +36,7 @@ module.exports.getSearchGameResults = async function (browser, gamename) {
   await Promise.all([
     page.click(selectors.SEARCH_BUTTON), // Execute search
     page.waitForNavigation({
-      waitUntil: shared.WAIT_STATEMENT
+      waitUntil: shared.WAIT_STATEMENT,
     }), // Wait for page to load
   ]);
 
@@ -44,13 +44,13 @@ module.exports.getSearchGameResults = async function (browser, gamename) {
   const resultsThread = await page.$$(selectors.SEARCH_THREADS_RESULTS_BODY);
 
   // For each element found extract the info about the conversation
-  if (shared.debug) console.log('Extracting info from conversations');
+  if (shared.debug) console.log("Extracting info from conversations");
   const results = [];
   for (const element of resultsThread) {
     const gameUrl = await getOnlyGameThreads(page, element);
     if (gameUrl !== null) results.push(gameUrl);
   }
-  if (shared.debug) console.log('Find ' + results.length + ' conversations');
+  if (shared.debug) console.log("Find " + results.length + " conversations");
   await page.close(); // Close the page
 
   return results;
@@ -71,7 +71,7 @@ async function getOnlyGameThreads(page, divHandle) {
 
   // Get the forum where the thread was posted
   const forum = await getMembershipForum(page, forumHandle);
-  if (forum !== 'GAMES' && forum !== 'MODS') return null;
+  if (forum !== "GAMES" && forum !== "MODS") return null;
 
   // Get the URL of the thread from the title
   return await getThreadURL(page, titleHandle);
@@ -92,13 +92,13 @@ async function getMembershipForum(page, handle) {
 
   let link = await page.evaluate(
     /* istanbul ignore next */
-    (e) => e.getAttribute('href'),
+    (e) => e.getAttribute("href"),
     handle
   );
 
   // Parse link
-  link = link.replace('/forums/', '');
-  const endIndex = link.indexOf('.');
+  link = link.replace("/forums/", "");
+  const endIndex = link.indexOf(".");
   const forum = link.substring(0, endIndex);
 
   return forum.toUpperCase();
@@ -114,7 +114,7 @@ async function getMembershipForum(page, handle) {
 async function getThreadURL(page, handle) {
   const relativeURLThread = await page.evaluate(
     /* istanbul ignore next */
-    (e) => e.querySelector('a').href,
+    (e) => e.querySelector("a").href,
     handle
   );
 

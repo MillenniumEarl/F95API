@@ -1,10 +1,10 @@
-'use strict';
+"use strict";
 
 // Public modules from npm
-const puppeteer = require('puppeteer');
+const puppeteer = require("puppeteer");
 
 // Modules from file
-const shared = require('./shared.js');
+const shared = require("./shared.js");
 
 /**
  * @protected
@@ -18,11 +18,11 @@ module.exports.prepareBrowser = async function () {
   if (shared.chromiumLocalPath) {
     browser = await puppeteer.launch({
       executablePath: shared.chromiumLocalPath,
-      headless: !shared.debug // Use GUI when debug = true
+      headless: !shared.debug, // Use GUI when debug = true
     });
   } else {
     browser = await puppeteer.launch({
-      headless: !shared.debug // Use GUI when debug = true
+      headless: !shared.debug, // Use GUI when debug = true
     });
   }
 
@@ -42,9 +42,9 @@ module.exports.preparePage = async function (browser) {
 
   // Block image download
   await page.setRequestInterception(true);
-  page.on('request', (request) => {
-    if (request.resourceType() === 'image') request.abort();
-    else if (request.resourceType === 'font') request.abort();
+  page.on("request", (request) => {
+    if (request.resourceType() === "image") request.abort();
+    else if (request.resourceType === "font") request.abort();
     // else if (request.resourceType() == 'stylesheet') request.abort();
     // else if(request.resourceType == 'media') request.abort();
     else request.continue();
@@ -52,8 +52,8 @@ module.exports.preparePage = async function (browser) {
 
   // Set custom user-agent
   const userAgent =
-    'Mozilla/5.0 (X11; Linux x86_64)' +
-    'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/64.0.3282.39 Safari/537.36';
+    "Mozilla/5.0 (X11; Linux x86_64)" +
+    "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/64.0.3282.39 Safari/537.36";
   await page.setUserAgent(userAgent);
 
   return page;
