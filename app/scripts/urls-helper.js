@@ -27,7 +27,7 @@ module.exports.isF95URL = function (url) {
  */
 module.exports.isStringAValidURL = function (url) {
   try {
-    new URL(url);
+    new URL(url); // skipcq: JS-0078
     return true;
   } catch (err) {
     return false;

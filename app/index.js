@@ -268,7 +268,7 @@ module.exports.getGameDataFromURL = async function (url) {
 
   // Check URL
   if (!urlExists(url)) return null;
-  if (!isF95URL(url)) throw url + " is not a valid F95Zone URL";
+  if (!isF95URL(url)) throw new Error(url + " is not a valid F95Zone URL");
 
   // Gets the search results of the game being searched for
   if (_browser === null && !shared.isolation) _browser = await prepareBrowser();
@@ -508,9 +508,8 @@ async function loginF95(browser, username, password) {
     const c = await page.cookies();
     fs.writeFileSync(shared.cookiesCachePath, JSON.stringify(c));
     result.message = "Authentication successful";
-  }
-  // Obtain the error message
-  else if (
+  } else if (
+    // Obtain the error message
     await page.evaluate(
       /* istanbul ignore next */ (selector) =>
         document.querySelector(selector) !== null,
