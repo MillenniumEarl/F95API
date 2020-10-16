@@ -18,7 +18,7 @@ const FAKE_PASSWORD = "fake_password";
 F95API.debug(false);
 
 function randomSleep() {
-  let random = Math.floor(Math.random() * 500) + 50;
+  const random = Math.floor(Math.random() * 500) + 50;
   sleep.msleep(500 + random);
 }
 
@@ -112,13 +112,13 @@ describe("Load base data without cookies", function () {
   //#endregion Set-up
 
   it("With login", async function () {
-    let loginResult = await F95API.login(USERNAME, PASSWORD);
+    const loginResult = await F95API.login(USERNAME, PASSWORD);
     expect(loginResult.success).to.be.true;
 
-    let result = await F95API.loadF95BaseData();
+    const result = await F95API.loadF95BaseData();
 
-    let enginesCacheExists = fs.existsSync(ENGINES_SAVE_PATH);
-    let statusesCacheExists = fs.existsSync(STATUSES_SAVE_PATH);
+    const enginesCacheExists = fs.existsSync(ENGINES_SAVE_PATH);
+    const statusesCacheExists = fs.existsSync(STATUSES_SAVE_PATH);
 
     expect(result).to.be.true;
     expect(enginesCacheExists).to.be.true;
@@ -127,7 +127,7 @@ describe("Load base data without cookies", function () {
 
   it("Without login", async function () {
     if (F95API.isLogged()) F95API.logout();
-    let result = await F95API.loadF95BaseData();
+    const result = await F95API.loadF95BaseData();
     expect(result).to.be.false;
   });
 });
@@ -154,7 +154,7 @@ describe("Search game data", function () {
     const gamesList = await F95API.getGameData("Kingdom of Deception", false);
     expect(gamesList.length, "Should find only the game").to.equal(1);
     const result = gamesList[0];
-    let src = "https://attachments.f95zone.to/2018/09/162821_f9nXfwF.png";
+    const src = "https://attachments.f95zone.to/2018/09/162821_f9nXfwF.png";
 
     // Test only the main information
     expect(result.name).to.equal("Kingdom of Deception");
@@ -179,7 +179,7 @@ describe("Load user data", function () {
     await F95API.login(USERNAME, PASSWORD);
 
     // Then retrieve user data
-    let data = await F95API.getUserData();
+    const data = await F95API.getUserData();
 
     expect(data).to.exist;
     expect(data.username).to.equal(USERNAME);
@@ -189,7 +189,7 @@ describe("Load user data", function () {
     if (F95API.isLogged()) F95API.logout();
 
     // Try to retrieve user data
-    let data = await F95API.getUserData();
+    const data = await F95API.getUserData();
 
     expect(data).to.be.null;
   });
@@ -211,7 +211,7 @@ describe("Check game update", function () {
     // https://f95zone.to/threads/kingdom-of-deception-v0-10-8-hreinn-games.2733/
     const result = (await F95API.getGameData("Kingdom of Deception", false))[0];
 
-    let update = await F95API.chekIfGameHasUpdate(result);
+    const update = await F95API.chekIfGameHasUpdate(result);
     expect(update).to.be.false;
   });
 
@@ -221,12 +221,12 @@ describe("Check game update", function () {
 
     // This test depend on the data on F95Zone at
     // https://f95zone.to/threads/perverted-education-v0-9701-april-ryan.1854/
-    let url =
+    const url =
       "https://f95zone.to/threads/perverted-education-v0-9701-april-ryan.1854/";
     const result = await F95API.getGameDataFromURL(url);
     result.version = "0.9600";
 
-    let update = await F95API.chekIfGameHasUpdate(result);
+    const update = await F95API.chekIfGameHasUpdate(result);
     expect(update).to.be.true;
   });
 });

@@ -53,36 +53,36 @@ module.exports = GameDownload;
 
 async function downloadMEGA(url, savepath) {
   // The URL is masked
-  let browser = await prepareBrowser();
-  let page = await preparePage(browser);
+  const browser = await prepareBrowser();
+  const page = await preparePage(browser);
   await page.setCookie(...shared.cookies); // Set cookies to avoid login
   await page.goto(url);
   await page.waitForSelector("a.host_link");
 
   // Obtain the link for the unmasked page and click it
-  let link = await page.$("a.host_link");
+  const link = await page.$("a.host_link");
   await link.click();
   await page.goto(url, {
     waitUntil: shared.WAIT_STATEMENT,
   }); // Go to the game page and wait until it loads
 
   // Obtain the URL after the redirect
-  let downloadURL = page.url();
+  const downloadURL = page.url();
 
   // Close browser and page
   await page.close();
   await browser.close();
 
-  let stream = fs.createWriteStream(savepath);
-  let file = File.fromURL(downloadURL);
+  const stream = fs.createWriteStream(savepath);
+  const file = File.fromURL(downloadURL);
   file.download().pipe(stream);
   return fs.existsSync(savepath);
 }
 
 async function downloadNOPY(url, savepath) {
   // Prepare browser
-  let browser = await prepareBrowser();
-  let page = await preparePage(browser);
+  const browser = await prepareBrowser();
+  const page = await preparePage(browser);
   await page.goto(url);
   await page.waitForSelector("#download");
 
@@ -93,7 +93,7 @@ async function downloadNOPY(url, savepath) {
   });
 
   // Obtain the download button and click it
-  let downloadButton = await page.$("#download");
+  const downloadButton = await page.$("#download");
   await downloadButton.click();
 
   // Await for all the connections to close
