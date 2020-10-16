@@ -89,7 +89,7 @@ async function downloadNOPY(url, savepath) {
   // Set the save path
   await page._client.send("Page.setDownloadBehavior", {
     behavior: "allow",
-    downloadPath: path.basename(path.dirname(savepath)), // Is a directory
+    downloadPath: path.basename(path.dirname(savepath)), // It's a directory
   });
 
   // Obtain the download button and click it
