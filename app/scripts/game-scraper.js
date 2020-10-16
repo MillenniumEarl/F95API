@@ -61,8 +61,7 @@ module.exports.getGameInfo = async function (browser, url) {
     ? parsedInfos["UPDATED"]
     : parsedInfos["THREAD UPDATED"];
   info.previewSource = await previewSource;
-  let temp = await changelog;
-  info.changelog = temp ? temp : "Unknown changelog";
+  info.changelog = (await changelog || "Unknown changelog");
   //info.downloadInfo = await downloadData;
   /* Downloading games without going directly to
    * the platform appears to be prohibited by
