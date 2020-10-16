@@ -121,7 +121,10 @@ async function getThreadURL(page, handle) {
   // Some game already have a full URL
   if (isF95URL(relativeURLThread)) return relativeURLThread;
 
-  const urlThread = new URL(relativeURLThread, constURLs.F95_BASE_URL).toString();
+  const urlThread = new URL(
+    relativeURLThread,
+    constURLs.F95_BASE_URL
+  ).toString();
   return urlThread;
 }
 //#endregion Private methods
