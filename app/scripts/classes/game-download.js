@@ -1,16 +1,16 @@
 /* istanbul ignore file */
 
-"use strict";
+'use strict';
 
 // Core modules
-const fs = require("fs");
+const fs = require('fs');
 
 // Public modules from npm
-// const { File } = require("megajs");
+// const { File } = require('megajs');
 
 // Modules from file
-const { prepareBrowser, preparePage } = require("../puppeteer-helper.js");
-const shared = require("../shared.js");
+const { prepareBrowser, preparePage } = require('../puppeteer-helper.js');
+const shared = require('../shared.js');
 
 class GameDownload {
   constructor() {
@@ -19,7 +19,7 @@ class GameDownload {
      * Platform that hosts game files
      * @type String
      */
-    this.hosting = "";
+    this.hosting = '';
     /**
      * @public
      * Link to game files
@@ -43,9 +43,9 @@ class GameDownload {
    * @return {Promise<Boolean>} Result of the operation
    */
   async download(path) {
-    if (this.link.includes("mega.nz"))
+    if (this.link.includes('mega.nz'))
       return await downloadMEGA(this.link, path);
-    else if (this.link.includes("nopy.to"))
+    else if (this.link.includes('nopy.to'))
       return await downloadNOPY(this.link, path);
   }
 }
@@ -57,10 +57,10 @@ async function downloadMEGA(url, savepath) {
   const page = await preparePage(browser);
   await page.setCookie(...shared.cookies); // Set cookies to avoid login
   await page.goto(url);
-  await page.waitForSelector("a.host_link");
+  await page.waitForSelector('a.host_link');
 
   // Obtain the link for the unmasked page and click it
-  const link = await page.$("a.host_link");
+  const link = await page.$('a.host_link');
   await link.click();
   await page.goto(url, {
     waitUntil: shared.WAIT_STATEMENT,
@@ -84,21 +84,21 @@ async function downloadNOPY(url, savepath) {
   const browser = await prepareBrowser();
   const page = await preparePage(browser);
   await page.goto(url);
-  await page.waitForSelector("#download");
+  await page.waitForSelector('#download');
 
   // Set the save path
-  await page._client.send("Page.setDownloadBehavior", {
-    behavior: "allow",
+  await page._client.send('Page.setDownloadBehavior', {
+    behavior: 'allow',
     downloadPath: path.basename(path.dirname(savepath)), // Is a directory
   });
 
   // Obtain the download button and click it
-  const downloadButton = await page.$("#download");
+  const downloadButton = await page.$('#download');
   await downloadButton.click();
 
   // Await for all the connections to close
   await page.waitForNavigation({
-    waitUntil: "networkidle0",
+    waitUntil: 'networkidle0',
     timeout: 0, // Disable timeout
   });
 
