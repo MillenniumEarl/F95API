@@ -20,7 +20,7 @@ const { isF95URL } = require("./urls-helper.js");
 module.exports.getSearchGameResults = async function (browser, gamename) {
   if (shared.debug) console.log("Searching " + gamename + " on F95Zone");
 
-  let page = await preparePage(browser); // Set new isolated page
+  const page = await preparePage(browser); // Set new isolated page
   await page.setCookie(...shared.cookies); // Set cookies to avoid login
   await page.goto(constURLs.F95_SEARCH_URL, {
     waitUntil: shared.WAIT_STATEMENT,
@@ -41,13 +41,13 @@ module.exports.getSearchGameResults = async function (browser, gamename) {
   ]);
 
   // Select all conversation titles
-  let resultsThread = await page.$$(selectors.SEARCH_THREADS_RESULTS_BODY);
+  const resultsThread = await page.$$(selectors.SEARCH_THREADS_RESULTS_BODY);
 
   // For each element found extract the info about the conversation
   if (shared.debug) console.log("Extracting info from conversations");
-  let results = [];
-  for (let element of resultsThread) {
-    let gameUrl = await getOnlyGameThreads(page, element);
+  const results = [];
+  for (const element of resultsThread) {
+    const gameUrl = await getOnlyGameThreads(page, element);
     if (gameUrl !== null) results.push(gameUrl);
   }
   if (shared.debug) console.log("Find " + results.length + " conversations");
@@ -66,11 +66,11 @@ module.exports.getSearchGameResults = async function (browser, gamename) {
  */
 async function getOnlyGameThreads(page, divHandle) {
   // Obtain the elements containing the basic information
-  let titleHandle = await divHandle.$(selectors.THREAD_TITLE);
-  let forumHandle = await divHandle.$(selectors.SEARCH_THREADS_MEMBERSHIP);
+  const titleHandle = await divHandle.$(selectors.THREAD_TITLE);
+  const forumHandle = await divHandle.$(selectors.SEARCH_THREADS_MEMBERSHIP);
 
   // Get the forum where the thread was posted
-  let forum = await getMembershipForum(page, forumHandle);
+  const forum = await getMembershipForum(page, forumHandle);
   if (forum !== "GAMES" && forum != "MODS") return null;
 
   // Get the URL of the thread from the title
@@ -98,8 +98,8 @@ async function getMembershipForum(page, handle) {
 
   // Parse link
   link = link.replace("/forums/", "");
-  let endIndex = link.indexOf(".");
-  let forum = link.substring(0, endIndex);
+  const endIndex = link.indexOf(".");
+  const forum = link.substring(0, endIndex);
 
   return forum.toUpperCase();
 }
@@ -112,7 +112,7 @@ async function getMembershipForum(page, handle) {
  * @returns {Promise<String>} URL of the thread
  */
 async function getThreadURL(page, handle) {
-  let relativeURLThread = await page.evaluate(
+  const relativeURLThread = await page.evaluate(
     /* istanbul ignore next */
     (e) => e.querySelector("a").href,
     handle
@@ -121,7 +121,10 @@ async function getThreadURL(page, handle) {
   // Some game already have a full URL
   if (isF95URL(relativeURLThread)) return relativeURLThread;
 
-  let urlThread = new URL(relativeURLThread, constURLs.F95_BASE_URL).toString();
+  const urlThread = new URL(
+    relativeURLThread,
+    constURLs.F95_BASE_URL
+  ).toString();
   return urlThread;
 }
 //#endregion Private methods
