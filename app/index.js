@@ -480,10 +480,12 @@ async function loginF95(browser, username, password) {
   await page.goto(constURLs.F95_LOGIN_URL); // Go to login page
 
   // Explicitly wait for the required items to load
-  await page.waitForSelector(selectors.USERNAME_INPUT);
-  await page.waitForSelector(selectors.PASSWORD_INPUT);
-  await page.waitForSelector(selectors.LOGIN_BUTTON);
-
+  await Promise.all([
+    page.waitForSelector(selectors.USERNAME_INPUT),
+    page.waitForSelector(selectors.PASSWORD_INPUT),
+    page.waitForSelector(selectors.LOGIN_BUTTON),
+  ]);
+  
   await page.type(selectors.USERNAME_INPUT, username); // Insert username
   await page.type(selectors.PASSWORD_INPUT, password); // Insert password
   await Promise.all([
@@ -549,10 +551,12 @@ async function getUserWatchedGameThreads(browser) {
   await page.waitForSelector(selectors.WATCHED_THREAD_FILTER_POPUP_BUTTON);
 
   // Show the popup
-  await page.click(selectors.WATCHED_THREAD_FILTER_POPUP_BUTTON);
-  await page.waitForSelector(selectors.UNREAD_THREAD_CHECKBOX);
-  await page.waitForSelector(selectors.ONLY_GAMES_THREAD_OPTION);
-  await page.waitForSelector(selectors.FILTER_THREADS_BUTTON);
+  await Promise.all([
+   page.click(selectors.WATCHED_THREAD_FILTER_POPUP_BUTTON),
+   page.waitForSelector(selectors.UNREAD_THREAD_CHECKBOX),
+   page.waitForSelector(selectors.ONLY_GAMES_THREAD_OPTION),
+   page.waitForSelector(selectors.FILTER_THREADS_BUTTON),
+  ]);
 
   // Set the filters
   await page.evaluate(
@@ -560,12 +564,13 @@ async function getUserWatchedGameThreads(browser) {
       document.querySelector(selector).removeAttribute("checked"),
     selectors.UNREAD_THREAD_CHECKBOX
   ); // Also read the threads already read
-
-  await page.click(selectors.ONLY_GAMES_THREAD_OPTION);
-
+  
   // Filter the threads
-  await page.click(selectors.FILTER_THREADS_BUTTON);
-  await page.waitForSelector(selectors.WATCHED_THREAD_URLS);
+  await Promise.all([
+    page.click(selectors.ONLY_GAMES_THREAD_OPTION),
+    page.click(selectors.FILTER_THREADS_BUTTON),
+    page.waitForSelector(selectors.WATCHED_THREAD_URLS),
+  ]);
 
   // Get the threads urls
   const urls = [];

@@ -10,7 +10,7 @@ const selectors = require("./constants/css-selectors.js");
 const { preparePage } = require("./puppeteer-helper.js");
 const GameDownload = require("./classes/game-download.js");
 const GameInfo = require("./classes/game-info.js");
-const { isStringAValidURL, isF95URL, urlExists } = require("./urls-helper.js");
+const urlsHelper = require("./urls-helper.js");
 
 /**
  * @protected
@@ -24,8 +24,8 @@ module.exports.getGameInfo = async function (browser, url) {
   if (shared.debug) console.log("Obtaining game info");
 
   // Verify the correctness of the URL
-  if (!isF95URL(url)) throw new Error(url + " is not a valid F95Zone URL");
-  const exists = await urlExists(url);
+  if (!urlsHelper.isF95URL(url)) throw new Error(url + " is not a valid F95Zone URL");
+  const exists = await urlsHelper.urlExists(url);
   if (!exists) return null;
 
   const page = await preparePage(browser); // Set new isolated page
@@ -40,26 +40,28 @@ module.exports.getGameInfo = async function (browser, url) {
   const title = getGameTitle(page);
   const author = getGameAuthor(page);
   const tags = getGameTags(page);
-  const previewSource = getGamePreviewSource(page);
-  //let downloadData = getGameDownloadLink(page);
+  const redirectUrl = urlsHelper.getUrlRedirect(url);
   info = await parsePrefixes(page, info); // Fill status/engines/isMod
   const structuredText = await getMainPostStructuredText(page);
   const overview = getOverview(structuredText, info.isMod);
   const parsedInfos = parseConversationPage(structuredText);
+  const previewSource = getGamePreviewSource(page);
   const changelog = getLastChangelog(page);
 
   // Fill in the GameInfo element with the information obtained
   info.name = await title;
   info.author = await author;
-  info.overview = overview;
   info.tags = await tags;
-  info.f95url = url;
+  info.f95url = await redirectUrl;
+  info.overview = overview;
   info.version = info.isMod ? parsedInfos.MOD_VERSION : parsedInfos.VERSION;
   info.lastUpdate = info.isMod
     ? parsedInfos.UPDATED
     : parsedInfos.THREAD_UPDATED;
   info.previewSource = await previewSource;
   info.changelog = (await changelog) || "Unknown changelog";
+
+  //let downloadData = getGameDownloadLink(page);
   //info.downloadInfo = await downloadData;
   /* Downloading games without going directly to
    * the platform appears to be prohibited by
@@ -207,7 +209,7 @@ async function getGamePreviewSource(page) {
   );
 
   // Check if the URL is valid
-  return isStringAValidURL(src) ? src : null;
+  return urlsHelper.isStringAValidURL(src) ? src : null;
 }
 
 /**
@@ -424,7 +426,7 @@ function extractGameHostingData(platform, text) {
     endIndex = tag.indexOf(HREF_END, startIndex);
     const link = tag.substring(startIndex, endIndex);
 
-    if (isStringAValidURL(link)) {
+    if (urlsHelper.isStringAValidURL(link)) {
       const gd = new GameDownload();
       gd.hosting = hosting.toUpperCase();
       gd.link = link;

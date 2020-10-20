@@ -15,7 +15,7 @@ const { isF95URL } = require("./urls-helper.js");
  * Search the F95Zone portal to find possible conversations regarding the game you are looking for.
  * @param {puppeteer.Browser} browser Browser object used for navigation
  * @param {String} gamename Name of the game to search for
- * @returns {Promise<String[]>} List of URL of possible games  obtained from the preliminary research on the F95 portal
+ * @returns {Promise<String[]>} List of URL of possible games obtained from the preliminary research on the F95 portal
  */
 module.exports.getSearchGameResults = async function (browser, gamename) {
   if (shared.debug) console.log("Searching " + gamename + " on F95Zone");
@@ -27,13 +27,15 @@ module.exports.getSearchGameResults = async function (browser, gamename) {
   }); // Go to the search form and wait for it
 
   // Explicitly wait for the required items to load
-  await page.waitForSelector(selectors.SEARCH_FORM_TEXTBOX);
-  await page.waitForSelector(selectors.TITLE_ONLY_CHECKBOX);
-  await page.waitForSelector(selectors.SEARCH_BUTTON);
+  await Promise.all([
+    page.waitForSelector(selectors.SEARCH_FORM_TEXTBOX),
+    page.waitForSelector(selectors.TITLE_ONLY_CHECKBOX),
+    page.waitForSelector(selectors.SEARCH_BUTTON)
+  ]);
 
   await page.type(selectors.SEARCH_FORM_TEXTBOX, gamename); // Type the game we desire
-  await page.click(selectors.TITLE_ONLY_CHECKBOX); // Select only the thread with the game in the titles
   await Promise.all([
+    page.click(selectors.TITLE_ONLY_CHECKBOX), // Select only the thread with the game in the titles
     page.click(selectors.SEARCH_BUTTON), // Execute search
     page.waitForNavigation({
       waitUntil: shared.WAIT_STATEMENT,

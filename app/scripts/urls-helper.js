@@ -35,7 +35,7 @@ module.exports.isStringAValidURL = function (url) {
 };
 
 /**
- * @public
+ * @protected
  * Check if a particular URL is valid and reachable on the web.
  * @param {String} url URL to check
  * @param {Boolean} checkRedirect If true, the function will consider redirects a violation and return false
@@ -52,9 +52,21 @@ module.exports.urlExists = async function (url, checkRedirect) {
   if (!valid) return false;
 
   if (checkRedirect) {
-    if (response.url === url) valid = true;
+    let redirectUrl = await exports.getUrlRedirect(url);
+    if (redirectUrl === url) valid = true;
     else valid = false;
   }
 
   return valid;
 };
+
+/**
+ * @protected
+ * Check if the URL has a redirect to another page.
+ * @param {String} url URL to check for redirect
+ * @returns {Promise<String>} Redirect URL or the passed URL
+ */
+module.exports.getUrlRedirect = async function(url) {
+    const response = await ky.head(url);
+    return response.url;
+}
