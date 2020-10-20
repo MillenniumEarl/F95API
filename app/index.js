@@ -485,7 +485,7 @@ async function loginF95(browser, username, password) {
     page.waitForSelector(selectors.PASSWORD_INPUT),
     page.waitForSelector(selectors.LOGIN_BUTTON),
   ]);
-  
+
   await page.type(selectors.USERNAME_INPUT, username); // Insert username
   await page.type(selectors.PASSWORD_INPUT, password); // Insert password
   await Promise.all([
@@ -552,10 +552,10 @@ async function getUserWatchedGameThreads(browser) {
 
   // Show the popup
   await Promise.all([
-   page.click(selectors.WATCHED_THREAD_FILTER_POPUP_BUTTON),
-   page.waitForSelector(selectors.UNREAD_THREAD_CHECKBOX),
-   page.waitForSelector(selectors.ONLY_GAMES_THREAD_OPTION),
-   page.waitForSelector(selectors.FILTER_THREADS_BUTTON),
+    page.click(selectors.WATCHED_THREAD_FILTER_POPUP_BUTTON),
+    page.waitForSelector(selectors.UNREAD_THREAD_CHECKBOX),
+    page.waitForSelector(selectors.ONLY_GAMES_THREAD_OPTION),
+    page.waitForSelector(selectors.FILTER_THREADS_BUTTON),
   ]);
 
   // Set the filters
@@ -564,7 +564,7 @@ async function getUserWatchedGameThreads(browser) {
       document.querySelector(selector).removeAttribute("checked"),
     selectors.UNREAD_THREAD_CHECKBOX
   ); // Also read the threads already read
-  
+
   // Filter the threads
   await Promise.all([
     page.click(selectors.ONLY_GAMES_THREAD_OPTION),

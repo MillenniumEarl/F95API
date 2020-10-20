@@ -24,7 +24,8 @@ module.exports.getGameInfo = async function (browser, url) {
   if (shared.debug) console.log("Obtaining game info");
 
   // Verify the correctness of the URL
-  if (!urlsHelper.isF95URL(url)) throw new Error(url + " is not a valid F95Zone URL");
+  if (!urlsHelper.isF95URL(url))
+    throw new Error(url + " is not a valid F95Zone URL");
   const exists = await urlsHelper.urlExists(url);
   if (!exists) return null;
 

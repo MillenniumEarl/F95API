@@ -66,7 +66,7 @@ module.exports.urlExists = async function (url, checkRedirect) {
  * @param {String} url URL to check for redirect
  * @returns {Promise<String>} Redirect URL or the passed URL
  */
-module.exports.getUrlRedirect = async function(url) {
-    const response = await ky.head(url);
-    return response.url;
-}
+module.exports.getUrlRedirect = async function (url) {
+  const response = await ky.head(url);
+  return response.url;
+};
