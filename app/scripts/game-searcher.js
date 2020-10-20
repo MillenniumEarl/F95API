@@ -30,7 +30,7 @@ module.exports.getSearchGameResults = async function (browser, gamename) {
   await Promise.all([
     page.waitForSelector(selectors.SEARCH_FORM_TEXTBOX),
     page.waitForSelector(selectors.TITLE_ONLY_CHECKBOX),
-    page.waitForSelector(selectors.SEARCH_BUTTON)
+    page.waitForSelector(selectors.SEARCH_BUTTON),
   ]);
 
   await page.type(selectors.SEARCH_FORM_TEXTBOX, gamename); // Type the game we desire
