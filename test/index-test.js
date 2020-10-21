@@ -171,7 +171,7 @@ describe("Search game data", function () {
     const result = await F95API.getGameData("Kingdom of Deception", false);
     expect(result, "Without being logged should return null").to.be.null;
   });
-  it("Test game serialization", function() {
+  it("Test game serialization", function () {
     let json = JSON.stringify(testGame);
     let parsedGameInfo = JSON.parse(json);
     expect(parsedGameInfo).to.be.equal(testGame);
@@ -257,15 +257,22 @@ describe("Test url-helper", function () {
     expect(exists).to.be.false;
 
     // Now check for more specific URLs (with redirect)...
-    exists = urlHelper.urlExists("https://f95zone.to/threads/perverted-education-v0-9601-april-ryan.1854/");
+    exists = urlHelper.urlExists(
+      "https://f95zone.to/threads/perverted-education-v0-9601-april-ryan.1854/"
+    );
     expect(exists).to.be.true;
 
-    exists = urlHelper.urlExists("https://f95zone.to/threads/perverted-education-v0-9601-april-ryan.1854/", true);
+    exists = urlHelper.urlExists(
+      "https://f95zone.to/threads/perverted-education-v0-9601-april-ryan.1854/",
+      true
+    );
     expect(exists).to.be.false;
   });
 
   it("Check if URL belong to the platform", async function () {
-    let belong = urlHelper.isF95URL("https://f95zone.to/threads/perverted-education-v0-9601-april-ryan.1854/");
+    let belong = urlHelper.isF95URL(
+      "https://f95zone.to/threads/perverted-education-v0-9601-april-ryan.1854/"
+    );
     expect(belong).to.be.true;
 
     belong = urlHelper.isF95URL("https://www.google/");

@@ -114,7 +114,9 @@ module.exports.login = async function (username, password) {
   }
 
   // Else, log in throught browser
-  shared.logger.info("No saved sessions or expired session, login on the platform");
+  shared.logger.info(
+    "No saved sessions or expired session, login on the platform"
+  );
 
   if (_browser === null && !shared.isolation) _browser = await prepareBrowser();
   const browser = shared.isolation ? await prepareBrowser() : _browser;
@@ -267,7 +269,8 @@ module.exports.getGameDataFromURL = async function (url) {
   // Check URL
   const exists = await urlHelper.urlExists(url);
   if (!exists) throw new URIError(url + " is not a valid URL");
-  if (!urlHelper.isF95URL(url)) throw new Error(url + " is not a valid F95Zone URL");
+  if (!urlHelper.isF95URL(url))
+    throw new Error(url + " is not a valid F95Zone URL");
 
   // Gets the search results of the game being searched for
   if (_browser === null && !shared.isolation) _browser = await prepareBrowser();
@@ -393,7 +396,9 @@ function isCookieExpired(cookie) {
     const expirationDate = new Date(expirationUnixTimestamp * 1000);
 
     if (expirationDate < Date.now()) {
-      shared.logger.warn("Cookie " + cookie.name + " expired, you need to re-authenticate");
+      shared.logger.warn(
+        "Cookie " + cookie.name + " expired, you need to re-authenticate"
+      );
       expiredCookies = true;
     }
   }
@@ -506,10 +511,9 @@ async function loginF95(browser, username, password) {
 
   let errorMessageExists = await page.evaluate(
     /* istanbul ignore next */
-    (selector) =>
-    document.querySelector(selector) !== null,
+    (selector) => document.querySelector(selector) !== null,
     selectorK.LOGIN_MESSAGE_ERROR
-  )
+  );
 
   // Save cookies to avoid re-auth
   if (success) {
@@ -525,7 +529,10 @@ async function loginF95(browser, username, password) {
 
     if (errorMessage === "Incorrect password. Please try again.") {
       message = "Incorrect password";
-    } else if (errorMessage ==='The requested user \'' + username + '\' could not be found.') {
+    } else if (
+      errorMessage ===
+      "The requested user '" + username + "' could not be found."
+    ) {
       // The escaped quotes are important!
       message = "Incorrect username";
     } else message = errorMessage;

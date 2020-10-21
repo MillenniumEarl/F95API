@@ -51,7 +51,7 @@ class Shared {
    * @type Boolean
    */
   static #_isolation = false;
-  /** 
+  /**
    * Logger object used to write to both file and console.
    * @type log4js.Logger
    */
