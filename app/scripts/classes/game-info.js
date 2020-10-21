@@ -86,6 +86,7 @@ class GameInfo {
   /**
    * Converts the object to a dictionary used for JSON serialization
    */
+  /* istanbul ignore next */
   toJSON() {
     return {
       name: this.name,
@@ -110,6 +111,7 @@ class GameInfo {
    * @param {String} json JSON string used to create the new object
    * @returns {GameInfo}
    */
+  /* istanbul ignore next */
   static fromJSON(json) {
     return Object.assign(new GameInfo(), json);
   }

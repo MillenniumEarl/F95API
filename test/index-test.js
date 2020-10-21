@@ -1,11 +1,19 @@
 "use strict";
 
-const urlHelper = require("../app/scripts/url-helper.js");
-const expect = require("chai").expect;
-const F95API = require("../app/index");
+// Core modules
 const fs = require("fs");
+
+// Public modules from npm
+const _ = require('lodash');
+const expect = require("chai").expect;
 const sleep = require("sleep");
 const dotenv = require("dotenv");
+
+// Modules from file
+const urlHelper = require("../app/scripts/url-helper.js");
+const F95API = require("../app/index.js");
+
+// Configure the .env reader
 dotenv.config();
 
 const COOKIES_SAVE_PATH = "./f95cache/cookies.json";
@@ -16,7 +24,7 @@ const PASSWORD = process.env.F95_PASSWORD;
 const FAKE_USERNAME = "FakeUsername091276";
 const FAKE_PASSWORD = "fake_password";
 
-F95API.debug(false);
+//F95API.debug(false);
 
 function randomSleep() {
   const random = Math.floor(Math.random() * 500) + 50;
@@ -174,7 +182,8 @@ describe("Search game data", function () {
   it("Test game serialization", function () {
     const json = JSON.stringify(testGame);
     const parsedGameInfo = JSON.parse(json);
-    expect(parsedGameInfo).to.be.equal(testGame);
+    const result = _.isEqual(parsedGameInfo, testGame);
+    expect(result).to.be.true;
   });
 });
 
@@ -247,26 +256,26 @@ describe("Test url-helper", function () {
 
   it("Check if URL exists", async function () {
     // Check generic URLs...
-    let exists = urlHelper.urlExists("https://www.google.com/");
-    expect(exists).to.be.true;
+    let exists = await urlHelper.urlExists("https://www.google.com/");
+    expect(exists, "Complete valid URL").to.be.true;
 
-    exists = urlHelper.urlExists("www.google.com");
-    expect(exists).to.be.true;
+    exists = await urlHelper.urlExists("www.google.com");
+    expect(exists, "URl without protocol prefix").to.be.false;
 
-    exists = urlHelper.urlExists("https://www.google/");
-    expect(exists).to.be.false;
+    exists = await urlHelper.urlExists("https://www.google/");
+    expect(exists, "URL without third level domain").to.be.false;
 
     // Now check for more specific URLs (with redirect)...
-    exists = urlHelper.urlExists(
+    exists = await urlHelper.urlExists(
       "https://f95zone.to/threads/perverted-education-v0-9601-april-ryan.1854/"
     );
-    expect(exists).to.be.true;
+    expect(exists, "URL with redirect without check").to.be.true;
 
-    exists = urlHelper.urlExists(
+    exists = await urlHelper.urlExists(
       "https://f95zone.to/threads/perverted-education-v0-9601-april-ryan.1854/",
       true
     );
-    expect(exists).to.be.false;
+    expect(exists, "URL with redirect with check").to.be.false;
   });
 
   it("Check if URL belong to the platform", async function () {

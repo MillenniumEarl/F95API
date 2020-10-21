@@ -194,10 +194,16 @@ function parseConversationPage(text) {
  * @private
  * Gets the URL of the image used as a preview for the game in the conversation.
  * @param {puppeteer.Page} page Page containing the URL to be extrapolated
- * @returns {Promise<String>} URL (String) of the image or a empty string if failed to get it
+ * @returns {Promise<String>} URL (String) of the image or null if failed to get it
  */
 async function getGamePreviewSource(page) {
-  await page.waitForSelector(selectorK.GAME_IMAGES);
+  // Wait for the selector or return an empty value
+  try {
+    await page.waitForSelector(selectorK.GAME_IMAGES);
+  } catch {
+    return null;
+  }
+  
   const src = await page.evaluate(
     /* istanbul ignore next */
     (selector) => {
@@ -211,7 +217,7 @@ async function getGamePreviewSource(page) {
   );
 
   // Check if the URL is valid
-  return urlHelper.isStringAValidURL(src) ? src : "";
+  return urlHelper.isStringAValidURL(src) ? src : null;
 }
 
 /**
@@ -454,6 +460,6 @@ function extractGameHostingData(platform, text) {
  * @param {String} string
  */
 function capitalize(string) {
-  return string.charAt(0).toUpperCase() + string.slice(1);
+  return string.toLowerCase().charAt(0).toUpperCase() + string.slice(1);
 }
 //#endregion Private methods
