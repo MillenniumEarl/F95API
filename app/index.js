@@ -35,7 +35,7 @@ module.exports.debug = function (value) {
   shared.debug = value;
 
   // Configure logger
-  shared.logger.level = value ? "debug" : "OFF";
+  shared.logger.level = value ? "debug" : "warn";
 };
 /**
  * @public
