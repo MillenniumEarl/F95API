@@ -52,7 +52,7 @@ module.exports.urlExists = async function (url, checkRedirect) {
   if (!valid) return false;
 
   if (checkRedirect) {
-    let redirectUrl = await exports.getUrlRedirect(url);
+    const redirectUrl = await exports.getUrlRedirect(url);
     if (redirectUrl === url) valid = true;
     else valid = false;
   }

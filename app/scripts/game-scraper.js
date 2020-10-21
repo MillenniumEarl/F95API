@@ -26,7 +26,8 @@ module.exports.getGameInfo = async function (browser, url) {
   // Verify the correctness of the URL
   const exists = await urlHelper.urlExists(url);
   if (!exists) throw new URIError(url + " is not a valid URL");
-  if (!urlHelper.isF95URL(url)) throw new Error(url + " is not a valid F95Zone URL");
+  if (!urlHelper.isF95URL(url))
+    throw new Error(url + " is not a valid F95Zone URL");
 
   const page = await preparePage(browser); // Set new isolated page
   await page.setCookie(...shared.cookies); // Set cookies to avoid login
@@ -202,7 +203,7 @@ async function getGamePreviewSource(page) {
     (selector) => {
       // Get the firs image available
       const img = document.querySelector(selector);
-      
+
       if (img) return img.getAttribute("src");
       else return null;
     },
@@ -277,7 +278,7 @@ async function parsePrefixes(page, info) {
 
     // Clean the prefix
     const prefix = value.toUpperCase().replace("[", "").replace("]", "").trim();
-    
+
     // Getting infos...
     if (shared.statuses.includes(prefix)) info.status = capitalize(prefix);
     else if (shared.engines.includes(prefix)) info.engine = capitalize(prefix);
@@ -308,7 +309,8 @@ async function getLastChangelog(page) {
   let parsedText = HTMLParser.parse(changelogHTML).structuredText;
 
   // Clean the text
-  if (parsedText.startsWith("Spoiler")) parsedText = parsedText.replace("Spoiler", "");
+  if (parsedText.startsWith("Spoiler"))
+    parsedText = parsedText.replace("Spoiler", "");
   if (parsedText.startsWith(":")) parsedText = parsedText.replace(":", "");
   return parsedText.trim();
 }
@@ -449,7 +451,7 @@ function extractGameHostingData(platform, text) {
 
 /**
  * Capitalize a string
- * @param {String} string 
+ * @param {String} string
  */
 function capitalize(string) {
   return string.charAt(0).toUpperCase() + string.slice(1);

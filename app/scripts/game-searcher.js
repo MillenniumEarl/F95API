@@ -124,10 +124,7 @@ async function getThreadURL(page, handle) {
   if (isF95URL(relativeURLThread)) return relativeURLThread;
 
   // ... else compose the URL and return
-  const urlThread = new URL(
-    relativeURLThread,
-    urlK.F95_BASE_URL
-  ).toString();
+  const urlThread = new URL(relativeURLThread, urlK.F95_BASE_URL).toString();
   return urlThread;
 }
 //#endregion Private methods
