@@ -4,7 +4,7 @@
 const fs = require("fs");
 
 // Public modules from npm
-const _ = require('lodash');
+const _ = require("lodash");
 const expect = require("chai").expect;
 const sleep = require("sleep");
 const dotenv = require("dotenv");
