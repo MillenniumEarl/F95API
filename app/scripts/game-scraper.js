@@ -11,7 +11,6 @@ const { preparePage } = require("./puppeteer-helper.js");
 const GameDownload = require("./classes/game-download.js");
 const GameInfo = require("./classes/game-info.js");
 const urlHelper = require("./url-helper.js");
-const { TimeoutError } = require("ky-universal");
 
 /**
  * @protected
@@ -321,8 +320,8 @@ async function getLastChangelog(page) {
  * @returns {Promise<GameDownload[]>} List of objects used for game download
  * @deprecated
  */
-// skipcq: JS-0128
 /* istanbul ignore next */
+// skipcq: JS-0128
 async function getGameDownloadLink(page) {
   // Most used hosting platforms
   const hostingPlatforms = [
