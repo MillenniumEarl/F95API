@@ -164,7 +164,7 @@ module.exports.loadF95BaseData = async function () {
     waitUntil: shared.WAIT_STATEMENT,
   });
 
-  // Obtain engines (disc/online)
+  // Obtain engines (disk/online)
   await page.waitForSelector(selectors.ENGINE_ID_SELECTOR);
   shared.engines = await loadValuesFromLatestPage(
     page,
@@ -173,7 +173,7 @@ module.exports.loadF95BaseData = async function () {
     "engines"
   );
 
-  // Obtain statuses (disc/online)
+  // Obtain statuses (disk/online)
   await page.waitForSelector(selectors.STATUS_ID_SELECTOR);
   shared.statuses = await loadValuesFromLatestPage(
     page,
