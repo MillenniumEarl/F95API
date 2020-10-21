@@ -203,7 +203,7 @@ async function getGamePreviewSource(page) {
   } catch {
     return null;
   }
-  
+
   const src = await page.evaluate(
     /* istanbul ignore next */
     (selector) => {
