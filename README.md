@@ -7,3 +7,10 @@
 # F95API
 
 Unofficial Node JS module for scraping F95Zone platform
+
+# Guidelines for errors
++ If you can, return a meaningful value
++ Return `null` only if the function should return a complex object (including strings)
++ Return an empty array if the function should return an array
++ Return `false`, `-1` when the function should retrn `boolean` or `number`
++ Throw an exception only if it is an error or if a wrong value could mess up the functioning of the library

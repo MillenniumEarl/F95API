@@ -6,11 +6,12 @@ const puppeteer = require("puppeteer"); // skipcq: JS-0128
 
 // Modules from file
 const shared = require("./shared.js");
-const selectors = require("./constants/css-selectors.js");
+const selectorK = require("./constants/css-selector.js");
 const { preparePage } = require("./puppeteer-helper.js");
 const GameDownload = require("./classes/game-download.js");
 const GameInfo = require("./classes/game-info.js");
-const urlsHelper = require("./urls-helper.js");
+const urlHelper = require("./url-helper.js");
+const { TimeoutError } = require("ky-universal");
 
 /**
  * @protected
@@ -18,16 +19,15 @@ const urlsHelper = require("./urls-helper.js");
  * @param {puppeteer.Browser} browser Browser object used for navigation
  * @param {String} url URL (String) of the game/mod to extract data from
  * @return {Promise<GameInfo>} Complete information about the game you are
- * looking for or null if the URL doesn't exists
+ * looking for
  */
 module.exports.getGameInfo = async function (browser, url) {
-  if (shared.debug) console.log("Obtaining game info");
+  shared.logger.info("Obtaining game info");
 
   // Verify the correctness of the URL
-  if (!urlsHelper.isF95URL(url))
-    throw new Error(url + " is not a valid F95Zone URL");
-  const exists = await urlsHelper.urlExists(url);
-  if (!exists) return null;
+  const exists = await urlHelper.urlExists(url);
+  if (!exists) throw new URIError(url + " is not a valid URL");
+  if (!urlHelper.isF95URL(url)) throw new Error(url + " is not a valid F95Zone URL");
 
   const page = await preparePage(browser); // Set new isolated page
   await page.setCookie(...shared.cookies); // Set cookies to avoid login
@@ -41,7 +41,7 @@ module.exports.getGameInfo = async function (browser, url) {
   const title = getGameTitle(page);
   const author = getGameAuthor(page);
   const tags = getGameTags(page);
-  const redirectUrl = urlsHelper.getUrlRedirect(url);
+  const redirectUrl = urlHelper.getUrlRedirect(url);
   info = await parsePrefixes(page, info); // Fill status/engines/isMod
   const structuredText = await getMainPostStructuredText(page);
   const overview = getOverview(structuredText, info.isMod);
@@ -60,7 +60,7 @@ module.exports.getGameInfo = async function (browser, url) {
     ? parsedInfos.UPDATED
     : parsedInfos.THREAD_UPDATED;
   info.previewSource = await previewSource;
-  info.changelog = (await changelog) || "Unknown changelog";
+  info.changelog = await changelog;
 
   //let downloadData = getGameDownloadLink(page);
   //info.downloadInfo = await downloadData;
@@ -70,7 +70,7 @@ module.exports.getGameInfo = async function (browser, url) {
    * keep the links for downloading the games. */
 
   await page.close(); // Close the page
-  if (shared.debug) console.log("Founded data for " + info.name);
+  shared.logger.info("Founded data for " + info.name);
   return info;
 };
 
@@ -91,7 +91,7 @@ module.exports.getGameVersionFromTitle = async function (browser, info) {
   const titleHTML = await page.evaluate(
     /* istanbul ignore next */
     (selector) => document.querySelector(selector).innerHTML,
-    selectors.GAME_TITLE
+    selectorK.GAME_TITLE
   );
   const title = HTMLParser.parse(titleHTML).childNodes.pop().rawText;
 
@@ -129,7 +129,7 @@ function getOverview(text, isMod) {
  */
 async function getMainPostStructuredText(page) {
   // Gets the first post, where are listed all the game's informations
-  const post = (await page.$$(selectors.THREAD_POSTS))[0];
+  const post = (await page.$$(selectorK.THREAD_POSTS))[0];
 
   // The info are plain text so we need to parse the HTML code
   const bodyHTML = await page.evaluate(
@@ -151,7 +151,7 @@ async function getGameAuthor(page) {
   const titleHTML = await page.evaluate(
     /* istanbul ignore next */
     (selector) => document.querySelector(selector).innerHTML,
-    selectors.GAME_TITLE
+    selectorK.GAME_TITLE
   );
   const structuredTitle = HTMLParser.parse(titleHTML);
 
@@ -180,7 +180,7 @@ function parseConversationPage(text) {
 
     // Create pair key/value
     const splitted = line.split(":");
-    const key = splitted[0].trim().toUpperCase().replaceAll(" ", "_"); // Uppercase to avoid mismatch
+    const key = splitted[0].trim().toUpperCase().replace(/ /g, "_"); // Uppercase to avoid mismatch
     const value = splitted[1].trim();
 
     // Add pair to the dict if valid
@@ -194,23 +194,24 @@ function parseConversationPage(text) {
  * @private
  * Gets the URL of the image used as a preview for the game in the conversation.
  * @param {puppeteer.Page} page Page containing the URL to be extrapolated
- * @returns {Promise<String>} URL (String) of the image or null if failed to get it
+ * @returns {Promise<String>} URL (String) of the image or a empty string if failed to get it
  */
 async function getGamePreviewSource(page) {
+  await page.waitForSelector(selectorK.GAME_IMAGES);
   const src = await page.evaluate(
     /* istanbul ignore next */
     (selector) => {
       // Get the firs image available
       const img = document.querySelector(selector);
-
+      
       if (img) return img.getAttribute("src");
       else return null;
     },
-    selectors.GAME_IMAGES
+    selectorK.GAME_IMAGES
   );
 
   // Check if the URL is valid
-  return urlsHelper.isStringAValidURL(src) ? src : null;
+  return urlHelper.isStringAValidURL(src) ? src : "";
 }
 
 /**
@@ -224,7 +225,7 @@ async function getGameTitle(page) {
   const titleHTML = await page.evaluate(
     /* istanbul ignore next */
     (selector) => document.querySelector(selector).innerHTML,
-    selectors.GAME_TITLE
+    selectorK.GAME_TITLE
   );
   const structuredTitle = HTMLParser.parse(titleHTML);
 
@@ -244,7 +245,7 @@ async function getGameTags(page) {
   const tags = [];
 
   // Get the game tags
-  for (const handle of await page.$$(selectors.GAME_TAGS)) {
+  for (const handle of await page.$$(selectorK.GAME_TAGS)) {
     const tag = await page.evaluate(
       /* istanbul ignore next */
       (element) => element.innerText,
@@ -268,7 +269,7 @@ async function parsePrefixes(page, info) {
 
   // The 'Ongoing' status is not specified, only 'Abandoned'/'OnHold'/'Complete'
   info.status = "Ongoing";
-  for (const handle of await page.$$(selectors.GAME_TITLE_PREFIXES)) {
+  for (const handle of await page.$$(selectorK.GAME_TITLE_PREFIXES)) {
     const value = await page.evaluate(
       /* istanbul ignore next */
       (element) => element.innerText,
@@ -277,10 +278,10 @@ async function parsePrefixes(page, info) {
 
     // Clean the prefix
     const prefix = value.toUpperCase().replace("[", "").replace("]", "").trim();
-
+    
     // Getting infos...
-    if (shared.statuses.includes(prefix)) info.status = prefix;
-    else if (shared.engines.includes(prefix)) info.engine = prefix;
+    if (shared.statuses.includes(prefix)) info.status = capitalize(prefix);
+    else if (shared.engines.includes(prefix)) info.engine = capitalize(prefix);
     // This is not a game but a mod
     else if (prefix === MOD_PREFIX) info.isMod = true;
   }
@@ -291,22 +292,26 @@ async function parsePrefixes(page, info) {
  * @private
  * Get the last changelog available for the game.
  * @param {puppeteer.Page} page Page containing the changelog
- * @returns {Promise<String>} Changelog for the last version or null if no changelog is found
+ * @returns {Promise<String>} Changelog for the last version or a empty string if no changelog is found
  */
 async function getLastChangelog(page) {
   // Gets the first post, where are listed all the game's informations
-  const post = (await page.$$(selectors.THREAD_POSTS))[0];
+  const post = (await page.$$(selectorK.THREAD_POSTS))[0];
 
-  const spoiler = await post.$(selectors.THREAD_LAST_CHANGELOG);
-  if (!spoiler) return null;
+  const spoiler = await post.$(selectorK.THREAD_LAST_CHANGELOG);
+  if (!spoiler) return "";
 
   const changelogHTML = await page.evaluate(
     /* istanbul ignore next */
     (e) => e.innerText,
     spoiler
   );
-  const parsedText = HTMLParser.parse(changelogHTML).structuredText;
-  return parsedText.replace("Spoiler", "").trim();
+  let parsedText = HTMLParser.parse(changelogHTML).structuredText;
+
+  // Clean the text
+  if (parsedText.startsWith("Spoiler")) parsedText = parsedText.replace("Spoiler", "");
+  if (parsedText.startsWith(":")) parsedText = parsedText.replace(":", "");
+  return parsedText.trim();
 }
 
 /**
@@ -314,8 +319,10 @@ async function getLastChangelog(page) {
  * Get game download links for different platforms.
  * @param {puppeteer.Page} page Page containing the links to be extrapolated
  * @returns {Promise<GameDownload[]>} List of objects used for game download
+ * @deprecated
  */
 // skipcq: JS-0128
+/* istanbul ignore next */
 async function getGameDownloadLink(page) {
   // Most used hosting platforms
   const hostingPlatforms = [
@@ -332,7 +339,7 @@ async function getGameDownloadLink(page) {
   const platformOS = ["WIN", "LINUX", "MAC", "ALL"];
 
   // Gets the <span> which contains the download links
-  const temp = await page.$$(selectors.DOWNLOAD_LINKS_CONTAINER);
+  const temp = await page.$$(selectorK.DOWNLOAD_LINKS_CONTAINER);
   if (temp.length === 0) return [];
 
   // Look for the container that contains the links
@@ -384,7 +391,9 @@ async function getGameDownloadLink(page) {
  * It can only be *WIN/LINUX/MAC/ALL*
  * @param {String} text HTML string to extract links from
  * @returns {GameDownload[]} List of game download links for the selected platform
+ * @deprecated
  */
+/* istanbul ignore next */
 function extractGameHostingData(platform, text) {
   const PLATFORM_BOLD_OPEN = "<b>";
   const CONTAINER_SPAN_CLOSE = "</span>";
@@ -427,7 +436,7 @@ function extractGameHostingData(platform, text) {
     endIndex = tag.indexOf(HREF_END, startIndex);
     const link = tag.substring(startIndex, endIndex);
 
-    if (urlsHelper.isStringAValidURL(link)) {
+    if (urlHelper.isStringAValidURL(link)) {
       const gd = new GameDownload();
       gd.hosting = hosting.toUpperCase();
       gd.link = link;
@@ -437,5 +446,13 @@ function extractGameHostingData(platform, text) {
     }
   }
   return downloadData;
+}
+
+/**
+ * Capitalize a string
+ * @param {String} string 
+ */
+function capitalize(string) {
+  return string.charAt(0).toUpperCase() + string.slice(1);
 }
 //#endregion Private methods

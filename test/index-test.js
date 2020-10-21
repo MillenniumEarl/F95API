@@ -1,5 +1,6 @@
 "use strict";
 
+const urlHelper = require("../app/scripts/url-helper.js");
 const expect = require("chai").expect;
 const F95API = require("../app/index");
 const fs = require("fs");
@@ -142,6 +143,8 @@ describe("Search game data", function () {
   });
   //#endregion Set-up
 
+  let testGame = null;
+
   it("Search game when logged", async function () {
     const loginResult = await F95API.login(USERNAME, PASSWORD);
     expect(loginResult.success).to.be.true;
@@ -162,10 +165,16 @@ describe("Search game data", function () {
     expect(result.isMod, "Should be false").to.be.false;
     expect(result.engine).to.equal("REN'PY");
     expect(result.previewSource).to.equal(src); // Could be null -> Why sometimes doesn't get the image?
+    testGame = Object.assign({}, result);
   });
   it("Search game when not logged", async function () {
     const result = await F95API.getGameData("Kingdom of Deception", false);
     expect(result, "Without being logged should return null").to.be.null;
+  });
+  it("Test game serialization", function() {
+    let json = JSON.stringify(testGame);
+    let parsedGameInfo = JSON.parse(json);
+    expect(parsedGameInfo).to.be.equal(testGame);
   });
 });
 
@@ -228,5 +237,38 @@ describe("Check game update", function () {
 
     const update = await F95API.chekIfGameHasUpdate(result);
     expect(update).to.be.true;
+  });
+});
+
+describe("Test url-helper", function () {
+  //#region Set-up
+  this.timeout(30000); // All tests in this suite get 30 seconds before timeout
+  //#endregion Set-up
+
+  it("Check if URL exists", async function () {
+    // Check generic URLs...
+    let exists = urlHelper.urlExists("https://www.google.com/");
+    expect(exists).to.be.true;
+
+    exists = urlHelper.urlExists("www.google.com");
+    expect(exists).to.be.true;
+
+    exists = urlHelper.urlExists("https://www.google/");
+    expect(exists).to.be.false;
+
+    // Now check for more specific URLs (with redirect)...
+    exists = urlHelper.urlExists("https://f95zone.to/threads/perverted-education-v0-9601-april-ryan.1854/");
+    expect(exists).to.be.true;
+
+    exists = urlHelper.urlExists("https://f95zone.to/threads/perverted-education-v0-9601-april-ryan.1854/", true);
+    expect(exists).to.be.false;
+  });
+
+  it("Check if URL belong to the platform", async function () {
+    let belong = urlHelper.isF95URL("https://f95zone.to/threads/perverted-education-v0-9601-april-ryan.1854/");
+    expect(belong).to.be.true;
+
+    belong = urlHelper.isF95URL("https://www.google/");
+    expect(belong).to.be.false;
   });
 });

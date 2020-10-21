@@ -1,7 +1,5 @@
 "use strict";
 
-const UNKNOWN = "Unknown";
-
 class GameInfo {
   constructor() {
     //#region Properties
@@ -9,12 +7,12 @@ class GameInfo {
      * Game name
      * @type String
      */
-    this.name = UNKNOWN;
+    this.name = null;
     /**
      * Game author
      * @type String
      */
-    this.author = UNKNOWN;
+    this.author = null;
     /**
      * URL to the game's official conversation on the F95Zone portal
      * @type String
@@ -24,7 +22,7 @@ class GameInfo {
      * Game description
      * @type String
      */
-    this.overview = UNKNOWN;
+    this.overview = null;
     /**
      * List of tags associated with the game
      * @type String[]
@@ -34,12 +32,12 @@ class GameInfo {
      * Graphics engine used for game development
      * @type String
      */
-    this.engine = UNKNOWN;
+    this.engine = null;
     /**
      * Progress of the game
      * @type String
      */
-    this.status = UNKNOWN;
+    this.status = null;
     /**
      * Game description image URL
      * @type String
@@ -49,17 +47,17 @@ class GameInfo {
      * Game version
      * @type String
      */
-    this.version = UNKNOWN;
+    this.version = null;
     /**
      * Last time the game underwent updates
      * @type String
      */
-    this.lastUpdate = UNKNOWN;
+    this.lastUpdate = null;
     /**
      * Last time the local copy of the game was run
      * @type String
      */
-    this.lastPlayed = UNKNOWN;
+    this.lastPlayed = null;
     /**
      * Specifies if the game is original or a mod
      * @type Boolean
@@ -74,7 +72,7 @@ class GameInfo {
      * Directory containing the local copy of the game
      * @type String
      */
-    this.gameDir = UNKNOWN;
+    this.gameDir = null;
     /**
      * Information on game file download links,
      * including information on hosting platforms

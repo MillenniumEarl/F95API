@@ -6,7 +6,7 @@ const ky = require("ky-universal").create({
 });
 
 // Modules from file
-const { F95_BASE_URL } = require("./constants/urls.js");
+const { F95_BASE_URL } = require("./constants/url.js");
 
 /**
  * @protected

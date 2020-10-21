@@ -5,13 +5,9 @@ const fs = require("fs");
 
 // Modules from file
 const shared = require("./scripts/shared.js");
-const constURLs = require("./scripts/constants/urls.js");
-const selectors = require("./scripts/constants/css-selectors.js");
-const {
-  isStringAValidURL,
-  urlExists,
-  isF95URL,
-} = require("./scripts/urls-helper.js");
+const urlK = require("./scripts/constants/url.js");
+const selectorK = require("./scripts/constants/css-selector.js");
+const urlHelper = require("./scripts/url-helper.js");
 const scraper = require("./scripts/game-scraper.js");
 const {
   prepareBrowser,
@@ -37,6 +33,9 @@ module.exports.UserData = UserData;
  */
 module.exports.debug = function (value) {
   shared.debug = value;
+
+  // Configure logger
+  shared.logger.level = value ? "debug" : "OFF";
 };
 /**
  * @public
@@ -86,6 +85,7 @@ module.exports.setChromiumPath = function (value) {
 
 //#region Global variables
 var _browser = null;
+const USER_NOT_LOGGED = "User not authenticated, unable to continue";
 //#endregion
 
 //#region Export methods
@@ -99,27 +99,22 @@ var _browser = null;
  */
 module.exports.login = async function (username, password) {
   if (shared.isLogged) {
-    if (shared.debug) console.log("Already logged in");
-    const result = new LoginResult();
-    result.success = true;
-    result.message = "Already logged in";
+    shared.logger.info("Already logged in");
+    const result = new LoginResult(true, "Already logged in");
     return result;
   }
 
   // If cookies are loaded, use them to authenticate
   shared.cookies = loadCookies();
   if (shared.cookies !== null) {
-    if (shared.debug) console.log("Valid session, no need to re-authenticate");
+    shared.logger.info("Valid session, no need to re-authenticate");
     shared.isLogged = true;
-    const result = new LoginResult();
-    result.success = true;
-    result.message = "Logged with cookies";
+    const result = new LoginResult(true, "Logged with cookies");
     return result;
   }
 
   // Else, log in throught browser
-  if (shared.debug)
-    console.log("No saved sessions or expired session, login on the platform");
+  shared.logger.info("No saved sessions or expired session, login on the platform");
 
   if (_browser === null && !shared.isolation) _browser = await prepareBrowser();
   const browser = shared.isolation ? await prepareBrowser() : _browser;
@@ -130,9 +125,9 @@ module.exports.login = async function (username, password) {
   if (result.success) {
     // Reload cookies
     shared.cookies = loadCookies();
-    if (shared.debug) console.log("User logged in through the platform");
+    shared.logger.info("User logged in through the platform");
   } else {
-    console.warn("Error during authentication: " + result.message);
+    shared.logger.warn("Error during authentication: " + result.message);
   }
   if (shared.isolation) await browser.close();
   return result;
@@ -146,11 +141,11 @@ module.exports.login = async function (username, password) {
  */
 module.exports.loadF95BaseData = async function () {
   if (!shared.isLogged || !shared.cookies) {
-    console.warn("User not authenticated, unable to continue");
+    shared.logger.warn(USER_NOT_LOGGED);
     return false;
   }
 
-  if (shared.debug) console.log("Loading base data...");
+  shared.logger.info("Loading base data...");
 
   // Prepare a new web page
   if (_browser === null && !shared.isolation) _browser = await prepareBrowser();
@@ -160,30 +155,31 @@ module.exports.loadF95BaseData = async function () {
   await page.setCookie(...shared.cookies); // Set cookies to avoid login
 
   // Go to latest update page and wait for it to load
-  await page.goto(constURLs.F95_LATEST_UPDATES, {
+  await page.goto(urlK.F95_LATEST_UPDATES, {
     waitUntil: shared.WAIT_STATEMENT,
   });
 
   // Obtain engines (disk/online)
-  await page.waitForSelector(selectors.ENGINE_ID_SELECTOR);
+  await page.waitForSelector(selectorK.ENGINE_ID_SELECTOR);
   shared.engines = await loadValuesFromLatestPage(
     page,
     shared.enginesCachePath,
-    selectors.ENGINE_ID_SELECTOR,
+    selectorK.ENGINE_ID_SELECTOR,
     "engines"
   );
 
   // Obtain statuses (disk/online)
-  await page.waitForSelector(selectors.STATUS_ID_SELECTOR);
+  await page.waitForSelector(selectorK.STATUS_ID_SELECTOR);
   shared.statuses = await loadValuesFromLatestPage(
     page,
     shared.statusesCachePath,
-    selectors.STATUS_ID_SELECTOR,
+    selectorK.STATUS_ID_SELECTOR,
     "statuses"
   );
 
+  await page.close();
   if (shared.isolation) await browser.close();
-  if (shared.debug) console.log("Base data loaded");
+  shared.logger.info("Base data loaded");
   return true;
 };
 /**
@@ -195,13 +191,13 @@ module.exports.loadF95BaseData = async function () {
  */
 module.exports.chekIfGameHasUpdate = async function (info) {
   if (!shared.isLogged || !shared.cookies) {
-    console.warn("user not authenticated, unable to continue");
-    return info.version;
+    shared.logger.warn(USER_NOT_LOGGED);
+    return false;
   }
 
   // F95 change URL at every game update,
   // so if the URL is different an update is available
-  const exists = await urlExists(info.f95url, true);
+  const exists = await urlHelper.urlExists(info.f95url, true);
   if (!exists) return true;
 
   // Parse version from title
@@ -221,11 +217,11 @@ module.exports.chekIfGameHasUpdate = async function (info) {
  * @param {String} name Name of the game searched
  * @param {Boolean} includeMods Indicates whether to also take mods into account when searching
  * @returns {Promise<GameInfo[]>} List of information obtained where each item corresponds to
- * an identified game (in the case of homonymy). If no games were found, null is returned
+ * an identified game (in the case of homonymy of titles)
  */
 module.exports.getGameData = async function (name, includeMods) {
   if (!shared.isLogged || !shared.cookies) {
-    console.warn("user not authenticated, unable to continue");
+    shared.logger.warn(USER_NOT_LOGGED);
     return null;
   }
 
@@ -244,10 +240,12 @@ module.exports.getGameData = async function (name, includeMods) {
   // Filter for mods
   const result = [];
   for (const info of await Promise.all(promiseList)) {
-    // Skip mods if not required
+    // Ignore empty results
     if (!info) continue;
+    // Skip mods if not required
     if (info.isMod && !includeMods) continue;
-    else result.push(info);
+    // Else save data
+    result.push(info);
   }
 
   if (shared.isolation) await browser.close();
@@ -262,13 +260,14 @@ module.exports.getGameData = async function (name, includeMods) {
  */
 module.exports.getGameDataFromURL = async function (url) {
   if (!shared.isLogged || !shared.cookies) {
-    console.warn("user not authenticated, unable to continue");
+    shared.logger.warn(USER_NOT_LOGGED);
     return null;
   }
 
   // Check URL
-  if (!urlExists(url)) return null;
-  if (!isF95URL(url)) throw new Error(url + " is not a valid F95Zone URL");
+  const exists = await urlHelper.urlExists(url);
+  if (!exists) throw new URIError(url + " is not a valid URL");
+  if (!urlHelper.isF95URL(url)) throw new Error(url + " is not a valid F95Zone URL");
 
   // Gets the search results of the game being searched for
   if (_browser === null && !shared.isolation) _browser = await prepareBrowser();
@@ -284,11 +283,11 @@ module.exports.getGameDataFromURL = async function (url) {
  * @public
  * Gets the data of the currently logged in user.
  * You **must** be logged in to the portal before calling this method.
- * @returns {Promise<UserData>} Data of the user currently logged in or null if an error arise
+ * @returns {Promise<UserData>} Data of the user currently logged in
  */
 module.exports.getUserData = async function () {
   if (!shared.isLogged || !shared.cookies) {
-    console.warn("user not authenticated, unable to continue");
+    shared.logger.warn(USER_NOT_LOGGED);
     return null;
   }
 
@@ -297,29 +296,31 @@ module.exports.getUserData = async function () {
   const browser = shared.isolation ? await prepareBrowser() : _browser;
   const page = await preparePage(browser); // Set new isolated page
   await page.setCookie(...shared.cookies); // Set cookies to avoid login
-  await page.goto(constURLs.F95_BASE_URL); // Go to base page
+  await page.goto(urlK.F95_BASE_URL); // Go to base page
 
   // Explicitly wait for the required items to load
-  await page.waitForSelector(selectors.USERNAME_ELEMENT);
-  await page.waitForSelector(selectors.AVATAR_PIC);
+  await Promise.all([
+    page.waitForSelector(selectorK.USERNAME_ELEMENT),
+    page.waitForSelector(selectorK.AVATAR_PIC),
+  ]);
 
   const threads = getUserWatchedGameThreads(browser);
 
   const username = await page.evaluate(
     /* istanbul ignore next */ (selector) =>
       document.querySelector(selector).innerText,
-    selectors.USERNAME_ELEMENT
+    selectorK.USERNAME_ELEMENT
   );
 
   const avatarSrc = await page.evaluate(
     /* istanbul ignore next */ (selector) =>
       document.querySelector(selector).getAttribute("src"),
-    selectors.AVATAR_PIC
+    selectorK.AVATAR_PIC
   );
 
   const ud = new UserData();
   ud.username = username;
-  ud.avatarSrc = isStringAValidURL(avatarSrc) ? avatarSrc : null;
+  ud.avatarSrc = urlHelper.isStringAValidURL(avatarSrc) ? avatarSrc : null;
   ud.watchedThreads = await threads;
 
   await page.close();
@@ -334,9 +335,11 @@ module.exports.getUserData = async function () {
  */
 module.exports.logout = async function () {
   if (!shared.isLogged || !shared.cookies) {
-    console.warn("user not authenticated, unable to continue");
+    shared.logger.warn(USER_NOT_LOGGED);
     return;
   }
+
+  // Logout
   shared.isLogged = false;
 
   // Gracefully close shared browser
@@ -390,10 +393,7 @@ function isCookieExpired(cookie) {
     const expirationDate = new Date(expirationUnixTimestamp * 1000);
 
     if (expirationDate < Date.now()) {
-      if (shared.debug)
-        console.log(
-          "Cookie " + cookie.name + " expired, you need to re-authenticate"
-        );
+      shared.logger.warn("Cookie " + cookie.name + " expired, you need to re-authenticate");
       expiredCookies = true;
     }
   }
@@ -421,15 +421,14 @@ async function loadValuesFromLatestPage(
   elementRequested
 ) {
   // If the values already exist they are loaded from disk without having to connect to F95
-  if (shared.debug) console.log("Load " + elementRequested + " from disk...");
+  shared.logger.info("Load " + elementRequested + " from disk...");
   if (fs.existsSync(path)) {
     const valueJSON = fs.readFileSync(path);
     return JSON.parse(valueJSON);
   }
 
   // Otherwise, connect and download the data from the portal
-  if (shared.debug)
-    console.log("No " + elementRequested + " cached, downloading...");
+  shared.logger.info("No " + elementRequested + " cached, downloading...");
   const values = await getValuesFromLatestPage(
     page,
     selector,
@@ -449,7 +448,7 @@ async function loadValuesFromLatestPage(
  * @return {Promise<String[]>} List of uppercase strings indicating the textual values of the elements identified by the selector
  */
 async function getValuesFromLatestPage(page, selector, logMessage) {
-  if (shared.debug) console.log(logMessage);
+  shared.logger.info(logMessage);
 
   const result = [];
   const elements = await page.$$(selector);
@@ -477,65 +476,63 @@ async function getValuesFromLatestPage(page, selector, logMessage) {
  */
 async function loginF95(browser, username, password) {
   const page = await preparePage(browser); // Set new isolated page
-  await page.goto(constURLs.F95_LOGIN_URL); // Go to login page
+  await page.goto(urlK.F95_LOGIN_URL); // Go to login page
 
   // Explicitly wait for the required items to load
   await Promise.all([
-    page.waitForSelector(selectors.USERNAME_INPUT),
-    page.waitForSelector(selectors.PASSWORD_INPUT),
-    page.waitForSelector(selectors.LOGIN_BUTTON),
+    page.waitForSelector(selectorK.USERNAME_INPUT),
+    page.waitForSelector(selectorK.PASSWORD_INPUT),
+    page.waitForSelector(selectorK.LOGIN_BUTTON),
   ]);
 
-  await page.type(selectors.USERNAME_INPUT, username); // Insert username
-  await page.type(selectors.PASSWORD_INPUT, password); // Insert password
+  await page.type(selectorK.USERNAME_INPUT, username); // Insert username
+  await page.type(selectorK.PASSWORD_INPUT, password); // Insert password
   await Promise.all([
-    page.click(selectors.LOGIN_BUTTON), // Click on the login button
+    page.click(selectorK.LOGIN_BUTTON), // Click on the login button
     page.waitForNavigation({
       waitUntil: shared.WAIT_STATEMENT,
     }), // Wait for page to load
   ]);
 
   // Prepare result
-  const result = new LoginResult();
+  let message = "";
 
   // Check if the user is logged in
-  result.success = await page.evaluate(
+  let success = await page.evaluate(
     /* istanbul ignore next */ (selector) =>
       document.querySelector(selector) !== null,
-    selectors.AVATAR_INFO
+    selectorK.AVATAR_INFO
   );
 
+  let errorMessageExists = await page.evaluate(
+    /* istanbul ignore next */
+    (selector) =>
+    document.querySelector(selector) !== null,
+    selectorK.LOGIN_MESSAGE_ERROR
+  )
+
   // Save cookies to avoid re-auth
-  if (result.success) {
+  if (success) {
     const c = await page.cookies();
     fs.writeFileSync(shared.cookiesCachePath, JSON.stringify(c));
-    result.message = "Authentication successful";
-  } else if (
-    // Obtain the error message
-    await page.evaluate(
-      /* istanbul ignore next */ (selector) =>
-        document.querySelector(selector) !== null,
-      selectors.LOGIN_MESSAGE_ERROR
-    )
-  ) {
+    message = "Authentication successful";
+  } else if (errorMessageExists) {
     const errorMessage = await page.evaluate(
       /* istanbul ignore next */ (selector) =>
         document.querySelector(selector).innerText,
-      selectors.LOGIN_MESSAGE_ERROR
+      selectorK.LOGIN_MESSAGE_ERROR
     );
 
     if (errorMessage === "Incorrect password. Please try again.") {
-      result.message = "Incorrect password";
-    } else if (
-      errorMessage ===
-      'The requested user "' + username + '" could not be found.'
-    ) {
-      result.message = "Incorrect username";
-    } else result.message = errorMessage;
-  } else result.message = "Unknown error";
+      message = "Incorrect password";
+    } else if (errorMessage ==='The requested user \'' + username + '\' could not be found.') {
+      // The escaped quotes are important!
+      message = "Incorrect username";
+    } else message = errorMessage;
+  } else message = "Unknown error";
 
   await page.close(); // Close the page
-  return result;
+  return new LoginResult(success, message);
 }
 /**
  * @private
@@ -545,39 +542,37 @@ async function loginF95(browser, username, password) {
  */
 async function getUserWatchedGameThreads(browser) {
   const page = await preparePage(browser); // Set new isolated page
-  await page.goto(constURLs.F95_WATCHED_THREADS); // Go to the thread page
+  await page.goto(urlK.F95_WATCHED_THREADS); // Go to the thread page
 
   // Explicitly wait for the required items to load
-  await page.waitForSelector(selectors.WATCHED_THREAD_FILTER_POPUP_BUTTON);
+  await page.waitForSelector(selectorK.WATCHED_THREAD_FILTER_POPUP_BUTTON);
 
   // Show the popup
   await Promise.all([
-    page.click(selectors.WATCHED_THREAD_FILTER_POPUP_BUTTON),
-    page.waitForSelector(selectors.UNREAD_THREAD_CHECKBOX),
-    page.waitForSelector(selectors.ONLY_GAMES_THREAD_OPTION),
-    page.waitForSelector(selectors.FILTER_THREADS_BUTTON),
+    page.click(selectorK.WATCHED_THREAD_FILTER_POPUP_BUTTON),
+    page.waitForSelector(selectorK.UNREAD_THREAD_CHECKBOX),
+    page.waitForSelector(selectorK.ONLY_GAMES_THREAD_OPTION),
+    page.waitForSelector(selectorK.FILTER_THREADS_BUTTON),
   ]);
 
   // Set the filters
   await page.evaluate(
     /* istanbul ignore next */ (selector) =>
       document.querySelector(selector).removeAttribute("checked"),
-    selectors.UNREAD_THREAD_CHECKBOX
+    selectorK.UNREAD_THREAD_CHECKBOX
   ); // Also read the threads already read
 
   // Filter the threads
-  await Promise.all([
-    page.click(selectors.ONLY_GAMES_THREAD_OPTION),
-    page.click(selectors.FILTER_THREADS_BUTTON),
-    page.waitForSelector(selectors.WATCHED_THREAD_URLS),
-  ]);
+  await page.click(selectorK.ONLY_GAMES_THREAD_OPTION);
+  await page.click(selectorK.FILTER_THREADS_BUTTON);
+  await page.waitForSelector(selectorK.WATCHED_THREAD_URLS);
 
   // Get the threads urls
   const urls = [];
   let nextPageExists = false;
   do {
     // Get all the URLs
-    for (const handle of await page.$$(selectors.WATCHED_THREAD_URLS)) {
+    for (const handle of await page.$$(selectorK.WATCHED_THREAD_URLS)) {
       const src = await page.evaluate(
         /* istanbul ignore next */ (element) => element.href,
         handle
@@ -589,13 +584,13 @@ async function getUserWatchedGameThreads(browser) {
 
     nextPageExists = await page.evaluate(
       /* istanbul ignore next */ (selector) => document.querySelector(selector),
-      selectors.WATCHED_THREAD_NEXT_PAGE
+      selectorK.WATCHED_THREAD_NEXT_PAGE
     );
 
     // Click to next page
     if (nextPageExists) {
-      await page.click(selectors.WATCHED_THREAD_NEXT_PAGE);
-      await page.waitForSelector(selectors.WATCHED_THREAD_URLS);
+      await page.click(selectorK.WATCHED_THREAD_NEXT_PAGE);
+      await page.waitForSelector(selectorK.WATCHED_THREAD_URLS);
     }
   } while (nextPageExists);
 
