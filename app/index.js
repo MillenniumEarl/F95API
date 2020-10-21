@@ -498,13 +498,13 @@ async function loginF95(browser, username, password) {
   let message = "";
 
   // Check if the user is logged in
-  let success = await page.evaluate(
+  const success = await page.evaluate(
     /* istanbul ignore next */ (selector) =>
       document.querySelector(selector) !== null,
     selectorK.AVATAR_INFO
   );
 
-  let errorMessageExists = await page.evaluate(
+  const errorMessageExists = await page.evaluate(
     /* istanbul ignore next */
     (selector) =>
     document.querySelector(selector) !== null,

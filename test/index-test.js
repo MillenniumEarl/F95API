@@ -172,8 +172,8 @@ describe("Search game data", function () {
     expect(result, "Without being logged should return null").to.be.null;
   });
   it("Test game serialization", function() {
-    let json = JSON.stringify(testGame);
-    let parsedGameInfo = JSON.parse(json);
+    const json = JSON.stringify(testGame);
+    const parsedGameInfo = JSON.parse(json);
     expect(parsedGameInfo).to.be.equal(testGame);
   });
 });
