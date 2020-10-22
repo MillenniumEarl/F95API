@@ -100,6 +100,7 @@ module.exports.getGameVersionFromTitle = async function (browser, info) {
   const endIndex = title.indexOf("]", startIndex);
   let version = title.substring(startIndex, endIndex).trim().toUpperCase();
   if (version.startsWith("V")) version = version.replace("V", ""); // Replace only the first occurrence
+  await page.close();
   return version;
 };
 
