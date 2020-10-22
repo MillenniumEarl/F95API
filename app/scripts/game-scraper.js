@@ -45,6 +45,7 @@ module.exports.getGameInfo = async function (browser, url) {
   info = await parsePrefixes(page, info); // Fill status/engines/isMod
   const structuredText = await getMainPostStructuredText(page);
   const overview = getOverview(structuredText, info.isMod);
+  
   const parsedInfos = parseConversationPage(structuredText);
   const previewSource = getGamePreviewSource(page);
   const changelog = getLastChangelog(page);
@@ -55,12 +56,12 @@ module.exports.getGameInfo = async function (browser, url) {
   info.tags = await tags;
   info.f95url = await redirectUrl;
   info.overview = overview;
-  info.version = info.isMod ? cleanFSString(parsedInfos.MOD_VERSION) : cleanFSString(parsedInfos.VERSION);
   info.lastUpdate = info.isMod
     ? parsedInfos.UPDATED
     : parsedInfos.THREAD_UPDATED;
   info.previewSource = await previewSource;
   info.changelog = await changelog;
+  info.version = await getGameVersionFromTitle(browser, info);
 
   //let downloadData = getGameDownloadLink(page);
   //info.downloadInfo = await downloadData;
@@ -101,7 +102,7 @@ module.exports.getGameVersionFromTitle = async function (browser, info) {
   let version = title.substring(startIndex, endIndex).trim().toUpperCase();
   if (version.startsWith("V")) version = version.replace("V", ""); // Replace only the first occurrence
   await page.close();
-  return version;
+  return cleanFSString(version);
 };
 
 //#region Private methods
