@@ -45,7 +45,7 @@ module.exports.getGameInfo = async function (browser, url) {
   info = await parsePrefixes(page, info); // Fill status/engines/isMod
   const structuredText = await getMainPostStructuredText(page);
   const overview = getOverview(structuredText, info.isMod);
-  
+
   const parsedInfos = parseConversationPage(structuredText);
   const previewSource = getGamePreviewSource(page);
   const changelog = getLastChangelog(page);
@@ -108,7 +108,7 @@ module.exports.getGameVersionFromTitle = async function (browser, info) {
 //#region Private methods
 /**
  * Clean a string from invalid File System chars.
- * @param {String} s 
+ * @param {String} s
  * @returns {String}
  */
 function cleanFSString(s) {
