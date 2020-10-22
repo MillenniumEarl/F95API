@@ -61,7 +61,7 @@ module.exports.getGameInfo = async function (browser, url) {
     : parsedInfos.THREAD_UPDATED;
   info.previewSource = await previewSource;
   info.changelog = await changelog;
-  info.version = await getGameVersionFromTitle(browser, info);
+  info.version = await exports.getGameVersionFromTitle(browser, info);
 
   //let downloadData = getGameDownloadLink(page);
   //info.downloadInfo = await downloadData;
