@@ -55,7 +55,7 @@ module.exports.getGameInfo = async function (browser, url) {
   info.tags = await tags;
   info.f95url = await redirectUrl;
   info.overview = overview;
-  info.version = info.isMod ? parsedInfos.MOD_VERSION : parsedInfos.VERSION;
+  info.version = info.isMod ? cleanFSString(parsedInfos.MOD_VERSION) : cleanFSString(parsedInfos.VERSION);
   info.lastUpdate = info.isMod
     ? parsedInfos.UPDATED
     : parsedInfos.THREAD_UPDATED;
@@ -104,6 +104,16 @@ module.exports.getGameVersionFromTitle = async function (browser, info) {
 };
 
 //#region Private methods
+/**
+ * Clean a string from invalid File System chars.
+ * @param {String} s 
+ * @returns {String}
+ */
+function cleanFSString(s) {
+  const rx = /[/\\?%*:|"<>]/g;
+  return s.replace(rx, "");
+}
+
 /**
  * @private
  * Get the game description from its web page.
