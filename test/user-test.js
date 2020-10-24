@@ -1,25 +1,15 @@
-const {
-  debug,
-  login,
-  getGameData,
-  loadF95BaseData,
-  getUserData,
-  logout,
-} = require("../app/index.js");
+const  F95API = require("../app/index.js");
 
-debug(true);
+F95API.debug(true);
 main();
 
 async function main() {
-  const loginResult = await login("MillenniumEarl", "f9vTcRNuvxj4YpK");
+  const loginResult = await F95API.login("MillenniumEarl", "f9vTcRNuvxj4YpK");
 
   if (loginResult.success) {
-    await loadF95BaseData();
-    const gameData = await getGameData("kingdom of deception", false);
+    await F95API.loadF95BaseData();
+    const gameData = await F95API.getGameData("a struggle with sin", false);
     console.log(gameData);
-
-    // let userData = await getUserData();
-    // console.log(userData);
   }
-  logout();
+  F95API.logout();
 }
