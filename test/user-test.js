@@ -1,4 +1,4 @@
-const  F95API = require("../app/index.js");
+const F95API = require("../app/index.js");
 
 F95API.debug(true);
 main();
