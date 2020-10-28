@@ -25,9 +25,9 @@ module.exports.getGameInfo = async function (browser, url) {
 
   // Verify the correctness of the URL
   const exists = await urlHelper.urlExists(url);
-  if (!exists) throw new URIError(url + " is not a valid URL");
+  if (!exists) throw new URIError(`${url} is not a valid URL`);
   if (!urlHelper.isF95URL(url))
-    throw new Error(url + " is not a valid F95Zone URL");
+    throw new Error(`${url} is not a valid F95Zone URL`);
 
   const page = await preparePage(browser); // Set new isolated page
   await page.setCookie(...shared.cookies); // Set cookies to avoid login
@@ -45,7 +45,6 @@ module.exports.getGameInfo = async function (browser, url) {
   info = await parsePrefixes(page, info); // Fill status/engines/isMod
   const structuredText = await getMainPostStructuredText(page);
   const overview = getOverview(structuredText, info.isMod);
-
   const parsedInfos = parseConversationPage(structuredText);
   const previewSource = getGamePreviewSource(page);
   const changelog = getLastChangelog(page);
@@ -283,10 +282,8 @@ async function getGameTags(page) {
  * @returns {Promise<GameInfo>} GameInfo object passed in to which the identified information has been added
  */
 async function parsePrefixes(page, info) {
-  const MOD_PREFIX = "MOD";
-
   // The 'Ongoing' status is not specified, only 'Abandoned'/'OnHold'/'Complete'
-  info.status = "Ongoing";
+  info.status = "ONGOING";
   for (const handle of await page.$$(selectorK.GAME_TITLE_PREFIXES)) {
     const value = await page.evaluate(
       /* istanbul ignore next */
@@ -298,10 +295,10 @@ async function parsePrefixes(page, info) {
     const prefix = value.toUpperCase().replace("[", "").replace("]", "").trim();
 
     // Getting infos...
-    if (shared.statuses.includes(prefix)) info.status = capitalize(prefix);
-    else if (shared.engines.includes(prefix)) info.engine = capitalize(prefix);
+    if (shared.statuses.includes(prefix)) info.status = prefix;
+    else if (shared.engines.includes(prefix)) info.engine = prefix;
     // This is not a game but a mod
-    else if (prefix === MOD_PREFIX) info.isMod = true;
+    else if (prefix === "MOD" || prefix === "CHEAT MOD") info.isMod = true;
   }
   return info;
 }
@@ -467,11 +464,4 @@ function extractGameHostingData(platform, text) {
   return downloadData;
 }
 
-/**
- * Capitalize a string
- * @param {String} string
- */
-function capitalize(string) {
-  return string.toLowerCase().charAt(0).toUpperCase() + string.slice(1);
-}
 //#endregion Private methods

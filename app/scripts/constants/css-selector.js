@@ -13,7 +13,8 @@ module.exports = Object.freeze({
   ONLY_GAMES_THREAD_OPTION: 'select[name="nodes[]"] > option[value="2"]',
   PASSWORD_INPUT: 'input[name="password"]',
   SEARCH_BUTTON: "form.block > * button.button--icon--search",
-  SEARCH_FORM_TEXTBOX: 'input[name="keywords"]',
+  SEARCH_FORM_TEXTBOX: 'input[name="keywords"][type="search"]',
+  SEARCH_ONLY_GAMES_OPTION: 'select[name="c[nodes][]"] > option[value="1"]',
   STATUS_ID_SELECTOR: 'div[id^="btn-prefix_4_"]>span',
   THREAD_POSTS:
     "article.message-body:first-child > div.bbWrapper:first-of-type",

@@ -18,7 +18,7 @@ const { isF95URL } = require("./url-helper.js");
  * @returns {Promise<String[]>} List of URL of possible games obtained from the preliminary research on the F95 portal
  */
 module.exports.getSearchGameResults = async function (browser, gamename) {
-  shared.logger.info("Searching " + gamename + " on F95Zone");
+  shared.logger.info(`Searching ${gamename} on F95Zone`);
 
   const page = await preparePage(browser); // Set new isolated page
   await page.setCookie(...shared.cookies); // Set cookies to avoid login
@@ -30,11 +30,13 @@ module.exports.getSearchGameResults = async function (browser, gamename) {
   await Promise.all([
     page.waitForSelector(selectorK.SEARCH_FORM_TEXTBOX),
     page.waitForSelector(selectorK.TITLE_ONLY_CHECKBOX),
+    page.waitForSelector(selectorK.SEARCH_ONLY_GAMES_OPTION),
     page.waitForSelector(selectorK.SEARCH_BUTTON),
   ]);
 
   await page.type(selectorK.SEARCH_FORM_TEXTBOX, gamename); // Type the game we desire
   await page.click(selectorK.TITLE_ONLY_CHECKBOX); // Select only the thread with the game in the titles
+  await page.click(selectorK.SEARCH_ONLY_GAMES_OPTION); // Search only games and mod
   await Promise.all([
     page.click(selectorK.SEARCH_BUTTON), // Execute search
     page.waitForNavigation({
@@ -52,7 +54,7 @@ module.exports.getSearchGameResults = async function (browser, gamename) {
     const gameUrl = await getOnlyGameThreads(page, element);
     if (gameUrl !== null) results.push(gameUrl);
   }
-  shared.logger.info("Find " + results.length + " conversations");
+  shared.logger.info(`Find ${results.length} conversations`);
   await page.close(); // Close the page
 
   return results;
