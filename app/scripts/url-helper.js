@@ -2,7 +2,7 @@
 
 // Public modules from npm
 const ky = require("ky-universal").create({
-  throwHttpErrors: false,
+    throwHttpErrors: false,
 });
 
 // Modules from file
@@ -15,8 +15,8 @@ const { F95_BASE_URL } = require("./constants/url.js");
  * @returns {Boolean} true if the url belongs to the domain, false otherwise
  */
 module.exports.isF95URL = function (url) {
-  if (url.toString().startsWith(F95_BASE_URL)) return true;
-  else return false;
+    if (url.toString().startsWith(F95_BASE_URL)) return true;
+    else return false;
 };
 
 /**
@@ -26,12 +26,12 @@ module.exports.isF95URL = function (url) {
  * @returns {Boolean} true if the string is a valid URL, false otherwise
  */
 module.exports.isStringAValidURL = function (url) {
-  try {
-    new URL(url); // skipcq: JS-0078
-    return true;
-  } catch (err) {
-    return false;
-  }
+    try {
+        new URL(url); // skipcq: JS-0078
+        return true;
+    } catch (err) {
+        return false;
+    }
 };
 
 /**
@@ -42,22 +42,22 @@ module.exports.isStringAValidURL = function (url) {
  * @returns {Promise<Boolean>} true if the URL exists, false otherwise
  */
 module.exports.urlExists = async function (url, checkRedirect) {
-  if (!exports.isStringAValidURL(url)) {
-    return false;
-  }
+    if (!exports.isStringAValidURL(url)) {
+        return false;
+    }
 
-  const response = await ky.head(url);
-  let valid = response !== undefined && !/4\d\d/.test(response.status);
+    const response = await ky.head(url);
+    let valid = response !== undefined && !/4\d\d/.test(response.status);
 
-  if (!valid) return false;
+    if (!valid) return false;
 
-  if (checkRedirect) {
-    const redirectUrl = await exports.getUrlRedirect(url);
-    if (redirectUrl === url) valid = true;
-    else valid = false;
-  }
+    if (checkRedirect) {
+        const redirectUrl = await exports.getUrlRedirect(url);
+        if (redirectUrl === url) valid = true;
+        else valid = false;
+    }
 
-  return valid;
+    return valid;
 };
 
 /**
@@ -67,6 +67,6 @@ module.exports.urlExists = async function (url, checkRedirect) {
  * @returns {Promise<String>} Redirect URL or the passed URL
  */
 module.exports.getUrlRedirect = async function (url) {
-  const response = await ky.head(url);
-  return response.url;
+    const response = await ky.head(url);
+    return response.url;
 };

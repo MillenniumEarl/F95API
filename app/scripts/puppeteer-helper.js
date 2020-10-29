@@ -13,20 +13,20 @@ const shared = require("./shared.js");
  * @returns {Promise<puppeteer.Browser>} Created browser
  */
 module.exports.prepareBrowser = async function () {
-  // Create a headless browser
-  let browser = null;
-  if (shared.chromiumLocalPath) {
-    browser = await puppeteer.launch({
-      executablePath: shared.chromiumLocalPath,
-      headless: !shared.debug, // Use GUI when debug = true
-    });
-  } else {
-    browser = await puppeteer.launch({
-      headless: !shared.debug, // Use GUI when debug = true
-    });
-  }
+    // Create a headless browser
+    let browser = null;
+    if (shared.chromiumLocalPath) {
+        browser = await puppeteer.launch({
+            executablePath: shared.chromiumLocalPath,
+            headless: !shared.debug, // Use GUI when debug = true
+        });
+    } else {
+        browser = await puppeteer.launch({
+            headless: !shared.debug, // Use GUI when debug = true
+        });
+    }
 
-  return browser;
+    return browser;
 };
 
 /**
@@ -37,24 +37,24 @@ module.exports.prepareBrowser = async function () {
  * @returns {Promise<puppeteer.Page>} New page
  */
 module.exports.preparePage = async function (browser) {
-  // Create new page in the browser argument
-  const page = await browser.newPage();
+    // Create new page in the browser argument
+    const page = await browser.newPage();
 
-  // Block image download
-  await page.setRequestInterception(true);
-  page.on("request", (request) => {
-    if (request.resourceType() === "image") request.abort();
-    else if (request.resourceType === "font") request.abort();
-    // else if (request.resourceType() == 'stylesheet') request.abort();
-    // else if(request.resourceType == 'media') request.abort();
-    else request.continue();
-  });
+    // Block image download
+    await page.setRequestInterception(true);
+    page.on("request", (request) => {
+        if (request.resourceType() === "image") request.abort();
+        else if (request.resourceType === "font") request.abort();
+        // else if (request.resourceType() == 'stylesheet') request.abort();
+        // else if(request.resourceType == 'media') request.abort();
+        else request.continue();
+    });
 
-  // Set custom user-agent
-  const userAgent =
+    // Set custom user-agent
+    const userAgent =
     "Mozilla/5.0 (X11; Linux x86_64)" +
     "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/64.0.3282.39 Safari/537.36";
-  await page.setUserAgent(userAgent);
+    await page.setUserAgent(userAgent);
 
-  return page;
+    return page;
 };

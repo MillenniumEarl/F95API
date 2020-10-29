@@ -10,8 +10,8 @@ const selectorK = require("./scripts/constants/css-selector.js");
 const urlHelper = require("./scripts/url-helper.js");
 const scraper = require("./scripts/game-scraper.js");
 const {
-  prepareBrowser,
-  preparePage,
+    prepareBrowser,
+    preparePage,
 } = require("./scripts/puppeteer-helper.js");
 const searcher = require("./scripts/game-searcher.js");
 
@@ -32,10 +32,10 @@ module.exports.UserData = UserData;
  * @param {Boolean} value
  */
 module.exports.debug = function (value) {
-  shared.debug = value;
+    shared.debug = value;
 
-  // Configure logger
-  shared.logger.level = value ? "debug" : "warn";
+    // Configure logger
+    shared.logger.level = value ? "debug" : "warn";
 };
 /**
  * @public
@@ -43,7 +43,7 @@ module.exports.debug = function (value) {
  * @returns {String}
  */
 module.exports.isLogged = function () {
-  return shared.isLogged;
+    return shared.isLogged;
 };
 /**
  * @public
@@ -52,7 +52,7 @@ module.exports.isLogged = function () {
  * @returns {String}
  */
 module.exports.setIsolation = function (value) {
-  shared.isolation = value;
+    shared.isolation = value;
 };
 /**
  * @public
@@ -60,7 +60,7 @@ module.exports.setIsolation = function (value) {
  * @returns {String}
  */
 module.exports.getCacheDir = function () {
-  return shared.cacheDir;
+    return shared.cacheDir;
 };
 /**
  * @public
@@ -68,10 +68,10 @@ module.exports.getCacheDir = function () {
  * @returns {String}
  */
 module.exports.setCacheDir = function (value) {
-  shared.cacheDir = value;
+    shared.cacheDir = value;
 
-  // Create directory if it doesn't exist
-  if (!fs.existsSync(shared.cacheDir)) fs.mkdirSync(shared.cacheDir);
+    // Create directory if it doesn't exist
+    if (!fs.existsSync(shared.cacheDir)) fs.mkdirSync(shared.cacheDir);
 };
 /**
  * @public
@@ -79,7 +79,7 @@ module.exports.setCacheDir = function (value) {
  * @returns {String}
  */
 module.exports.setChromiumPath = function (value) {
-  shared.chromiumLocalPath = value;
+    shared.chromiumLocalPath = value;
 };
 //#endregion Export properties
 
@@ -98,41 +98,41 @@ const USER_NOT_LOGGED = "User not authenticated, unable to continue";
  * @returns {Promise<LoginResult>} Result of the operation
  */
 module.exports.login = async function (username, password) {
-  if (shared.isLogged) {
-    shared.logger.info("Already logged in");
-    const result = new LoginResult(true, "Already logged in");
-    return result;
-  }
+    if (shared.isLogged) {
+        shared.logger.info("Already logged in");
+        const result = new LoginResult(true, "Already logged in");
+        return result;
+    }
 
-  // If cookies are loaded, use them to authenticate
-  shared.cookies = loadCookies();
-  if (shared.cookies !== null) {
-    shared.logger.info("Valid session, no need to re-authenticate");
-    shared.isLogged = true;
-    const result = new LoginResult(true, "Logged with cookies");
-    return result;
-  }
-
-  // Else, log in throught browser
-  shared.logger.info(
-    "No saved sessions or expired session, login on the platform"
-  );
-
-  if (_browser === null && !shared.isolation) _browser = await prepareBrowser();
-  const browser = shared.isolation ? await prepareBrowser() : _browser;
-
-  const result = await loginF95(browser, username, password);
-  shared.isLogged = result.success;
-
-  if (result.success) {
-    // Reload cookies
+    // If cookies are loaded, use them to authenticate
     shared.cookies = loadCookies();
-    shared.logger.info("User logged in through the platform");
-  } else {
-    shared.logger.warn("Error during authentication: " + result.message);
-  }
-  if (shared.isolation) await browser.close();
-  return result;
+    if (shared.cookies !== null) {
+        shared.logger.info("Valid session, no need to re-authenticate");
+        shared.isLogged = true;
+        const result = new LoginResult(true, "Logged with cookies");
+        return result;
+    }
+
+    // Else, log in throught browser
+    shared.logger.info(
+        "No saved sessions or expired session, login on the platform"
+    );
+
+    if (_browser === null && !shared.isolation) _browser = await prepareBrowser();
+    const browser = shared.isolation ? await prepareBrowser() : _browser;
+
+    const result = await loginF95(browser, username, password);
+    shared.isLogged = result.success;
+
+    if (result.success) {
+    // Reload cookies
+        shared.cookies = loadCookies();
+        shared.logger.info("User logged in through the platform");
+    } else {
+        shared.logger.warn("Error during authentication: " + result.message);
+    }
+    if (shared.isolation) await browser.close();
+    return result;
 };
 /**
  * @public
@@ -142,47 +142,47 @@ module.exports.login = async function (username, password) {
  * @returns {Promise<Boolean>} Result of the operation
  */
 module.exports.loadF95BaseData = async function () {
-  if (!shared.isLogged || !shared.cookies) {
-    shared.logger.warn(USER_NOT_LOGGED);
-    return false;
-  }
+    if (!shared.isLogged || !shared.cookies) {
+        shared.logger.warn(USER_NOT_LOGGED);
+        return false;
+    }
 
-  shared.logger.info("Loading base data...");
+    shared.logger.info("Loading base data...");
 
-  // Prepare a new web page
-  if (_browser === null && !shared.isolation) _browser = await prepareBrowser();
-  const browser = shared.isolation ? await prepareBrowser() : _browser;
+    // Prepare a new web page
+    if (_browser === null && !shared.isolation) _browser = await prepareBrowser();
+    const browser = shared.isolation ? await prepareBrowser() : _browser;
 
-  const page = await preparePage(browser); // Set new isolated page
-  await page.setCookie(...shared.cookies); // Set cookies to avoid login
+    const page = await preparePage(browser); // Set new isolated page
+    await page.setCookie(...shared.cookies); // Set cookies to avoid login
 
-  // Go to latest update page and wait for it to load
-  await page.goto(urlK.F95_LATEST_UPDATES, {
-    waitUntil: shared.WAIT_STATEMENT,
-  });
+    // Go to latest update page and wait for it to load
+    await page.goto(urlK.F95_LATEST_UPDATES, {
+        waitUntil: shared.WAIT_STATEMENT,
+    });
 
-  // Obtain engines (disk/online)
-  await page.waitForSelector(selectorK.ENGINE_ID_SELECTOR);
-  shared.engines = await loadValuesFromLatestPage(
-    page,
-    shared.enginesCachePath,
-    selectorK.ENGINE_ID_SELECTOR,
-    "engines"
-  );
+    // Obtain engines (disk/online)
+    await page.waitForSelector(selectorK.ENGINE_ID_SELECTOR);
+    shared.engines = await loadValuesFromLatestPage(
+        page,
+        shared.enginesCachePath,
+        selectorK.ENGINE_ID_SELECTOR,
+        "engines"
+    );
 
-  // Obtain statuses (disk/online)
-  await page.waitForSelector(selectorK.STATUS_ID_SELECTOR);
-  shared.statuses = await loadValuesFromLatestPage(
-    page,
-    shared.statusesCachePath,
-    selectorK.STATUS_ID_SELECTOR,
-    "statuses"
-  );
+    // Obtain statuses (disk/online)
+    await page.waitForSelector(selectorK.STATUS_ID_SELECTOR);
+    shared.statuses = await loadValuesFromLatestPage(
+        page,
+        shared.statusesCachePath,
+        selectorK.STATUS_ID_SELECTOR,
+        "statuses"
+    );
 
-  await page.close();
-  if (shared.isolation) await browser.close();
-  shared.logger.info("Base data loaded");
-  return true;
+    await page.close();
+    if (shared.isolation) await browser.close();
+    shared.logger.info("Base data loaded");
+    return true;
 };
 /**
  * @public
@@ -192,25 +192,25 @@ module.exports.loadF95BaseData = async function () {
  * @returns {Promise<Boolean>} true if an update is available, false otherwise
  */
 module.exports.chekIfGameHasUpdate = async function (info) {
-  if (!shared.isLogged || !shared.cookies) {
-    shared.logger.warn(USER_NOT_LOGGED);
-    return false;
-  }
+    if (!shared.isLogged || !shared.cookies) {
+        shared.logger.warn(USER_NOT_LOGGED);
+        return false;
+    }
 
-  // F95 change URL at every game update,
-  // so if the URL is different an update is available
-  const exists = await urlHelper.urlExists(info.f95url, true);
-  if (!exists) return true;
+    // F95 change URL at every game update,
+    // so if the URL is different an update is available
+    const exists = await urlHelper.urlExists(info.f95url, true);
+    if (!exists) return true;
 
-  // Parse version from title
-  if (_browser === null && !shared.isolation) _browser = await prepareBrowser();
-  const browser = shared.isolation ? await prepareBrowser() : _browser;
+    // Parse version from title
+    if (_browser === null && !shared.isolation) _browser = await prepareBrowser();
+    const browser = shared.isolation ? await prepareBrowser() : _browser;
 
-  const onlineVersion = await scraper.getGameVersionFromTitle(browser, info);
+    const onlineVersion = await scraper.getGameVersionFromTitle(browser, info);
 
-  if (shared.isolation) await browser.close();
+    if (shared.isolation) await browser.close();
 
-  return onlineVersion.toUpperCase() !== info.version.toUpperCase();
+    return onlineVersion.toUpperCase() !== info.version.toUpperCase();
 };
 /**
  * @public
@@ -222,36 +222,36 @@ module.exports.chekIfGameHasUpdate = async function (info) {
  * an identified game (in the case of homonymy of titles)
  */
 module.exports.getGameData = async function (name, includeMods) {
-  if (!shared.isLogged || !shared.cookies) {
-    shared.logger.warn(USER_NOT_LOGGED);
-    return null;
-  }
+    if (!shared.isLogged || !shared.cookies) {
+        shared.logger.warn(USER_NOT_LOGGED);
+        return null;
+    }
 
-  // Gets the search results of the game being searched for
-  if (_browser === null && !shared.isolation) _browser = await prepareBrowser();
-  const browser = shared.isolation ? await prepareBrowser() : _browser;
-  const urlList = await searcher.getSearchGameResults(browser, name);
+    // Gets the search results of the game being searched for
+    if (_browser === null && !shared.isolation) _browser = await prepareBrowser();
+    const browser = shared.isolation ? await prepareBrowser() : _browser;
+    const urlList = await searcher.getSearchGameResults(browser, name);
 
-  // Process previous partial results
-  const promiseList = [];
-  for (const url of urlList) {
+    // Process previous partial results
+    const promiseList = [];
+    for (const url of urlList) {
     // Start looking for information
-    promiseList.push(scraper.getGameInfo(browser, url));
-  }
+        promiseList.push(scraper.getGameInfo(browser, url));
+    }
 
-  // Filter for mods
-  const result = [];
-  for (const info of await Promise.all(promiseList)) {
+    // Filter for mods
+    const result = [];
+    for (const info of await Promise.all(promiseList)) {
     // Ignore empty results
-    if (!info) continue;
-    // Skip mods if not required
-    if (info.isMod && !includeMods) continue;
-    // Else save data
-    result.push(info);
-  }
+        if (!info) continue;
+        // Skip mods if not required
+        if (info.isMod && !includeMods) continue;
+        // Else save data
+        result.push(info);
+    }
 
-  if (shared.isolation) await browser.close();
-  return result;
+    if (shared.isolation) await browser.close();
+    return result;
 };
 /**
  * @public
@@ -261,26 +261,26 @@ module.exports.getGameData = async function (name, includeMods) {
  * @returns {Promise<GameInfo>} Information about the game. If no game was found, null is returned
  */
 module.exports.getGameDataFromURL = async function (url) {
-  if (!shared.isLogged || !shared.cookies) {
-    shared.logger.warn(USER_NOT_LOGGED);
-    return null;
-  }
+    if (!shared.isLogged || !shared.cookies) {
+        shared.logger.warn(USER_NOT_LOGGED);
+        return null;
+    }
 
-  // Check URL
-  const exists = await urlHelper.urlExists(url);
-  if (!exists) throw new URIError(url + " is not a valid URL");
-  if (!urlHelper.isF95URL(url))
-    throw new Error(url + " is not a valid F95Zone URL");
+    // Check URL
+    const exists = await urlHelper.urlExists(url);
+    if (!exists) throw new URIError(url + " is not a valid URL");
+    if (!urlHelper.isF95URL(url))
+        throw new Error(url + " is not a valid F95Zone URL");
 
-  // Gets the search results of the game being searched for
-  if (_browser === null && !shared.isolation) _browser = await prepareBrowser();
-  const browser = shared.isolation ? await prepareBrowser() : _browser;
+    // Gets the search results of the game being searched for
+    if (_browser === null && !shared.isolation) _browser = await prepareBrowser();
+    const browser = shared.isolation ? await prepareBrowser() : _browser;
 
-  // Get game data
-  const result = await scraper.getGameInfo(browser, url);
+    // Get game data
+    const result = await scraper.getGameInfo(browser, url);
 
-  if (shared.isolation) await browser.close();
-  return result;
+    if (shared.isolation) await browser.close();
+    return result;
 };
 /**
  * @public
@@ -289,47 +289,47 @@ module.exports.getGameDataFromURL = async function (url) {
  * @returns {Promise<UserData>} Data of the user currently logged in
  */
 module.exports.getUserData = async function () {
-  if (!shared.isLogged || !shared.cookies) {
-    shared.logger.warn(USER_NOT_LOGGED);
-    return null;
-  }
+    if (!shared.isLogged || !shared.cookies) {
+        shared.logger.warn(USER_NOT_LOGGED);
+        return null;
+    }
 
-  // Prepare a new web page
-  if (_browser === null && !shared.isolation) _browser = await prepareBrowser();
-  const browser = shared.isolation ? await prepareBrowser() : _browser;
-  const page = await preparePage(browser); // Set new isolated page
-  await page.setCookie(...shared.cookies); // Set cookies to avoid login
-  await page.goto(urlK.F95_BASE_URL); // Go to base page
+    // Prepare a new web page
+    if (_browser === null && !shared.isolation) _browser = await prepareBrowser();
+    const browser = shared.isolation ? await prepareBrowser() : _browser;
+    const page = await preparePage(browser); // Set new isolated page
+    await page.setCookie(...shared.cookies); // Set cookies to avoid login
+    await page.goto(urlK.F95_BASE_URL); // Go to base page
 
-  // Explicitly wait for the required items to load
-  await Promise.all([
-    page.waitForSelector(selectorK.USERNAME_ELEMENT),
-    page.waitForSelector(selectorK.AVATAR_PIC),
-  ]);
+    // Explicitly wait for the required items to load
+    await Promise.all([
+        page.waitForSelector(selectorK.USERNAME_ELEMENT),
+        page.waitForSelector(selectorK.AVATAR_PIC),
+    ]);
 
-  const threads = getUserWatchedGameThreads(browser);
+    const threads = getUserWatchedGameThreads(browser);
 
-  const username = await page.evaluate(
+    const username = await page.evaluate(
     /* istanbul ignore next */ (selector) =>
-      document.querySelector(selector).innerText,
-    selectorK.USERNAME_ELEMENT
-  );
+            document.querySelector(selector).innerText,
+        selectorK.USERNAME_ELEMENT
+    );
 
-  const avatarSrc = await page.evaluate(
+    const avatarSrc = await page.evaluate(
     /* istanbul ignore next */ (selector) =>
-      document.querySelector(selector).getAttribute("src"),
-    selectorK.AVATAR_PIC
-  );
+            document.querySelector(selector).getAttribute("src"),
+        selectorK.AVATAR_PIC
+    );
 
-  const ud = new UserData();
-  ud.username = username;
-  ud.avatarSrc = urlHelper.isStringAValidURL(avatarSrc) ? avatarSrc : null;
-  ud.watchedThreads = await threads;
+    const ud = new UserData();
+    ud.username = username;
+    ud.avatarSrc = urlHelper.isStringAValidURL(avatarSrc) ? avatarSrc : null;
+    ud.watchedThreads = await threads;
 
-  await page.close();
-  if (shared.isolation) await browser.close();
+    await page.close();
+    if (shared.isolation) await browser.close();
 
-  return ud;
+    return ud;
 };
 /**
  * @public
@@ -337,19 +337,19 @@ module.exports.getUserData = async function () {
  * You **must** be logged in to the portal before calling this method.
  */
 module.exports.logout = async function () {
-  if (!shared.isLogged || !shared.cookies) {
-    shared.logger.warn(USER_NOT_LOGGED);
-    return;
-  }
+    if (!shared.isLogged || !shared.cookies) {
+        shared.logger.warn(USER_NOT_LOGGED);
+        return;
+    }
 
-  // Logout
-  shared.isLogged = false;
+    // Logout
+    shared.isLogged = false;
 
-  // Gracefully close shared browser
-  if (!shared.isolation && _browser !== null) {
-    await _browser.close();
-    _browser = null;
-  }
+    // Gracefully close shared browser
+    if (!shared.isolation && _browser !== null) {
+        await _browser.close();
+        _browser = null;
+    }
 };
 //#endregion
 
@@ -363,20 +363,20 @@ module.exports.logout = async function () {
  * @return {object[]} List of dictionaries or null if cookies don't exist
  */
 function loadCookies() {
-  // Check the existence of the cookie file
-  if (fs.existsSync(shared.cookiesCachePath)) {
+    // Check the existence of the cookie file
+    if (fs.existsSync(shared.cookiesCachePath)) {
     // Read cookies
-    const cookiesJSON = fs.readFileSync(shared.cookiesCachePath);
-    const cookies = JSON.parse(cookiesJSON);
+        const cookiesJSON = fs.readFileSync(shared.cookiesCachePath);
+        const cookies = JSON.parse(cookiesJSON);
 
-    // Check if the cookies have expired
-    for (const cookie of cookies) {
-      if (isCookieExpired(cookie)) return null;
-    }
+        // Check if the cookies have expired
+        for (const cookie of cookies) {
+            if (isCookieExpired(cookie)) return null;
+        }
 
-    // Cookies loaded and verified
-    return cookies;
-  } else return null;
+        // Cookies loaded and verified
+        return cookies;
+    } else return null;
 }
 /**
  * @private
@@ -385,25 +385,25 @@ function loadCookies() {
  * @returns {Boolean} true if the cookie has expired, false otherwise
  */
 function isCookieExpired(cookie) {
-  // Local variables
-  let expiredCookies = false;
+    // Local variables
+    let expiredCookies = false;
 
-  // Ignore cookies that never expire
-  const expirationUnixTimestamp = cookie.expire;
+    // Ignore cookies that never expire
+    const expirationUnixTimestamp = cookie.expire;
 
-  if (expirationUnixTimestamp !== "-1") {
+    if (expirationUnixTimestamp !== "-1") {
     // Convert UNIX epoch timestamp to normal Date
-    const expirationDate = new Date(expirationUnixTimestamp * 1000);
+        const expirationDate = new Date(expirationUnixTimestamp * 1000);
 
-    if (expirationDate < Date.now()) {
-      shared.logger.warn(
-        "Cookie " + cookie.name + " expired, you need to re-authenticate"
-      );
-      expiredCookies = true;
+        if (expirationDate < Date.now()) {
+            shared.logger.warn(
+                "Cookie " + cookie.name + " expired, you need to re-authenticate"
+            );
+            expiredCookies = true;
+        }
     }
-  }
 
-  return expiredCookies;
+    return expiredCookies;
 }
 //#endregion Cookies functions
 
@@ -420,27 +420,27 @@ function isCookieExpired(cookie) {
  * @returns {Promise<String[]>} List of required values in uppercase
  */
 async function loadValuesFromLatestPage(
-  page,
-  path,
-  selector,
-  elementRequested
-) {
-  // If the values already exist they are loaded from disk without having to connect to F95
-  shared.logger.info("Load " + elementRequested + " from disk...");
-  if (fs.existsSync(path)) {
-    const valueJSON = fs.readFileSync(path);
-    return JSON.parse(valueJSON);
-  }
-
-  // Otherwise, connect and download the data from the portal
-  shared.logger.info("No " + elementRequested + " cached, downloading...");
-  const values = await getValuesFromLatestPage(
     page,
+    path,
     selector,
-    "Getting " + elementRequested + " from page"
-  );
-  fs.writeFileSync(path, JSON.stringify(values));
-  return values;
+    elementRequested
+) {
+    // If the values already exist they are loaded from disk without having to connect to F95
+    shared.logger.info("Load " + elementRequested + " from disk...");
+    if (fs.existsSync(path)) {
+        const valueJSON = fs.readFileSync(path);
+        return JSON.parse(valueJSON);
+    }
+
+    // Otherwise, connect and download the data from the portal
+    shared.logger.info("No " + elementRequested + " cached, downloading...");
+    const values = await getValuesFromLatestPage(
+        page,
+        selector,
+        "Getting " + elementRequested + " from page"
+    );
+    fs.writeFileSync(path, JSON.stringify(values));
+    return values;
 }
 /**
  * @private
@@ -453,20 +453,20 @@ async function loadValuesFromLatestPage(
  * @return {Promise<String[]>} List of uppercase strings indicating the textual values of the elements identified by the selector
  */
 async function getValuesFromLatestPage(page, selector, logMessage) {
-  shared.logger.info(logMessage);
+    shared.logger.info(logMessage);
 
-  const result = [];
-  const elements = await page.$$(selector);
+    const result = [];
+    const elements = await page.$$(selector);
 
-  for (const element of elements) {
-    const text = await element.evaluate(
-      /* istanbul ignore next */ (e) => e.innerText
-    );
+    for (const element of elements) {
+        const text = await element.evaluate(
+            /* istanbul ignore next */ (e) => e.innerText
+        );
 
-    // Save as upper text for better match if used in query
-    result.push(text.toUpperCase());
-  }
-  return result;
+        // Save as upper text for better match if used in query
+        result.push(text.toUpperCase());
+    }
+    return result;
 }
 //#endregion
 
@@ -480,66 +480,66 @@ async function getValuesFromLatestPage(page, selector, logMessage) {
  * @returns {Promise<LoginResult>} Result of the operation
  */
 async function loginF95(browser, username, password) {
-  const page = await preparePage(browser); // Set new isolated page
-  await page.goto(urlK.F95_LOGIN_URL); // Go to login page
+    const page = await preparePage(browser); // Set new isolated page
+    await page.goto(urlK.F95_LOGIN_URL); // Go to login page
 
-  // Explicitly wait for the required items to load
-  await Promise.all([
-    page.waitForSelector(selectorK.USERNAME_INPUT),
-    page.waitForSelector(selectorK.PASSWORD_INPUT),
-    page.waitForSelector(selectorK.LOGIN_BUTTON),
-  ]);
+    // Explicitly wait for the required items to load
+    await Promise.all([
+        page.waitForSelector(selectorK.USERNAME_INPUT),
+        page.waitForSelector(selectorK.PASSWORD_INPUT),
+        page.waitForSelector(selectorK.LOGIN_BUTTON),
+    ]);
 
-  await page.type(selectorK.USERNAME_INPUT, username); // Insert username
-  await page.type(selectorK.PASSWORD_INPUT, password); // Insert password
-  await Promise.all([
-    page.click(selectorK.LOGIN_BUTTON), // Click on the login button
-    page.waitForNavigation({
-      waitUntil: shared.WAIT_STATEMENT,
-    }), // Wait for page to load
-  ]);
+    await page.type(selectorK.USERNAME_INPUT, username); // Insert username
+    await page.type(selectorK.PASSWORD_INPUT, password); // Insert password
+    await Promise.all([
+        page.click(selectorK.LOGIN_BUTTON), // Click on the login button
+        page.waitForNavigation({
+            waitUntil: shared.WAIT_STATEMENT,
+        }), // Wait for page to load
+    ]);
 
-  // Prepare result
-  let message = "";
+    // Prepare result
+    let message = "";
 
-  // Check if the user is logged in
-  const success = await page.evaluate(
+    // Check if the user is logged in
+    const success = await page.evaluate(
     /* istanbul ignore next */ (selector) =>
-      document.querySelector(selector) !== null,
-    selectorK.AVATAR_INFO
-  );
-
-  const errorMessageExists = await page.evaluate(
-    /* istanbul ignore next */
-    (selector) => document.querySelector(selector) !== null,
-    selectorK.LOGIN_MESSAGE_ERROR
-  );
-
-  // Save cookies to avoid re-auth
-  if (success) {
-    const c = await page.cookies();
-    fs.writeFileSync(shared.cookiesCachePath, JSON.stringify(c));
-    message = "Authentication successful";
-  } else if (errorMessageExists) {
-    const errorMessage = await page.evaluate(
-      /* istanbul ignore next */ (selector) =>
-        document.querySelector(selector).innerText,
-      selectorK.LOGIN_MESSAGE_ERROR
+            document.querySelector(selector) !== null,
+        selectorK.AVATAR_INFO
     );
 
-    if (errorMessage === "Incorrect password. Please try again.") {
-      message = "Incorrect password";
-    } else if (
-      errorMessage ===
-      "The requested user '" + username + "' could not be found."
-    ) {
-      // The escaped quotes are important!
-      message = "Incorrect username";
-    } else message = errorMessage;
-  } else message = "Unknown error";
+    const errorMessageExists = await page.evaluate(
+    /* istanbul ignore next */
+        (selector) => document.querySelector(selector) !== null,
+        selectorK.LOGIN_MESSAGE_ERROR
+    );
 
-  await page.close(); // Close the page
-  return new LoginResult(success, message);
+    // Save cookies to avoid re-auth
+    if (success) {
+        const c = await page.cookies();
+        fs.writeFileSync(shared.cookiesCachePath, JSON.stringify(c));
+        message = "Authentication successful";
+    } else if (errorMessageExists) {
+        const errorMessage = await page.evaluate(
+            /* istanbul ignore next */ (selector) =>
+                document.querySelector(selector).innerText,
+            selectorK.LOGIN_MESSAGE_ERROR
+        );
+
+        if (errorMessage === "Incorrect password. Please try again.") {
+            message = "Incorrect password";
+        } else if (
+            errorMessage ===
+      "The requested user '" + username + "' could not be found."
+        ) {
+            // The escaped quotes are important!
+            message = "Incorrect username";
+        } else message = errorMessage;
+    } else message = "Unknown error";
+
+    await page.close(); // Close the page
+    return new LoginResult(success, message);
 }
 /**
  * @private
@@ -548,61 +548,61 @@ async function loginF95(browser, username, password) {
  * @returns {Promise<String[]>} URL list
  */
 async function getUserWatchedGameThreads(browser) {
-  const page = await preparePage(browser); // Set new isolated page
-  await page.goto(urlK.F95_WATCHED_THREADS); // Go to the thread page
+    const page = await preparePage(browser); // Set new isolated page
+    await page.goto(urlK.F95_WATCHED_THREADS); // Go to the thread page
 
-  // Explicitly wait for the required items to load
-  await page.waitForSelector(selectorK.WATCHED_THREAD_FILTER_POPUP_BUTTON);
+    // Explicitly wait for the required items to load
+    await page.waitForSelector(selectorK.WATCHED_THREAD_FILTER_POPUP_BUTTON);
 
-  // Show the popup
-  await Promise.all([
-    page.click(selectorK.WATCHED_THREAD_FILTER_POPUP_BUTTON),
-    page.waitForSelector(selectorK.UNREAD_THREAD_CHECKBOX),
-    page.waitForSelector(selectorK.ONLY_GAMES_THREAD_OPTION),
-    page.waitForSelector(selectorK.FILTER_THREADS_BUTTON),
-  ]);
+    // Show the popup
+    await Promise.all([
+        page.click(selectorK.WATCHED_THREAD_FILTER_POPUP_BUTTON),
+        page.waitForSelector(selectorK.UNREAD_THREAD_CHECKBOX),
+        page.waitForSelector(selectorK.ONLY_GAMES_THREAD_OPTION),
+        page.waitForSelector(selectorK.FILTER_THREADS_BUTTON),
+    ]);
 
-  // Set the filters
-  await page.evaluate(
+    // Set the filters
+    await page.evaluate(
     /* istanbul ignore next */ (selector) =>
-      document.querySelector(selector).removeAttribute("checked"),
-    selectorK.UNREAD_THREAD_CHECKBOX
-  ); // Also read the threads already read
+            document.querySelector(selector).removeAttribute("checked"),
+        selectorK.UNREAD_THREAD_CHECKBOX
+    ); // Also read the threads already read
 
-  // Filter the threads
-  await page.click(selectorK.ONLY_GAMES_THREAD_OPTION);
-  await page.click(selectorK.FILTER_THREADS_BUTTON);
-  await page.waitForSelector(selectorK.WATCHED_THREAD_URLS);
+    // Filter the threads
+    await page.click(selectorK.ONLY_GAMES_THREAD_OPTION);
+    await page.click(selectorK.FILTER_THREADS_BUTTON);
+    await page.waitForSelector(selectorK.WATCHED_THREAD_URLS);
 
-  // Get the threads urls
-  const urls = [];
-  let nextPageExists = false;
-  do {
+    // Get the threads urls
+    const urls = [];
+    let nextPageExists = false;
+    do {
     // Get all the URLs
-    for (const handle of await page.$$(selectorK.WATCHED_THREAD_URLS)) {
-      const src = await page.evaluate(
-        /* istanbul ignore next */ (element) => element.href,
-        handle
-      );
-      // If 'unread' is left, it will redirect to the last unread post
-      const url = src.replace("/unread", "");
-      urls.push(url);
-    }
+        for (const handle of await page.$$(selectorK.WATCHED_THREAD_URLS)) {
+            const src = await page.evaluate(
+                /* istanbul ignore next */ (element) => element.href,
+                handle
+            );
+            // If 'unread' is left, it will redirect to the last unread post
+            const url = src.replace("/unread", "");
+            urls.push(url);
+        }
 
-    nextPageExists = await page.evaluate(
-      /* istanbul ignore next */ (selector) => document.querySelector(selector),
-      selectorK.WATCHED_THREAD_NEXT_PAGE
-    );
+        nextPageExists = await page.evaluate(
+            /* istanbul ignore next */ (selector) => document.querySelector(selector),
+            selectorK.WATCHED_THREAD_NEXT_PAGE
+        );
 
-    // Click to next page
-    if (nextPageExists) {
-      await page.click(selectorK.WATCHED_THREAD_NEXT_PAGE);
-      await page.waitForSelector(selectorK.WATCHED_THREAD_URLS);
-    }
-  } while (nextPageExists);
+        // Click to next page
+        if (nextPageExists) {
+            await page.click(selectorK.WATCHED_THREAD_NEXT_PAGE);
+            await page.waitForSelector(selectorK.WATCHED_THREAD_URLS);
+        }
+    } while (nextPageExists);
 
-  await page.close();
-  return urls;
+    await page.close();
+    return urls;
 }
 //#endregion User
 
