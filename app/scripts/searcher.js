@@ -5,20 +5,21 @@ const cheerio = require("cheerio");
 
 // Modules from file
 const { fetchHTML } = require("./network-helper.js");
-const shared = require("./scripts/shared.js");
+const shared = require("./shared.js");
 const f95Selector = require("./constants/css-selector.js");
 
+//#region Public methods
 /**
  * @protected
  * Search for a game on F95Zone and return a list of URLs, one for each search result.
  * @param {String} name Game name
  * @returns {Promise<String[]>} URLs of results
  */
-module.exports = async function searchGame(name) {
+module.exports.searchGame = async function (name) {
     shared.logger.info(`Searching games with name ${name}`);
 
     // Replace the whitespaces with +
-    const searchName = name.replaceAll(" ", "+").toUpperCase();
+    const searchName = encodeURIComponent(name.toUpperCase());
     
     // Prepare the URL (only title, search in the "Games" section, order by relevance)
     const url = `https://f95zone.to/search/83456043/?q=${searchName}&t=post&c[child_nodes]=1&c[nodes][0]=2&c[title_only]=1&o=relevance`;
@@ -33,10 +34,11 @@ module.exports = async function searchGame(name) {
  * @param {String} name Mod name
  * @returns {Promise<String[]>} URLs of results
  */
-module.exports = async function searchMod(name) {
+module.exports.searchMod = async function (name) {
     shared.logger.info(`Searching mods with name ${name}`);
+    
     // Replace the whitespaces with +
-    const searchName = name.replaceAll(" ", "+").toUpperCase();
+    const searchName = encodeURIComponent(name.toUpperCase());
 
     // Prepare the URL (only title, search in the "Mods" section, order by relevance)
     const url = `https://f95zone.to/search/83459796/?q=${searchName}&t=post&c[child_nodes]=1&c[nodes][0]=41&c[title_only]=1&o=relevance`;
@@ -44,6 +46,7 @@ module.exports = async function searchMod(name) {
     // Fetch and parse the result URLs
     return await fetchResultURLs(url);
 };
+//#endregion Public methods
 
 //#region Private methods
 /**
