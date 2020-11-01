@@ -21,8 +21,9 @@ async function searchKOD() {
     await creds.fetchToken();
     console.log(`Token obtained: ${creds.token}`);
 
-    const html = await networkHelper.fetchHTMLWithAuth("https://f95zone.to/login/login", creds);
-    console.log(html);
+    console.log("Authenticating...");
+    const authenticated = await networkHelper.autenticate(creds);
+    console.log(`Authentication result: ${authenticated}`);
 
     console.log("Searching KOD...");
     const urls = await searcher.searchGame("kingdom of deception", creds);

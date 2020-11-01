@@ -32,10 +32,12 @@
   },
   "dependencies": {
     "axios": "^0.21.0",
+    "axios-cookiejar-support": "^1.0.1",
     "cheerio": "^1.0.0-rc.3",
     "ky": "^0.24.0",
     "ky-universal": "^0.8.2",
-    "log4js": "^6.3.0"
+    "log4js": "^6.3.0",
+    "tough-cookie": "^4.0.0"
   },
   "devDependencies": {
     "babel-eslint": "^10.1.0",

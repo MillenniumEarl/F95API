@@ -75,7 +75,7 @@ function extractInfoFromTitle(body) {
 
     // From the title we can extract: Name, author and version
     // TITLE [VERSION] [AUTHOR]
-    const matches = title.match(/\[(.*?)\]/);
+    const matches = title.match(/\[(.*?)\]/g);
     const endIndex = title.indexOf("["); // The open bracket of the version
     const name = title.substring(0, endIndex).trim();
     const version = matches[0].trim();

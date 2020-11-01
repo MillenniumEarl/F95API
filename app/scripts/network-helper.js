@@ -7,7 +7,8 @@ const ky = require("ky-universal").create({
     throwHttpErrors: false,
 });
 const cheerio = require("cheerio");
-const qs = require("querystring");
+const axiosCookieJarSupport = require("axios-cookiejar-support").default;
+const tough = require("tough-cookie");
 
 // Modules from file
 const shared = require("./shared.js");
@@ -17,6 +18,8 @@ const f95url = require("./constants/url.js");
 const userAgent =
     "Mozilla/5.0 (X11; Linux x86_64)" +
     "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/64.0.3282.39 Safari/537.36";
+axiosCookieJarSupport(axios);
+const cookieJar = new tough.CookieJar();
 
 /**
  * @protected
@@ -30,6 +33,8 @@ module.exports.fetchHTML = async function (url) {
             headers: {
                 "User-Agent": userAgent
             },
+            withCredentials: true,
+            jar: cookieJar
         });
         return response.data;
     } catch (e) {
@@ -40,50 +45,44 @@ module.exports.fetchHTML = async function (url) {
 
 /**
  * @protected
- * Gets the HTML code of a login-protected page.
- * @param {String} url URL to fetch
+ * It authenticates to the platform using the credentials 
+ * and token obtained previously. Save cookies on your 
+ * device after authentication.
  * @param {Credentials} credentials Platform access credentials
- * @returns {Promise<String>} HTML code or `null` if an error arise
+ * @returns {Promise<Boolean>} Result of the operation
  */
-module.exports.fetchHTMLWithAuth = async function (url, credentials) {
-    shared.logger.trace(`Fetching ${url} with user ${credentials.username}`);
+module.exports.autenticate = async function (credentials) {
+    shared.logger.info(`Authenticating with user ${credentials.username}`);
+    if (!credentials.token) throw new Error(`Invalid token for auth: ${credentials.token}`);
 
-    const data = {
-        "login": credentials.username,
-        "url": "",
-        "password": credentials.password,
-        "password_confirm": "",
-        "additional_security": "",
-        "remember": "1",
-        "_xfRedirect": "https://f95zone.to/",
-        "website_code": "",
-        "_xfToken": credentials.token,
-    };
+    // Prepare the parameters to send to the platform to authenticate
+    const params = new URLSearchParams();
+    params.append("login", credentials.username);
+    params.append("url", "");
+    params.append("password", credentials.password);
+    params.append("password_confirm", "");
+    params.append("additional_security", "");
+    params.append("remember", "1");
+    params.append("_xfRedirect", "https://f95zone.to/");
+    params.append("website_code", "");
+    params.append("_xfToken", credentials.token);
 
     const config = {
         headers: {
             "User-Agent": userAgent,
-            "Content-Type": "application/x-www-form-urlencoded"
-        }
+            "Content-Type": "application/x-www-form-urlencoded",
+            "Connection": "keep-alive"
+        },
+        withCredentials: true,
+        jar: cookieJar // Retrieve the stored cookies! What a pain to understand that this is a MUST!
     };
 
     try {
-        console.log(qs.stringify(data));
-        const response = await axios({
-            method: "post",
-            url: url,
-            data: qs.stringify(data),
-            headers: {
-                "user-agent": userAgent,
-                "content-type": "application/x-www-form-urlencoded;charset=utf-8"
-            },
-            withCredentials: true
-        });
-        //const response = await axios.post(url, qs.stringify(data), config);
-        return response.data;
+        await axios.post(f95url.F95_LOGIN_URL, params, config);
+        return true;
     } catch (e) {
-        shared.logger.error(`Error ${e.message} occurred while trying to fetch ${url}`);
-        return null;
+        shared.logger.error(`Error ${e.message} occurred while authenticating to ${f95url.F95_LOGIN_URL}`);
+        return false;
     }
 };
 
@@ -93,12 +92,17 @@ module.exports.fetchHTMLWithAuth = async function (url, credentials) {
  */
 module.exports.getF95Token = async function() {
     try {
-        // Fetch the response of the platform
-        const response = await axios.get(f95url.F95_LOGIN_URL, {
+        const config = {
             headers: {
-                "User-Agent": userAgent
+                "User-Agent": userAgent,
+                "Connection": "keep-alive"
             },
-        });
+            withCredentials: true,
+            jar: cookieJar // Used to store the token in the PC
+        };
+
+        // Fetch the response of the platform
+        const response = await axios.get(f95url.F95_LOGIN_URL, config);
 
         // The response is a HTML page, we need to find the <input> with name "_xfToken"
         const $ = cheerio.load(response.data);
