@@ -59,12 +59,6 @@ module.exports.autenticate = async function (credentials) {
     shared.logger.info(`Authenticating with user ${credentials.username}`);
     if (!credentials.token) throw new Error(`Invalid token for auth: ${credentials.token}`);
 
-    // If the user is already logged, return
-    if(shared.isLogged) {
-        shared.logger.warn(`${credentials.username} already authenticated`);
-        return new LoginResult(true, "Already authenticated");
-    }
-
     // Secure the URL
     const secureURL = exports.enforceHttpsUrl(f95url.F95_LOGIN_URL);
 
@@ -91,7 +85,6 @@ module.exports.autenticate = async function (credentials) {
         const errorMessage = $("body").find(f95selector.LOGIN_MESSAGE_ERROR).text().replace(/\n/g, "");
 
         // Return the result of the authentication
-        shared.isLogged = errorMessage === "";
         if (errorMessage === "") return new LoginResult(true, "Authentication successful");
         else return new LoginResult(false, errorMessage);
     } catch (e) {
