@@ -6,12 +6,17 @@ const _ = require("lodash");
 const ky = require("ky-universal").create({
     throwHttpErrors: false,
 });
+const cheerio = require("cheerio");
+const qs = require("querystring");
 
 // Modules from file
 const shared = require("./shared.js");
-const {
-    F95_BASE_URL
-} = require("./constants/url.js");
+const f95url = require("./constants/url.js");
+
+// Global variables
+const userAgent =
+    "Mozilla/5.0 (X11; Linux x86_64)" +
+    "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/64.0.3282.39 Safari/537.36";
 
 /**
  * @protected
@@ -20,19 +25,87 @@ const {
  * @returns {Promise<String>} HTML code or `null` if an error arise
  */
 module.exports.fetchHTML = async function (url) {
-    const userAgent =
-        "Mozilla/5.0 (X11; Linux x86_64)" +
-        "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/64.0.3282.39 Safari/537.36";
-
     try {
         const response = await axios.get(url, {
             headers: {
                 "User-Agent": userAgent
-            }
+            },
         });
         return response.data;
     } catch (e) {
         shared.logger.error(`Error ${e.message} occurred while trying to fetch ${url}`);
+        return null;
+    }
+};
+
+/**
+ * @protected
+ * Gets the HTML code of a login-protected page.
+ * @param {String} url URL to fetch
+ * @param {Credentials} credentials Platform access credentials
+ * @returns {Promise<String>} HTML code or `null` if an error arise
+ */
+module.exports.fetchHTMLWithAuth = async function (url, credentials) {
+    shared.logger.trace(`Fetching ${url} with user ${credentials.username}`);
+
+    const data = {
+        "login": credentials.username,
+        "url": "",
+        "password": credentials.password,
+        "password_confirm": "",
+        "additional_security": "",
+        "remember": "1",
+        "_xfRedirect": "https://f95zone.to/",
+        "website_code": "",
+        "_xfToken": credentials.token,
+    };
+
+    const config = {
+        headers: {
+            "User-Agent": userAgent,
+            "Content-Type": "application/x-www-form-urlencoded"
+        }
+    };
+
+    try {
+        console.log(qs.stringify(data));
+        const response = await axios({
+            method: "post",
+            url: url,
+            data: qs.stringify(data),
+            headers: {
+                "user-agent": userAgent,
+                "content-type": "application/x-www-form-urlencoded;charset=utf-8"
+            },
+            withCredentials: true
+        });
+        //const response = await axios.post(url, qs.stringify(data), config);
+        return response.data;
+    } catch (e) {
+        shared.logger.error(`Error ${e.message} occurred while trying to fetch ${url}`);
+        return null;
+    }
+};
+
+/**
+ * Obtain the token used to authenticate the user to the platform.
+ * @returns {Promise<String>} Token or `null` if an error arise
+ */
+module.exports.getF95Token = async function() {
+    try {
+        // Fetch the response of the platform
+        const response = await axios.get(f95url.F95_LOGIN_URL, {
+            headers: {
+                "User-Agent": userAgent
+            },
+        });
+
+        // The response is a HTML page, we need to find the <input> with name "_xfToken"
+        const $ = cheerio.load(response.data);
+        const token = $("body").find("input[name='_xfToken']").attr("value");
+        return token;
+    } catch (e) {
+        shared.logger.error(`Error ${e.message} occurred while trying to fetch F95 token`);
         return null;
     }
 };
@@ -55,7 +128,7 @@ module.exports.enforceHttpsUrl = function (url) {
  * @returns {Boolean} true if the url belongs to the domain, false otherwise
  */
 module.exports.isF95URL = function (url) {
-    if (url.toString().startsWith(F95_BASE_URL)) return true;
+    if (url.toString().startsWith(f95url.F95_BASE_URL)) return true;
     else return false;
 };
 

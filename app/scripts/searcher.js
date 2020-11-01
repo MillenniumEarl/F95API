@@ -4,7 +4,7 @@
 const cheerio = require("cheerio");
 
 // Modules from file
-const { fetchHTML } = require("./network-helper.js");
+const { fetchHTMLWithAuth } = require("./network-helper.js");
 const shared = require("./shared.js");
 const f95Selector = require("./constants/css-selector.js");
 
@@ -13,9 +13,10 @@ const f95Selector = require("./constants/css-selector.js");
  * @protected
  * Search for a game on F95Zone and return a list of URLs, one for each search result.
  * @param {String} name Game name
+ * @param {Credentials} credentials Platform access credentials
  * @returns {Promise<String[]>} URLs of results
  */
-module.exports.searchGame = async function (name) {
+module.exports.searchGame = async function (name, credentials) {
     shared.logger.info(`Searching games with name ${name}`);
 
     // Replace the whitespaces with +
@@ -25,16 +26,17 @@ module.exports.searchGame = async function (name) {
     const url = `https://f95zone.to/search/83456043/?q=${searchName}&t=post&c[child_nodes]=1&c[nodes][0]=2&c[title_only]=1&o=relevance`;
 
     // Fetch and parse the result URLs
-    return await fetchResultURLs(url);
+    return await fetchResultURLs(url, credentials);
 };
 
 /**
  * @protected
  * Search for a mod on F95Zone and return a list of URLs, one for each search result.
  * @param {String} name Mod name
+ * @param {Credentials} credentials Platform access credentials
  * @returns {Promise<String[]>} URLs of results
  */
-module.exports.searchMod = async function (name) {
+module.exports.searchMod = async function (name, credentials) {
     shared.logger.info(`Searching mods with name ${name}`);
     
     // Replace the whitespaces with +
@@ -44,7 +46,7 @@ module.exports.searchMod = async function (name) {
     const url = `https://f95zone.to/search/83459796/?q=${searchName}&t=post&c[child_nodes]=1&c[nodes][0]=41&c[title_only]=1&o=relevance`;
 
     // Fetch and parse the result URLs
-    return await fetchResultURLs(url);
+    return await fetchResultURLs(url, credentials);
 };
 //#endregion Public methods
 
@@ -53,13 +55,14 @@ module.exports.searchMod = async function (name) {
  * @private
  * Gets the URLs of the threads resulting from the F95Zone search.
  * @param {String} url Search URL
+ * @param {Credentials} credentials Platform access credentials
  * @return {Promise<String[]>} List of URLs
  */
-async function fetchResultURLs(url) {
+async function fetchResultURLs(url, credentials) {
     shared.logger.info(`Fetching ${url}...`);
 
     // Fetch HTML and prepare Cheerio
-    const html = await fetchHTML(url);
+    const html = await fetchHTMLWithAuth(url, credentials);
     const $ = cheerio.load(html);
 
     // Here we get all the DIV that are the body of the various query results
