@@ -1,6 +1,7 @@
 module.exports = Object.freeze({
     BD_ENGINE_ID_SELECTOR: "div[id^=\"btn-prefix_1_\"]>span",
     BD_STATUS_ID_SELECTOR: "div[id^=\"btn-prefix_4_\"]>span",
+    
     GT_IMAGES: "img:not([title])[data-src^=\"https://attachments.f95zone.to\"][data-url=\"\"]",
     GT_TAGS: "a.tagItem",
     GT_TITLE: "h1.p-title-value",
@@ -16,13 +17,7 @@ module.exports = Object.freeze({
     GS_RESULT_BODY: "div.contentRow-main",
     GS_MEMBERSHIP: "li > a:not(.username)",
     GET_REQUEST_TOKEN: "input[name=\"_xfToken\"]",
-
-    LOGIN_BUTTON: "button.button--icon--login",
+    UD_USERNAME_ELEMENT: "a[href=\"/account/\"] > span.p-navgroup-linkText",
+    UD_AVATAR_PIC: "a[href=\"/account/\"] > span.avatar > img[class^=\"avatar\"]",
     LOGIN_MESSAGE_ERROR: "div.blockMessage.blockMessage--error.blockMessage--iconic",
-    PASSWORD_INPUT: "input[name=\"password\"]",
-    USERNAME_ELEMENT: "a[href=\"/account/\"] > span.p-navgroup-linkText",
-    USERNAME_INPUT: "input[name=\"login\"]",
-    AVATAR_INFO: "span.avatar",
-    AVATAR_PIC: "a[href=\"/account/\"] > span.avatar > img[class^=\"avatar\"]",
-    FILTER_THREADS_BUTTON: "button[class=\"button--primary button\"]",
 });

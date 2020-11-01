@@ -2,7 +2,7 @@
 
 // Public modules from npm
 const axios = require("axios").default;
-const _ = require("lodash");
+const { isString } = require("lodash");
 const ky = require("ky-universal").create({
     throwHttpErrors: false,
 });
@@ -166,7 +166,7 @@ module.exports.fetchGETResponse = async function(url) {
  * @returns {String}
  */
 module.exports.enforceHttpsUrl = function (url) {
-    return _.isString(url) ? url.replace(/^(https?:)?\/\//, "https://") : null;
+    return isString(url) ? url.replace(/^(https?:)?\/\//, "https://") : null;
 };
 
 /**

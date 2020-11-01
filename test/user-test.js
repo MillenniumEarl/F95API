@@ -8,6 +8,7 @@ const searcher = require("../app/scripts/searcher.js");
 const scraper = require("../app/scripts/scraper.js");
 const Credentials = require("../app/scripts/classes/credentials.js");
 const networkHelper = require("../app/scripts/network-helper.js");
+const uScraper = require("../app/scripts/user-scraper.js");
 
 // Configure the .env reader
 dotenv.config();
@@ -15,6 +16,10 @@ dotenv.config();
 // Login
 auth().then(async function searchGames(result) {
     if(!result) return;
+
+    console.log("Fetching user data...");
+    const userdata = await uScraper.getUserData();
+    console.log(`${userdata.username} follows ${userdata.watchedThreads.length} threads`);
 
     // Search for Kingdom Of Deception data
     await search("kingdom of deception");

@@ -2,11 +2,10 @@
 
 // Modules from file
 const shared = require("./scripts/shared.js");
-const f95url = require("./scripts/constants/url.js");
-const f95selector = require("./scripts/constants/css-selector.js");
 const networkHelper = require("./scripts/network-helper.js");
 const scraper = require("./scripts/scraper.js");
 const searcher = require("./scripts/searcher.js");
+const uScraper = require("./scripts/user-scraper.js");
 
 // Classes from file
 const Credentials = require("./scripts/classes/credentials.js");
@@ -163,95 +162,6 @@ module.exports.getUserData = async function () {
         return null;
     }
 
-    const threads = await getUserWatchedGameThreads(null);
-
-    const username = await page.evaluate(
-    /* istanbul ignore next */ (selector) =>
-            document.querySelector(selector).innerText,
-        f95selector.USERNAME_ELEMENT
-    );
-
-    const avatarSrc = await page.evaluate(
-    /* istanbul ignore next */ (selector) =>
-            document.querySelector(selector).getAttribute("src"),
-        f95selector.AVATAR_PIC
-    );
-
-    const ud = new UserData();
-    ud.username = username;
-    ud.avatarSrc = networkHelper.isStringAValidURL(avatarSrc) ? avatarSrc : null;
-    ud.watchedThreads = threads;
-
-    return ud;
+    return await uScraper.getUserData();
 };
 //#endregion
-
-//#region Private methods
-
-//#region User
-/**
- * @private
- * Gets the list of URLs of threads the user follows.
- * @param {puppeteer.Browser} browser Browser object used for navigation
- * @returns {Promise<String[]>} URL list
- */
-async function getUserWatchedGameThreads() {
-    const page = null;
-    await page.goto(f95url.F95_WATCHED_THREADS); // Go to the thread page
-
-    // Explicitly wait for the required items to load
-    await page.waitForSelector(f95selector.WATCHED_THREAD_FILTER_POPUP_BUTTON);
-
-    // Show the popup
-    await Promise.all([
-        page.click(f95selector.WATCHED_THREAD_FILTER_POPUP_BUTTON),
-        page.waitForSelector(f95selector.UNREAD_THREAD_CHECKBOX),
-        page.waitForSelector(f95selector.ONLY_GAMES_THREAD_OPTION),
-        page.waitForSelector(f95selector.FILTER_THREADS_BUTTON),
-    ]);
-
-    // Set the filters
-    await page.evaluate(
-    /* istanbul ignore next */ (selector) =>
-            document.querySelector(selector).removeAttribute("checked"),
-        f95selector.UNREAD_THREAD_CHECKBOX
-    ); // Also read the threads already read
-
-    // Filter the threads
-    await page.click(f95selector.ONLY_GAMES_THREAD_OPTION);
-    await page.click(f95selector.FILTER_THREADS_BUTTON);
-    await page.waitForSelector(f95selector.WATCHED_THREAD_URLS);
-
-    // Get the threads urls
-    const urls = [];
-    let nextPageExists = false;
-    do {
-    // Get all the URLs
-        for (const handle of await page.$$(f95selector.WATCHED_THREAD_URLS)) {
-            const src = await page.evaluate(
-                /* istanbul ignore next */ (element) => element.href,
-                handle
-            );
-            // If 'unread' is left, it will redirect to the last unread post
-            const url = src.replace("/unread", "");
-            urls.push(url);
-        }
-
-        nextPageExists = await page.evaluate(
-            /* istanbul ignore next */ (selector) => document.querySelector(selector),
-            f95selector.WATCHED_THREAD_NEXT_PAGE
-        );
-
-        // Click to next page
-        if (nextPageExists) {
-            await page.click(f95selector.WATCHED_THREAD_NEXT_PAGE);
-            await page.waitForSelector(f95selector.WATCHED_THREAD_URLS);
-        }
-    } while (nextPageExists);
-
-    await page.close();
-    return urls;
-}
-//#endregion User
-
-//#endregion Private methods
