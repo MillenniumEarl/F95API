@@ -57,7 +57,7 @@ module.exports.searchMod = async function (name) {
  * @return {Promise<String[]>} List of URLs
  */
 async function fetchResultURLs(url) {
-    shared.logger.info(`Fetching ${url}...`);
+    shared.logger.trace(`Fetching ${url}...`);
 
     // Fetch HTML and prepare Cheerio
     const html = await fetchHTML(url);
@@ -82,6 +82,8 @@ async function fetchResultURLs(url) {
  * @returns {String} URL to thread
  */
 function extractLinkFromResult(selector) {
+    shared.logger.trace("Extracting thread link from result...");
+    
     const partialLink = selector
         .find(f95Selector.GS_RESULT_THREAD_TITLE)
         .attr("href")

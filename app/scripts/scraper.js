@@ -27,33 +27,33 @@ module.exports.getGameInfo = async function (url) {
 
     // Extract data
     const titleData = extractInfoFromTitle(body);
-    console.log(titleData);
     const tags = extractTags(body);
-    console.log(tags);
-    const mainPostData = extractInfoFromMainPost(mainPost);
-    console.log(mainPostData);
+    const prefixesData = parseGamePrefixes(body);
+    const src = extractPreviewSource(body);
+    const changelog = extractChangelog(mainPost);
     const structuredData = extractStructuredData(body);
+    const parsedInfos = parseMainPostText(structuredData["description"]);
+    const overview = getOverview(structuredData["description"], prefixesData.mod);
     
     // Obtain the updated URL
     const redirectUrl = await getUrlRedirect(url);
-
-    // TODO: Check to change
-    const parsedInfos = parseMainPostText(mainPost.text());
-    const overview = getOverview(mainPost.text(), info.isMod);
 
     // Fill in the GameInfo element with the information obtained
     const info = new GameInfo();
     info.name = titleData.name;
     info.author = titleData.author;
-    info.isMod = titleData.mod;
-    info.engine = titleData.engine;
-    info.status = titleData.status;
+    info.isMod = prefixesData.mod;
+    info.engine = prefixesData.engine;
+    info.status = prefixesData.status;
     info.tags = tags;
     info.url = redirectUrl;
+    info.language = parsedInfos.Language;
     info.overview = overview;
-    info.lastUpdate = titleData.mod ? parsedInfos.UPDATED : parsedInfos.THREAD_UPDATED;
-    info.previewSource = mainPostData.previewSource;
-    info.changelog = mainPostData.changelog;
+    info.supportedOS = parsedInfos.SupportedOS;
+    info.censored = parsedInfos.Censored;
+    info.lastUpdate = parsedInfos.LastUpdate;
+    info.previewSrc = src;
+    info.changelog = changelog;
     info.version = titleData.version;
     
     shared.logger.info(`Founded data for ${info.name}`);
@@ -63,41 +63,86 @@ module.exports.getGameInfo = async function (url) {
 //#region Private methods
 /**
  * @private
- * Extracts all the possible informations from the title, including the prefixes.
+ * Parse the game prefixes obtaining the engine used, 
+ * the advancement status and if the game is actually a game or a mod.
+ * @param {cheerio.Cheerio} body Page `body` selector
+ * @returns {Object} Dictionary of values
+ */
+function parseGamePrefixes(body) {
+    shared.logger.trace("Parsing prefixes...");
+
+    // Local variables
+    let mod = false,
+        engine = null,
+        status = null;
+
+    // Obtain the title prefixes
+    const prefixeElements = body.find(f95Selector.GT_TITLE_PREFIXES);
+    
+    prefixeElements.each(function parseGamePrefix(idx, el) {
+        // Obtain the prefix text
+        let prefix = cheerio.load(el).text().trim();
+
+        // Remove the square brackets
+        prefix = prefix.replace("[", "").replace("]", "");
+
+        // Check what the prefix indicates
+        if (isEngine(prefix)) engine = prefix;
+        else if (isStatus(prefix)) status = prefix;
+        else if (isMod(prefix)) mod = true;
+    });
+
+    // If the status is not set, then the game in in development (Ongoing)
+    if (!status) status = "Ongoing";
+
+    return {
+        engine,
+        status,
+        mod
+    };
+}
+
+/**
+ * @private
+ * Extracts all the possible informations from the title.
  * @param {cheerio.Cheerio} body Page `body` selector
  * @returns {Object} Dictionary of values
  */
 function extractInfoFromTitle(body) {
+    shared.logger.trace("Extracting information from title...");
     const title = body
         .find(f95Selector.GT_TITLE)
         .text()
         .trim();
 
     // From the title we can extract: Name, author and version
-    // TITLE [VERSION] [AUTHOR]
+    // [PREFIXES] TITLE [VERSION] [AUTHOR]
     const matches = title.match(/\[(.*?)\]/g);
-    const endIndex = title.indexOf("["); // The open bracket of the version
-    const name = title.substring(0, endIndex).trim();
-    const version = matches[0].trim();
-    const author = matches[1].trim();
 
-    // Parse the title prefixes
-    const prefixeElements = body.find(f95Selector.GT_TITLE_PREFIXES);
-    let mod = false, engine = null, status = null;
-    prefixeElements.each(function parseGamePrefixes(el) {
-        const prefix = el.text().trim();
-        if(isEngine(prefix)) engine = prefix;
-        else if(isStatus(prefix)) status = prefix;
-        else if (isMod(prefix)) mod = true;
+    // Get the title name
+    let name = title;
+    matches.forEach(function replaceElementsInTitle(e) {
+        name = name.replace(e, "");
     });
+    name = name.trim();
+
+    // The regex [[\]]+ remove the square brackets
+
+    // The version is the penultimate element. 
+    // If the matches are less than 2, than the title 
+    // is malformes and only the author is fetched
+    // (usually the author is always present)
+    let version = null;
+    if (matches.length >= 2) version = matches[matches.length - 2].replace(/[[\]]+/g, "").trim();
+    else shared.logger.trace(`Malformed title: ${title}`);
+
+    // Last element
+    const author = matches[matches.length - 1].replace(/[[\]]+/g, "").trim();
 
     return {
         name,
         version,
         author,
-        engine,
-        status,
-        mod
     };
 }
 
@@ -108,32 +153,49 @@ function extractInfoFromTitle(body) {
  * @returns {String[]} List of tags
  */
 function extractTags(body) {
+    shared.logger.trace("Extracting tags...");
+
     // Get the game tags
     const tagResults = body.find(f95Selector.GT_TAGS);
-    return tagResults.map((idx, el) => {
-        return el.text().trim();
+    return tagResults.map(function parseGameTags(idx, el) {
+        return cheerio.load(el).text().trim();
     }).get();
 }
 
 /**
  * @private
- * Extracts the name of the game, its author and its current version from the title of the page.
- * @param {cheerio.Cheerio} mainPost Selector of the main post
- * @returns {Object} Dictionary of values
+ * Gets the URL of the image used as a preview.
+ * @param {cheerio.Cheerio} body Page `body` selector
+ * @returns {String} URL of the image
  */
-function extractInfoFromMainPost(mainPost) {
-    // Get the preview image
-    const previewElement = mainPost.find(f95Selector.GT_IMAGES);
-    const previewSource = previewElement ? previewElement.first().attr("src") : null;
-
-    // Get the latest changelog
-    const changelogElement = mainPost.find(f95Selector.GT_LAST_CHANGELOG);
-    const changelog = changelogElement ? changelogElement.text().trim() : null;
+function extractPreviewSource(body) {
+    shared.logger.trace("Extracting image preview source...");
+    const image = body.find(f95Selector.GT_IMAGES);
     
-    return {
-        previewSource,
-        changelog
-    };
+    // The "src" attribute is rendered only in a second moment, 
+    // we need the "static" src value saved in the attribute "data-src"
+    const source = image ? image.attr("data-src") : null;
+    return source;
+}
+
+/**
+ * @private
+ * Gets the changelog of the latest version.
+ * @param {cheerio.Cheerio} mainPost main post selector
+ * @returns {String} Changelog of the last version or `null` if no changelog is fetched
+ */
+function extractChangelog(mainPost) {
+    shared.logger.trace("Extracting last changelog...");
+
+    // Obtain changelog
+    let changelog = mainPost.find(f95Selector.GT_LAST_CHANGELOG).text().trim();
+
+    // Clean changelog
+    changelog = changelog.replace("Spoiler", "");
+    changelog = changelog.replace(/\n+/g, "\n");
+
+    // Return changelog
+    return changelog ? changelog : null;
 }
 
 /**
@@ -144,7 +206,9 @@ function extractInfoFromMainPost(mainPost) {
  * @returns {Object} Dictionary of information
  */
 function parseMainPostText(text) {
-    const dataPairs = {};
+    shared.logger.trace("Parsing main post raw text...");
+
+    const data = {};
 
     // The information searched in the game post are one per line
     const splittedText = text.split("\n");
@@ -157,28 +221,80 @@ function parseMainPostText(text) {
         const value = splitted[1].trim();
 
         // Add pair to the dict if valid
-        if (value !== "") dataPairs[key] = value;
+        if (value !== "") data[key] = value;
     }
 
-    return dataPairs;
+    // Parse the standard pairs
+    const parsedDict = {};
+
+    // Check if the game is censored
+    if (data.CENSORED) {
+        const censored = data.CENSORED.toUpperCase() === "NO" ? false : true;
+        parsedDict["Censored"] = censored;
+        delete data.CENSORED;
+    }
+
+    // Last update of the main post
+    if (data.UPDATED) {
+        parsedDict["LastUpdate"] = new Date(data.UPDATED);
+        delete data.UPDATED;
+    }
+    else if (data.THREAD_UPDATED) {
+        parsedDict["LastUpdate"] = new Date(data.THREAD_UPDATED);
+        delete data.THREAD_UPDATED;
+    }
+
+    // Parse the supported OS
+    if (data.OS) {
+        const listOS = [];
+
+        // Usually the string is something like "Windows, Linux, Mac"
+        const splitted = data.OS.split(",");
+        splitted.forEach(function (os) {
+            listOS.push(os.trim());
+        });
+
+        parsedDict["SupportedOS"] = listOS;
+        delete data.OS;
+    }
+
+    // Rename the key for the language
+    if (data.LANGUAGE) {
+        parsedDict["Language"] = data.LANGUAGE;
+        delete data.LANGUAGE;
+    }
+
+    // What remains is added to a sub dictionary
+    parsedDict["Various"] = data;
+    
+    return parsedDict;
 }
 
 /**
  * @private
  * Extracts and processes the JSON-LD values found at the bottom of the page.
  * @param {cheerio.Cheerio} body Page `body` selector
- * @returns ???
+ * @returns {Object} JSON-LD or `null` if no valid JSON is found
  */
 function extractStructuredData(body) {
-    const structuredDataElements = body.find("...");
-    for (const el in structuredDataElements) {
-        for (const child in structuredDataElements[el].children) {
-            const data = structuredDataElements[el].children[child].data;
-            console.log(data);
-            // TODO: The @type should be "Book"
-            // TODO: Test here
-        }
-    }
+    shared.logger.trace("Extracting JSON-LD data...");
+    const structuredDataElements = body.find(f95Selector.GT_JSONLD);
+    const json = structuredDataElements.map(function parseScriptTag(idx, el) {
+        // Get the element HTML
+        const html = cheerio.load(el).html().trim();
+
+        // Obtain the JSON-LD
+        const data = html
+            .replace("<script type=\"application/ld+json\">", "")
+            .replace("</script>", "");
+
+        // Convert the string to an object
+        const json = JSON.parse(data);
+
+        // Return only the data of the game
+        if (json["@type"] === "Book") return json;
+    }).get();
+    return json[0] ? json[0] : null;
 }
 
 /**
@@ -190,6 +306,7 @@ function extractStructuredData(body) {
  * @returns {Promise<String>} Game description
  */
 function getOverview(text, mod) {
+    shared.logger.trace("Extracting game overview...");
     // Get overview (different parsing for game and mod)
     const overviewEndIndex = mod ? text.indexOf("Updated") : text.indexOf("Thread Updated");
     return text.substring(0, overviewEndIndex).replace("Overview:\n", "").trim();
@@ -235,6 +352,9 @@ function isMod(prefix) {
  * @returns {String[]}
  */
 function toUpperCaseArray(a) {
+    // If the array is empty, return
+    if(a.length === 0) return [];
+
     /**
      * Makes a string uppercase.
      * @param {String} s 

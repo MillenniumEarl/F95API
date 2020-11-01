@@ -13,13 +13,23 @@ const tough = require("tough-cookie");
 // Modules from file
 const shared = require("./shared.js");
 const f95url = require("./constants/url.js");
+const f95selector = require("./constants/css-selector.js");
+const LoginResult = require("./classes/login-result.js");
 
 // Global variables
-const userAgent =
-    "Mozilla/5.0 (X11; Linux x86_64)" +
-    "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/64.0.3282.39 Safari/537.36";
+const userAgent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15) " + 
+    "AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0 Safari/605.1.15";
 axiosCookieJarSupport(axios);
 const cookieJar = new tough.CookieJar();
+
+const commonConfig = {
+    headers: {
+        "User-Agent": userAgent,
+        "Connection": "keep-alive"
+    },
+    withCredentials: true,
+    jar: cookieJar // Used to store the token in the PC
+};
 
 /**
  * @protected
@@ -28,19 +38,13 @@ const cookieJar = new tough.CookieJar();
  * @returns {Promise<String>} HTML code or `null` if an error arise
  */
 module.exports.fetchHTML = async function (url) {
-    try {
-        const response = await axios.get(url, {
-            headers: {
-                "User-Agent": userAgent
-            },
-            withCredentials: true,
-            jar: cookieJar
-        });
-        return response.data;
-    } catch (e) {
-        shared.logger.error(`Error ${e.message} occurred while trying to fetch ${url}`);
+    // Fetch the response of the platform
+    const response = await exports.fetchGETResponse(url);
+    if (!response) {
+        shared.logger.warn(`Unable to fetch HTML for ${url}`);
         return null;
     }
+    return response.data;
 };
 
 /**
@@ -49,11 +53,20 @@ module.exports.fetchHTML = async function (url) {
  * and token obtained previously. Save cookies on your 
  * device after authentication.
  * @param {Credentials} credentials Platform access credentials
- * @returns {Promise<Boolean>} Result of the operation
+ * @returns {Promise<LoginResul>} Result of the operation
  */
 module.exports.autenticate = async function (credentials) {
     shared.logger.info(`Authenticating with user ${credentials.username}`);
     if (!credentials.token) throw new Error(`Invalid token for auth: ${credentials.token}`);
+
+    // If the user is already logged, return
+    if(shared.isLogged) {
+        shared.logger.warn(`${credentials.username} already authenticated`);
+        return new LoginResult(true, "Already authenticated");
+    }
+
+    // Secure the URL
+    const secureURL = exports.enforceHttpsUrl(f95url.F95_LOGIN_URL);
 
     // Prepare the parameters to send to the platform to authenticate
     const params = new URLSearchParams();
@@ -67,22 +80,23 @@ module.exports.autenticate = async function (credentials) {
     params.append("website_code", "");
     params.append("_xfToken", credentials.token);
 
-    const config = {
-        headers: {
-            "User-Agent": userAgent,
-            "Content-Type": "application/x-www-form-urlencoded",
-            "Connection": "keep-alive"
-        },
-        withCredentials: true,
-        jar: cookieJar // Retrieve the stored cookies! What a pain to understand that this is a MUST!
-    };
-
     try {
-        await axios.post(f95url.F95_LOGIN_URL, params, config);
-        return true;
+        // Try to log-in
+        const response = await axios.post(secureURL, params, commonConfig);
+
+        // Parse the response HTML
+        const $ = cheerio.load(response.data);
+
+        // Get the error message (if any) and remove the new line chars
+        const errorMessage = $("body").find(f95selector.LOGIN_MESSAGE_ERROR).text().replace(/\n/g, "");
+
+        // Return the result of the authentication
+        shared.isLogged = errorMessage === "";
+        if (errorMessage === "") return new LoginResult(true, "Authentication successful");
+        else return new LoginResult(false, errorMessage);
     } catch (e) {
-        shared.logger.error(`Error ${e.message} occurred while authenticating to ${f95url.F95_LOGIN_URL}`);
-        return false;
+        shared.logger.error(`Error ${e.message} occurred while authenticating to ${secureURL}`);
+        return new LoginResult(false, `Error ${e.message} while authenticating`);
     }
 };
 
@@ -91,25 +105,63 @@ module.exports.autenticate = async function (credentials) {
  * @returns {Promise<String>} Token or `null` if an error arise
  */
 module.exports.getF95Token = async function() {
+    // Fetch the response of the platform
+    const response = await exports.fetchGETResponse(f95url.F95_LOGIN_URL);
+    if (!response) {
+        shared.logger.warn("Unable to get the token for the session");
+        return null;
+    }
+
+    // The response is a HTML page, we need to find the <input> with name "_xfToken"
+    const $ = cheerio.load(response.data);
+    const token = $("body").find(f95selector.GET_REQUEST_TOKEN).attr("value");
+    return token;
+};
+
+/**
+ * @protected
+ * Gets the basic data used for game data processing 
+ * (such as graphics engines and progress statuses)
+ * @deprecated
+ */
+module.exports.fetchPlatformData = async function() {
+    // Fetch the response of the platform
+    const response = await exports.fetchGETResponse(f95url.F95_LATEST_UPDATES);
+    if (!response) {
+        shared.logger.warn("Unable to get the token for the session");
+        return;
+    }
+
+    // The response is a HTML page, we need to find 
+    // the base data, used when scraping the games
+    const $ = cheerio.load(response.data);
+
+    // Extract the elements
+    const engineElements = $("body").find(f95selector.BD_ENGINE_ID_SELECTOR);
+    const statusesElements = $("body").find(f95selector.BD_STATUS_ID_SELECTOR);
+
+    // Extract the raw text
+    engineElements.each(function extractEngineNames(idx, el) {
+        const engine = cheerio.load(el).text().trim();
+        shared.engines.push(engine);
+    });
+
+    statusesElements.each(function extractEngineNames(idx, el) {
+        const status = cheerio.load(el).text().trim();
+        shared.statuses.push(status);
+    });
+};
+
+//#region Utility methods
+module.exports.fetchGETResponse = async function(url) {
+    // Secure the URL
+    const secureURL = exports.enforceHttpsUrl(url);
+
     try {
-        const config = {
-            headers: {
-                "User-Agent": userAgent,
-                "Connection": "keep-alive"
-            },
-            withCredentials: true,
-            jar: cookieJar // Used to store the token in the PC
-        };
-
-        // Fetch the response of the platform
-        const response = await axios.get(f95url.F95_LOGIN_URL, config);
-
-        // The response is a HTML page, we need to find the <input> with name "_xfToken"
-        const $ = cheerio.load(response.data);
-        const token = $("body").find("input[name='_xfToken']").attr("value");
-        return token;
+        // Fetch and return the response
+        return await axios.get(secureURL, commonConfig);
     } catch (e) {
-        shared.logger.error(`Error ${e.message} occurred while trying to fetch F95 token`);
+        shared.logger.error(`Error ${e.message} occurred while trying to fetch ${secureURL}`);
         return null;
     }
 };
@@ -121,8 +173,7 @@ module.exports.getF95Token = async function() {
  * @returns {String}
  */
 module.exports.enforceHttpsUrl = function (url) {
-    const value = _.isString(url) ? url.replace(/^(https?:)?\/\//, "https://") : null;
-    return value;
+    return _.isString(url) ? url.replace(/^(https?:)?\/\//, "https://") : null;
 };
 
 /**
@@ -187,3 +238,4 @@ module.exports.getUrlRedirect = async function (url) {
     const response = await ky.head(url);
     return response.url;
 };
+//#endregion Utility methods

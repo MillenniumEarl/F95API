@@ -24,9 +24,25 @@ class GameInfo {
        */
         this.overview = null;
         /**
-       * List of tags associated with the game
-       * @type String[]
-       */
+         * Game language.
+         * @type String
+         */
+        this.language = null;
+        /**
+         * List of supported OS.
+         * @type
+         */
+        this.supportedOS = [];
+        /**
+         * Specify whether the game has censorship 
+         * measures regarding NSFW scenes.
+         * @type Boolean
+         */
+        this.censored = null;
+        /**
+        * List of tags associated with the game
+        * @type String[]
+        */
         this.tags = [];
         /**
        * Graphics engine used for game development
@@ -86,6 +102,9 @@ class GameInfo {
             author: this.author,
             url: this.url,
             overview: this.overview,
+            language: this.language,
+            supportedOS: this.supportedOS,
+            censored: this.censored,
             engine: this.engine,
             status: this.status,
             previewSrc: this.previewSrc,
