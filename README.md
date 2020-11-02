@@ -8,7 +8,7 @@
 
 Unofficial Node JS module for scraping F95Zone platform
 
-These APIs have been developed to support this application and allow you to obtain data on games and mods on the platform [F95zone](https://f95zone.to/) (**NSFW**)
+These APIs have been developed to support [this application](https://github.com/MillenniumEarl/F95GameUpdater) and allow you to obtain data on games and mods on the platform [F95zone](https://f95zone.to/) (**NSFW**)
 
 A simple usage example can be found in [app/example.js](https://github.com/MillenniumEarl/F95API/blob/master/app/example.js)
 
