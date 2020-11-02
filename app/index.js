@@ -90,7 +90,8 @@ module.exports.checkIfGameHasUpdate = async function (info) {
     if (!exists) return true;
 
     // Parse version from title
-    const onlineVersion = await scraper.getGameInfo(info.url).version;
+    const onlineInfo = await scraper.getGameInfo(info.url);
+    const onlineVersion = onlineInfo.version;
     
     // Compare the versions
     return onlineVersion.toUpperCase() !== info.version.toUpperCase();
