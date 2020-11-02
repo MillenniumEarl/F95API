@@ -126,14 +126,13 @@ function extractInfoFromTitle(body) {
     });
     name = name.trim();
 
-    // The regex [[\]]+ remove the square brackets
-
     // The version is the penultimate element. 
     // If the matches are less than 2, than the title 
     // is malformes and only the author is fetched
     // (usually the author is always present)
     let version = null;
     if (matches.length >= 2) {
+        // The regex [[\]]+ remove the square brackets
         version = matches[matches.length - 2].replace(/[[\]]+/g, "").trim();
 
         // If the version is in the format v1.0 remove the "v"
@@ -146,7 +145,7 @@ function extractInfoFromTitle(body) {
     }
     else shared.logger.trace(`Malformed title: ${title}`);
 
-    // Last element
+    // Last element (the regex [[\]]+ remove the square brackets)
     const author = matches[matches.length - 1].replace(/[[\]]+/g, "").trim();
 
     return {
