@@ -9,6 +9,11 @@ const f95Selector = require("./constants/css-selector.js");
 const f95url = require("./constants/url.js");
 const UserData = require("./classes/user-data.js");
 
+/**
+ * @protected
+ * Gets user data, such as username, url of watched threads, and profile picture url.
+ * @return {UserData} User data
+ */
 module.exports.getUserData = async function() {
     // Fetch data
     const data = await fetchUsernameAndAvatar();
@@ -24,6 +29,13 @@ module.exports.getUserData = async function() {
 };
 
 //#region Private methods
+/**
+ * @private
+ * It connects to the page and extracts the name 
+ * of the currently logged in user and the URL 
+ * of their profile picture.
+ * @return {Object.<string, string>}
+ */
 async function fetchUsernameAndAvatar() {
     // Fetch page
     const html = await networkHelper.fetchHTML(f95url.F95_BASE_URL);
@@ -44,6 +56,11 @@ async function fetchUsernameAndAvatar() {
     };
 }
 
+/**
+ * @private
+ * Gets the list of URLs of threads watched by the user.
+ * @returns {String[]} List of URLs
+ */
 async function fetchWatchedThreadURLs() {
     // Local variables
     let currentURL = f95url.F95_WATCHED_THREADS;
@@ -69,6 +86,12 @@ async function fetchWatchedThreadURLs() {
     return wathcedThreadURLs;
 }
 
+/**
+ * @private
+ * Gets the URLs of the watched threads on the page.
+ * @param {cheerio.Cheerio} body Page `body` selector
+ * @returns {String[]}
+ */
 function fetchPageURLs(body) {
     const elements = body.find(f95Selector.WT_URLS);
 
@@ -82,8 +105,11 @@ function fetchPageURLs(body) {
 }
 
 /**
- * 
- * @param {cheerio.Cheerio} body 
+ * @private
+ * Gets the URL of the next page containing the watched threads 
+ * or `null` if that page does not exist.
+ * @param {cheerio.Cheerio} body Page `body` selector
+ * @returns {String}
  */
 function fetchNextPageURL(body) {
     const element = body.find(f95Selector.WT_NEXT_PAGE).first();

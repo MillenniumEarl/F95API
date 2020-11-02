@@ -66,7 +66,7 @@ module.exports.getGameInfo = async function (url) {
  * Parse the game prefixes obtaining the engine used, 
  * the advancement status and if the game is actually a game or a mod.
  * @param {cheerio.Cheerio} body Page `body` selector
- * @returns {Object} Dictionary of values
+ * @returns {Object.<string, object>} Dictionary of values with keys `engine`, `status`, `mod`
  */
 function parseGamePrefixes(body) {
     shared.logger.trace("Parsing prefixes...");
@@ -106,7 +106,7 @@ function parseGamePrefixes(body) {
  * @private
  * Extracts all the possible informations from the title.
  * @param {cheerio.Cheerio} body Page `body` selector
- * @returns {Object} Dictionary of values
+ * @returns {Object.<string, string>} Dictionary of values with keys `name`, `author`, `version`
  */
 function extractInfoFromTitle(body) {
     shared.logger.trace("Extracting information from title...");
@@ -202,8 +202,10 @@ function extractChangelog(mainPost) {
  * @private
  * Process the main post text to get all the useful
  * information in the format *DESCRIPTOR : VALUE*.
+ * Gets "standard" values such as: `Language`, `SupportedOS`, `Censored`, and `LastUpdate`.
+ * All non-canonical values are instead grouped together as a dictionary with the key `Various`.
  * @param {String} text Structured text of the post
- * @returns {Object} Dictionary of information
+ * @returns {Object.<string, object>} Dictionary of information
  */
 function parseMainPostText(text) {
     shared.logger.trace("Parsing main post raw text...");
@@ -274,7 +276,7 @@ function parseMainPostText(text) {
  * @private
  * Extracts and processes the JSON-LD values found at the bottom of the page.
  * @param {cheerio.Cheerio} body Page `body` selector
- * @returns {Object} JSON-LD or `null` if no valid JSON is found
+ * @returns {Object.<string, string>} JSON-LD or `null` if no valid JSON is found
  */
 function extractStructuredData(body) {
     shared.logger.trace("Extracting JSON-LD data...");
