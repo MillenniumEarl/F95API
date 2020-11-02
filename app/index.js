@@ -21,23 +21,19 @@ module.exports.UserData = UserData;
 
 //#region Export properties
 /**
- * Shows log messages and other useful functions for module debugging.
- * @param {Boolean} value
+ * @public
+ * Set the logger level for module debugging.
  */
 /* istambul ignore next */
-module.exports.debug = function (value) {
-    shared.debug = value;
-
-    // Configure logger
-    shared.logger.level = value ? "trace" : "warn";
-};
+module.exports.loggerLevel = shared.logger.level;
+exports.loggerLevel = "warn"; // By default log only the warn messages
 /**
  * @public
  * Indicates whether a user is logged in to the F95Zone platform or not.
  * @returns {String}
  */
 /* istambul ignore next */
-module.exports.isLogged = function () {
+module.exports.isLogged = function isLogged() {
     return shared.isLogged;
 };
 //#endregion Export properties

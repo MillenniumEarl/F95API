@@ -10,11 +10,6 @@ const log4js = require("log4js");
 class Shared {
     //#region Properties
     /**
-     * Shows log messages and other useful functions for module debugging.
-     * @type Boolean
-     */
-    static #_debug = false;
-    /**
      * Indicates whether a user is logged in to the F95Zone platform or not.
      * @type Boolean
      */
@@ -37,13 +32,6 @@ class Shared {
     //#endregion Properties
 
     //#region Getters
-    /**
-   * Shows log messages and other useful functions for module debugging.
-   * @returns {Boolean}
-   */
-    static get debug() {
-        return this.#_debug;
-    }
     /**
    * Indicates whether a user is logged in to the F95Zone platform or not.
    * @returns {Boolean}
@@ -81,10 +69,6 @@ class Shared {
 
     static set statuses(val) {
         this.#_statuses = val;
-    }
-
-    static set debug(val) {
-        this.#_debug = val;
     }
 
     static set isLogged(val) {
