@@ -4,7 +4,7 @@
 const dotenv = require("dotenv");
 
 // Modules from file
-const F95API = require("../app/index.js");
+const F95API = require("./index.js");
 
 // Configure the .env reader
 dotenv.config();

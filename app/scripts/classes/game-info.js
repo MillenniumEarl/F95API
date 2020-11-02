@@ -107,6 +107,7 @@ class GameInfo {
             censored: this.censored,
             engine: this.engine,
             status: this.status,
+            tags: this.tags,
             previewSrc: this.previewSrc,
             version: this.version,
             lastUpdate: this.lastUpdate,
@@ -122,9 +123,13 @@ class GameInfo {
     * @param {String} json JSON string used to create the new object
     * @returns {GameInfo}
     */
-    /* istanbul ignore next */
     static fromJSON(json) {
-        return Object.assign(new GameInfo(), json);
+        // Convert string
+        const temp = Object.assign(new GameInfo(), JSON.parse(json));
+        
+        // JSON cannot transform a string to a date implicitly
+        temp.lastUpdate = new Date(temp.lastUpdate);
+        return temp;
     }
 }
 module.exports = GameInfo;

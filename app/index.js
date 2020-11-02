@@ -24,6 +24,7 @@ module.exports.UserData = UserData;
  * Shows log messages and other useful functions for module debugging.
  * @param {Boolean} value
  */
+/* istambul ignore next */
 module.exports.debug = function (value) {
     shared.debug = value;
 
@@ -35,6 +36,7 @@ module.exports.debug = function (value) {
  * Indicates whether a user is logged in to the F95Zone platform or not.
  * @returns {String}
  */
+/* istambul ignore next */
 module.exports.isLogged = function () {
     return shared.isLogged;
 };
@@ -64,7 +66,7 @@ module.exports.login = async function (username, password) {
     await creds.fetchToken();
 
     shared.logger.trace(`Authentication for ${username}`);
-    const result = await networkHelper.autenticate(creds);
+    const result = await networkHelper.authenticate(creds);
     shared.isLogged = result.success;
 
     if (result.success) shared.logger.info("User logged in through the platform");

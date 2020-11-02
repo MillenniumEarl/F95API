@@ -2,7 +2,6 @@
 
 // Public modules from npm
 const axios = require("axios").default;
-const { isString } = require("lodash");
 const ky = require("ky-universal").create({
     throwHttpErrors: false,
 });
@@ -21,6 +20,7 @@ const userAgent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15) " +
     "AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0 Safari/605.1.15";
 axiosCookieJarSupport(axios);
 const cookieJar = new tough.CookieJar();
+
 const commonConfig = {
     headers: {
         "User-Agent": userAgent,
@@ -52,9 +52,10 @@ module.exports.fetchHTML = async function (url) {
  * and token obtained previously. Save cookies on your 
  * device after authentication.
  * @param {Credentials} credentials Platform access credentials
- * @returns {Promise<LoginResul>} Result of the operation
+ * @param {Boolea} force Specifies whether the request should be forced, ignoring any saved cookies
+ * @returns {Promise<LoginResult>} Result of the operation
  */
-module.exports.autenticate = async function (credentials) {
+module.exports.authenticate = async function (credentials, force) {
     shared.logger.info(`Authenticating with user ${credentials.username}`);
     if (!credentials.token) throw new Error(`Invalid token for auth: ${credentials.token}`);
 
@@ -75,7 +76,9 @@ module.exports.autenticate = async function (credentials) {
 
     try {
         // Try to log-in
-        const response = await axios.post(secureURL, params, commonConfig);
+        let config = Object.assign({}, commonConfig);
+        if (force) delete config.jar;
+        const response = await axios.post(secureURL, params, config);
 
         // Parse the response HTML
         const $ = cheerio.load(response.data);
@@ -116,6 +119,7 @@ module.exports.getF95Token = async function() {
  * (such as graphics engines and progress statuses)
  * @deprecated
  */
+/* istanbul ignore next */
 module.exports.fetchPlatformData = async function() {
     // Fetch the response of the platform
     const response = await exports.fetchGETResponse(f95url.F95_LATEST_UPDATES);
@@ -145,6 +149,12 @@ module.exports.fetchPlatformData = async function() {
 };
 
 //#region Utility methods
+/**
+ * @protected
+ * Performs a GET request to a specific URL and returns the response.
+ * If the request generates an error (for example 400) `null` is returned.
+ * @param {String} url 
+ */
 module.exports.fetchGETResponse = async function(url) {
     // Secure the URL
     const secureURL = exports.enforceHttpsUrl(url);
@@ -162,10 +172,10 @@ module.exports.fetchGETResponse = async function(url) {
  * @protected
  * Enforces the scheme of the URL is https and returns the new URL.
  * @param {String} url 
- * @returns {String}
+ * @returns {String} Secure URL or `null` if the argument is not a string
  */
 module.exports.enforceHttpsUrl = function (url) {
-    return isString(url) ? url.replace(/^(https?:)?\/\//, "https://") : null;
+    return exports.isStringAValidURL(url) ? url.replace(/^(https?:)?\/\//, "https://") : null;
 };
 
 /**
@@ -181,17 +191,17 @@ module.exports.isF95URL = function (url) {
 
 /**
  * @protected
- * Checks if the string passed by parameter has a properly formatted and valid path to a URL.
+ * Checks if the string passed by parameter has a 
+ * properly formatted and valid path to a URL (HTTP/HTTPS).
  * @param {String} url String to check for correctness
  * @returns {Boolean} true if the string is a valid URL, false otherwise
  */
 module.exports.isStringAValidURL = function (url) {
-    try {
-        new URL(url); // skipcq: JS-0078
-        return true;
-    } catch (err) {
-        return false;
-    }
+    // Many thanks to Daveo at StackOverflow (https://preview.tinyurl.com/y2f2e2pc)
+    const expression = /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_+.~#?&//=]*)/;
+    const regex = new RegExp(expression);
+    if (url.match(regex)) return true;
+    else return false;
 };
 
 /**
