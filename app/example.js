@@ -1,3 +1,11 @@
+/* 
+to use this example, create an .env file 
+in the project root with the following values:
+
+F95_USERNAME = YOUR_USERNAME
+F95_PASSWORD = YOUR_PASSWORD
+*/
+
 "use strict";
 
 // Public modules from npm
@@ -8,7 +16,6 @@ const F95API = require("./index.js");
 
 // Configure the .env reader
 dotenv.config();
-
 
 main();
 
