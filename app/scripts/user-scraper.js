@@ -12,7 +12,7 @@ const UserData = require("./classes/user-data.js");
 /**
  * @protected
  * Gets user data, such as username, url of watched threads, and profile picture url.
- * @return {UserData} User data
+ * @return {Promise<UserData>} User data
  */
 module.exports.getUserData = async function() {
     // Fetch data
@@ -34,7 +34,7 @@ module.exports.getUserData = async function() {
  * It connects to the page and extracts the name 
  * of the currently logged in user and the URL 
  * of their profile picture.
- * @return {Object.<string, string>}
+ * @return {Promise<Object.<string, string>>}
  */
 async function fetchUsernameAndAvatar() {
     // Fetch page
@@ -59,7 +59,7 @@ async function fetchUsernameAndAvatar() {
 /**
  * @private
  * Gets the list of URLs of threads watched by the user.
- * @returns {String[]} List of URLs
+ * @returns {Promise<String[]>} List of URLs
  */
 async function fetchWatchedThreadURLs() {
     // Local variables
