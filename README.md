@@ -15,6 +15,7 @@ A simple usage example can be found in [app/example.js](https://github.com/Mille
 **Attention**: Two-factor authentication is not supported
 
 # Data scraping
+
 Games/mods can be obtained by name or URL
 
 ```javascript
@@ -25,7 +26,7 @@ let listOfFoundMods = await F95API.getGameData("your mod name", true);
 let specificGame = await F95API.getGameDataFromURL("the URL of your game");
 ```
 
-While user data (after authenticating) with 
+While user data (after authenticating) with
 
 ```javascript
 let authResult = await F95API.login(username, password);
@@ -34,7 +35,9 @@ let loggedUserData = await F95API.getUserData();
 ```
 
 # Classes
+
 ## Games and mods
+
 Information about games and mods is stored in a GameInfo object with the following fields:
 
 ```
@@ -58,6 +61,7 @@ changelog: Latest changelog available
 The serialization in JSON format of this object is possible through `JSON.stringfy()` while the deserialization must happen through the static method `GameInfo.fromJSON()`.
 
 ## User data
+
 User data (after authentication) can be stored in a UserData object, consisting of the following fields:
 
 ```
@@ -67,6 +71,7 @@ watchedThreads: List of URLs of threads followed by the user
 ```
 
 ## Login results
+
 The outcome of the authentication process is represented by the LoginResult object:
 
 ```
@@ -75,6 +80,7 @@ message: Possible error message (unrecognized user, wrong password ...) or authe
 ```
 
 # Logging
+
 To log the behavior of the application [log4js](https://github.com/log4js-node/log4js-node) is used with a default level of "warn". This option can be changed with the `loggerLevel` property.
 
 # Guidelines for errors
