@@ -133,7 +133,17 @@ function extractInfoFromTitle(body) {
     // is malformes and only the author is fetched
     // (usually the author is always present)
     let version = null;
-    if (matches.length >= 2) version = matches[matches.length - 2].replace(/[[\]]+/g, "").trim();
+    if (matches.length >= 2) {
+        version = matches[matches.length - 2].replace(/[[\]]+/g, "").trim();
+
+        // If the version is in the format v1.0 remove the "v"
+        if (version[0].toUpperCase() === "V" && !isNaN(version[1])) {
+            const indexOfCharToRemove = 0; // The first letter
+            const tmp = version.split(""); // Convert to an array
+            tmp.splice(indexOfCharToRemove, 1); // Remove the first element
+            version = tmp.join(""); // Reconstruct the version
+        }
+    }
     else shared.logger.trace(`Malformed title: ${title}`);
 
     // Last element
