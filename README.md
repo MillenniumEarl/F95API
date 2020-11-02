@@ -8,7 +8,7 @@
 
 Unofficial Node JS module for scraping F95Zone platform
 
-These APIs have been developed to support this application and allow you to obtain data on games and mods on the platform [F95zone.to](www.f95zone.to)
+These APIs have been developed to support this application and allow you to obtain data on games and mods on the platform [F95zone](https://f95zone.to/) (**NSFW**)
 
 A simple usage example can be found in [app/example.js](https://github.com/MillenniumEarl/F95API/blob/master/app/example.js)
 
@@ -75,7 +75,7 @@ message: Possible error message (unrecognized user, wrong password ...) or authe
 ```
 
 # Logging
-To log the behavior of the application log4js is used with a default level of "warn". This option can be changed with the loggerLevel property.
+To log the behavior of the application [log4js](https://github.com/log4js-node/log4js-node) is used with a default level of "warn". This option can be changed with the `loggerLevel` property.
 
 # Guidelines for errors
 
