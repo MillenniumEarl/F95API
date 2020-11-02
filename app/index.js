@@ -122,7 +122,7 @@ module.exports.getGameData = async function (name, mod) {
     const results = [];
     for (const url of urls) {
         // Start looking for information
-        const info = scraper.getGameInfo(url);
+        const info = await scraper.getGameInfo(url);
         results.push(info);
     }
     return results;

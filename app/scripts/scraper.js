@@ -305,10 +305,11 @@ function extractStructuredData(body) {
  * Different processing depending on whether the game is a mod or not.
  * @param {String} text Structured text extracted from the game's web page
  * @param {Boolean} mod Specify if it is a game or a mod
- * @returns {Promise<String>} Game description
+ * @returns {String} Game description
  */
 function getOverview(text, mod) {
     shared.logger.trace("Extracting game overview...");
+
     // Get overview (different parsing for game and mod)
     const overviewEndIndex = mod ? text.indexOf("Updated") : text.indexOf("Thread Updated");
     return text.substring(0, overviewEndIndex).replace("Overview:\n", "").trim();
