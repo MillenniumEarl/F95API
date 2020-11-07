@@ -135,13 +135,8 @@ function extractInfoFromTitle(body) {
         // The regex [[\]]+ remove the square brackets
         version = matches[matches.length - 2].replace(/[[\]]+/g, "").trim();
 
-        // If the version is in the format v1.0 remove the "v"
-        if (version[0].toUpperCase() === "V" && !isNaN(version[1])) {
-            const indexOfCharToRemove = 0; // The first letter
-            const tmp = version.split(""); // Convert to an array
-            tmp.splice(indexOfCharToRemove, 1); // Remove the first element
-            version = tmp.join(""); // Reconstruct the version
-        }
+        // Remove the trailing "v"
+        if (version[0] === "v") version.replace("v", "");
     }
     else shared.logger.trace(`Malformed title: ${title}`);
 
@@ -202,6 +197,7 @@ function extractChangelog(mainPost) {
     // Clean changelog
     changelog = changelog.replace("Spoiler", "");
     changelog = changelog.replace(/\n+/g, "\n");
+    changelog = changelog.trim();
 
     // Return changelog
     return changelog ? changelog : null;
