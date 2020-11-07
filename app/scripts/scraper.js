@@ -40,6 +40,7 @@ module.exports.getGameInfo = async function (url) {
 
     // Fill in the GameInfo element with the information obtained
     const info = new GameInfo();
+    info.id = extractIDFromURL(url);
     info.name = titleData.name;
     info.author = titleData.author;
     info.isMod = prefixesData.mod;
@@ -351,6 +352,23 @@ function isStatus(prefix) {
 function isMod(prefix) {
     const modPrefixes = ["MOD", "CHEAT MOD"];
     return modPrefixes.includes(prefix.toUpperCase());
+}
+
+/**
+ * @private
+ * Extracts the game's unique ID from the game's URL.
+ * @param {String} url Game's URL
+ * @return {Number} Game's ID
+ */
+function extractIDFromURL(url) {
+    // URL are in the format https://f95zone.to/threads/GAMENAME-VERSION-DEVELOPER.ID/
+    const splitted = url.split(".");
+
+    // We took the last part (clean it)
+    const value = splitted.pop().replace("/", "").trim();
+
+    // Parse and return number
+    return parseInt(value, 10);
 }
 
 /**

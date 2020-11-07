@@ -4,6 +4,11 @@ class GameInfo {
     constructor() {
         //#region Properties
         /**
+         * Unique ID of the game on the platform.
+         * @type Number
+         */
+        this.id = -1;
+        /**
          * Game name
          * @type String
          */

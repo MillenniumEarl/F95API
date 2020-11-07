@@ -51,6 +51,6 @@ async function main() {
 
         // Extract first game
         const gamedata = found[0];
-        console.log(`Found ${gamedata.name} (${gamedata.version}) by ${gamedata.author}`);
+        console.log(`Found ${gamedata.name} (${gamedata.version}, ID ${gamedata.id}) by ${gamedata.author}`);
     }
 }
