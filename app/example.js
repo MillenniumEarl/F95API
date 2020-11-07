@@ -22,8 +22,6 @@ main();
 async function main() {
     // Local variables
     const gameList = [
-        "kingdom of deception",
-        "perverted education",
         "corrupted kingdoms",
         "summertime saga",
         "brothel king"
