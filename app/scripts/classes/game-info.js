@@ -4,24 +4,24 @@ class GameInfo {
     constructor() {
         //#region Properties
         /**
-       * Game name
-       * @type String
-       */
+         * Game name
+         * @type String
+         */
         this.name = null;
         /**
-        * Game author
-        * @type String
-        */
+         * Game author
+         * @type String
+         */
         this.author = null;
         /**
-       * URL to the game's official conversation on the F95Zone portal
-       * @type String
-       */
+         * URL to the game's official conversation on the F95Zone portal
+         * @type String
+         */
         this.url = null;
         /**
-       * Game description
-       * @type String
-       */
+         * Game description
+         * @type String
+         */
         this.overview = null;
         /**
          * Game language.
@@ -40,55 +40,45 @@ class GameInfo {
          */
         this.censored = null;
         /**
-        * List of tags associated with the game
-        * @type String[]
-        */
+         * List of tags associated with the game
+         * @type String[]
+         */
         this.tags = [];
         /**
-       * Graphics engine used for game development
-       * @type String
-       */
+         * Graphics engine used for game development
+         * @type String
+         */
         this.engine = null;
         /**
-       * Progress of the game
-       * @type String
-       */
+         * Development of the game
+         * @type String
+         */
         this.status = null;
         /**
-       * Game description image URL
-       * @type String
-       */
+         * Game description image URL
+         * @type String
+         */
         this.previewSrc = null;
         /**
-       * Game version
-       * @type String
-       */
+         * Game version
+         * @type String
+         */
         this.version = null;
         /**
-       * Last time the game underwent updates
-       * @type String
-       */
+         * Last time the game underwent updates
+         * @type Date
+         */
         this.lastUpdate = null;
         /**
-       * Last time the local copy of the game was run
-       * @type String
-       */
-        this.lastPlayed = null;
-        /**
-       * Specifies if the game is original or a mod
-       * @type Boolean
-       */
+         * Specifies if the game is original or a mod
+         * @type Boolean
+         */
         this.isMod = false;
         /**
-       * Changelog for the last version.
-       * @type String
-       */
+         * Changelog for the last version.
+         * @type String
+         */
         this.changelog = null;
-        /**
-       * Directory containing the local copy of the game
-       * @type String
-       */
-        this.gameDir = null;
         //#endregion Properties
     }
 
