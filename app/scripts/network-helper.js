@@ -19,7 +19,6 @@ const LoginResult = require("./classes/login-result.js");
 const userAgent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15) " + 
     "AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0 Safari/605.1.15";
 axiosCookieJarSupport(axios);
-const cookieJar = new tough.CookieJar();
 
 const commonConfig = {
     headers: {
@@ -27,7 +26,7 @@ const commonConfig = {
         "Connection": "keep-alive"
     },
     withCredentials: true,
-    jar: cookieJar // Used to store the token in the PC
+    jar: new tough.CookieJar() // Used to store the token in the PC
 };
 
 /**

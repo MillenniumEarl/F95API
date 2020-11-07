@@ -17,13 +17,13 @@ const UserData = require("./classes/user-data.js");
 module.exports.getUserData = async function() {
     // Fetch data
     const data = await fetchUsernameAndAvatar();
-    const urls = await fetchWatchedThreadURLs();
+    const urls = await fetchWatchedGameThreadURLs();
 
     // Create object
     const ud = new UserData();
     ud.username = data.username;
     ud.avatarSrc = data.source;
-    ud.watchedThreads = urls;
+    ud.watchedGameThreads = urls;
 
     return ud;
 };
@@ -58,13 +58,21 @@ async function fetchUsernameAndAvatar() {
 
 /**
  * @private
- * Gets the list of URLs of threads watched by the user.
+ * Gets the list of URLs of game threads watched by the user.
  * @returns {Promise<String[]>} List of URLs
  */
-async function fetchWatchedThreadURLs() {
+async function fetchWatchedGameThreadURLs() {
     // Local variables
-    let currentURL = f95url.F95_WATCHED_THREADS;
-    const wathcedThreadURLs = [];
+    const watchedGameThreadURLs = [];
+
+    // Get the first page with the "unread" flag disabled
+    // and searching only the games forum
+    const firstPageURL = new URL(f95url.F95_WATCHED_THREADS);
+    firstPageURL.searchParams.append("unread", "0");
+    firstPageURL.searchParams.append("nodes[0]", "2"); // This is the forum filter
+
+    // Set the variable containing the current scraped page
+    let currentURL = firstPageURL.href;
 
     do {
         // Fetch page
@@ -76,14 +84,14 @@ async function fetchWatchedThreadURLs() {
 
         // Find the URLs
         const urls = fetchPageURLs(body);
-        wathcedThreadURLs.push(...urls);
+        watchedGameThreadURLs.push(...urls);
 
         // Find the next page (if any)
         currentURL = fetchNextPageURL(body);
     }
     while (currentURL);
 
-    return wathcedThreadURLs;
+    return watchedGameThreadURLs;
 }
 
 /**

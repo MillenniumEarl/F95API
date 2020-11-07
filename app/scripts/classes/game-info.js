@@ -93,6 +93,7 @@ class GameInfo {
     /* istanbul ignore next */
     toJSON() {
         return {
+            id: this.id,
             name: this.name,
             author: this.author,
             url: this.url,
@@ -106,10 +107,8 @@ class GameInfo {
             previewSrc: this.previewSrc,
             version: this.version,
             lastUpdate: this.lastUpdate,
-            lastPlayed: this.lastPlayed,
             isMod: this.isMod,
             changelog: this.changelog,
-            gameDir: this.gameDir,
         };
     }
 

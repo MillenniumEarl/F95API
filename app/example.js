@@ -37,7 +37,7 @@ async function main() {
     // Get user data
     console.log("Fetching user data...");
     const userdata = await F95API.getUserData();
-    console.log(`${userdata.username} follows ${userdata.watchedThreads.length} threads`);
+    console.log(`${userdata.username} follows ${userdata.watchedGameThreads.length} threads`);
 
     for(const gamename of gameList) {
         console.log(`Searching '${gamename}'...`);
