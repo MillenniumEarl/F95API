@@ -63,7 +63,7 @@ User data (after authentication) can be stored in a UserData object, consisting 
 ```
 username: Name of the logged in user
 avatarSrc: Source URL of the user's profile picture
-watchedThreads: List of URLs of threads followed by the user
+watchedGameThreads: List of URLs of threads followed by the user
 ```
 
 ## Login results
