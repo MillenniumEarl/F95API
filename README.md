@@ -70,8 +70,8 @@ watchedThreads: List of URLs of threads followed by the user
 The outcome of the authentication process is represented by the LoginResult object:
 
 ```
-success: Was the authentication successful?;
-message: Possible error message (unrecognized user, wrong password ...) or authentication successful message
+success: Was the authentication successful?;ì
+message: Possible error message (unrecognized user, wrong password...) or authentication successful message
 ```
 
 # Logging
