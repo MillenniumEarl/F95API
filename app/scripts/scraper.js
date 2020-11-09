@@ -14,7 +14,7 @@ const f95Selector = require("./constants/css-selector.js");
  * Get information from the game's main page.
  * @param {String} url URL of the game/mod to extract data from
  * @return {Promise<GameInfo>} Complete information about the game you are
- * looking for
+ * looking for or `null` if is impossible to parse information
  */
 module.exports.getGameInfo = async function (url) {
     shared.logger.info("Obtaining game info");
@@ -32,8 +32,12 @@ module.exports.getGameInfo = async function (url) {
     const src = extractPreviewSource(body);
     const changelog = extractChangelog(mainPost);
     const structuredData = extractStructuredData(body);
-    const parsedInfos = parseMainPostText(structuredData["description"]);
-    const overview = getOverview(structuredData["description"], prefixesData.mod);
+
+    // Sometimes the JSON-LD are not set, especially in low-profile game
+    if(!structuredData) return null;
+
+    const parsedInfos = parseMainPostText(structuredData.description);
+    const overview = getOverview(structuredData.description, prefixesData.mod);
     
     // Obtain the updated URL
     const redirectUrl = await getUrlRedirect(url);
@@ -302,7 +306,7 @@ function extractStructuredData(body) {
         // Return only the data of the game
         if (json["@type"] === "Book") return json;
     }).get();
-    return json[0] ? json[0] : null;
+    return json.lenght !== 0 ? json[0] : null;
 }
 
 /**

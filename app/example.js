@@ -22,9 +22,9 @@ main();
 async function main() {
     // Local variables
     const gameList = [
+        "Four Elements Trainer",
         "corrupted kingdoms",
-        "summertime saga",
-        "brothel king"
+        "summertime saga"
     ];
 
     // Log in the platform
