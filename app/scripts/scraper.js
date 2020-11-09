@@ -137,7 +137,7 @@ function extractInfoFromTitle(body) {
         version = matches[matches.length - 2].replace(/[[\]]+/g, "").trim();
 
         // Remove the trailing "v"
-        if (version[0] === "v") version.replace("v", "");
+        if (version[0] === "v") version = version.replace("v", "");
     }
     else shared.logger.trace(`Malformed title: ${title}`);
 
