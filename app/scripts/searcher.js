@@ -23,7 +23,7 @@ module.exports.searchGame = async function (name) {
     const searchName = encodeURIComponent(name.toUpperCase());
     
     // Prepare the URL (only title, search in the "Games" section, order by relevance)
-    const url = `https://f95zone.to/search/83456043/?q=${searchName}&t=post&c[child_nodes]=1&c[nodes][0]=2&c[title_only]=1&o=relevance`;
+    const url = `https://f95zone.to/search/83456043/?q="${searchName}"&t=post&c[child_nodes]=1&c[nodes][0]=2&c[title_only]=1&o=relevance`;
 
     // Fetch and parse the result URLs
     return await fetchResultURLs(url);
@@ -42,7 +42,7 @@ module.exports.searchMod = async function (name) {
     const searchName = encodeURIComponent(name.toUpperCase());
 
     // Prepare the URL (only title, search in the "Mods" section, order by relevance)
-    const url = `https://f95zone.to/search/83459796/?q=${searchName}&t=post&c[child_nodes]=1&c[nodes][0]=41&c[title_only]=1&o=relevance`;
+    const url = `https://f95zone.to/search/83459796/?q="${searchName}"&t=post&c[child_nodes]=1&c[nodes][0]=41&c[title_only]=1&o=relevance`;
 
     // Fetch and parse the result URLs
     return await fetchResultURLs(url);
