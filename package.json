@@ -10,7 +10,7 @@
     "type": "git",
     "url": "https://github.com/MillenniumEarl/F95API.git"
   },
-  "license": "UNLICENSED",
+  "license": "MIT",
   "private": true,
   "keywords": [
     "f95",
