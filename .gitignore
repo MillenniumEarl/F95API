@@ -2,3 +2,4 @@ node_modules/
 f95cache/
 .nyc_output/
 .env
+coverage.lcov
