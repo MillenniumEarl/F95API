@@ -6,7 +6,7 @@ module.exports = Object.freeze({
     GT_TAGS: "a.tagItem",
     GT_TITLE: "h1.p-title-value",
     GT_TITLE_PREFIXES: "h1.p-title-value > a.labelLink > span[dir=\"auto\"]",
-    GT_LAST_CHANGELOG: "div.bbCodeBlock-content > div:first-of-type",
+    GT_LAST_CHANGELOG: "b:contains('Changelog') + br + div > div",
     GT_JSONLD: "script[type=\"application/ld+json\"]",
     WT_FILTER_POPUP_BUTTON: "a.filterBar-menuTrigger",
     WT_NEXT_PAGE: "a.pageNav-jump--next",

@@ -204,6 +204,11 @@ function extractChangelog(mainPost) {
     changelog = changelog.replace(/\n+/g, "\n");
     changelog = changelog.trim();
 
+    // Delete the version at the start of the changelog
+    const firstNewLine = changelog.indexOf("\n");
+    const supposedVersion = changelog.substring(0, firstNewLine);
+    if (supposedVersion[0] === "v") changelog = changelog.substring(firstNewLine).trim();
+    
     // Return changelog
     return changelog ? changelog : null;
 }
