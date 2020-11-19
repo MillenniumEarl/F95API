@@ -7,6 +7,7 @@ const network = require("./suites/network-helper-test.js").suite;
 const scraper = require("./suites/scraper-test.js").suite;
 const searcher = require("./suites/searcher-test.js").suite;
 const uScraper = require("./suites/user-scraper-test.js").suite;
+const tags = require("./suites/tag-parser-test.js").suite;
 
 describe("Test basic function", function testBasic() {
     //#region Set-up
@@ -15,6 +16,7 @@ describe("Test basic function", function testBasic() {
 
     describe("Test credentials class", credentials.bind(this));
     describe("Test network helper", network.bind(this));
+    describe("Test tag parser", tags.bind(this));
 });
 
 describe("Test F95 modules", function testF95Modules() {
