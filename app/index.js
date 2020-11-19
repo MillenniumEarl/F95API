@@ -12,11 +12,13 @@ const Credentials = require("./scripts/classes/credentials.js");
 const GameInfo = require("./scripts/classes/game-info.js");
 const LoginResult = require("./scripts/classes/login-result.js");
 const UserData = require("./scripts/classes/user-data.js");
+const TagParser = require("./scripts/classes/tag-parser.js");
 
 //#region Export classes
 module.exports.GameInfo = GameInfo;
 module.exports.LoginResult = LoginResult;
 module.exports.UserData = UserData;
+module.exports.TagParser = TagParser;
 //#endregion Export classes
 
 //#region Export properties

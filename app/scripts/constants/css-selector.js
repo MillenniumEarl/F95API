@@ -20,4 +20,5 @@ module.exports = Object.freeze({
     UD_USERNAME_ELEMENT: "a[href=\"/account/\"] > span.p-navgroup-linkText",
     UD_AVATAR_PIC: "a[href=\"/account/\"] > span.avatar > img[class^=\"avatar\"]",
     LOGIN_MESSAGE_ERROR: "div.blockMessage.blockMessage--error.blockMessage--iconic",
+    LU_TAGS_SCRIPT: "script:contains('latestUpdates')",
 });
