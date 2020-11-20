@@ -196,12 +196,16 @@ function extractPreviewSource(body) {
 function extractChangelog(mainPost) {
     shared.logger.trace("Extracting last changelog...");
 
-    // Obtain changelog
+    // Obtain the changelog for ALL the versions
     let changelog = mainPost.find(f95Selector.GT_LAST_CHANGELOG).text().trim();
+
+    // Parse the latest changelog
+    const endChangelog = changelog.indexOf("\nv"); // \n followed by version (v)
+    if (endChangelog !== -1) changelog = changelog.substring(0, endChangelog + 1);
 
     // Clean changelog
     changelog = changelog.replace("Spoiler", "");
-    changelog = changelog.replace(/\n+/g, "\n");
+    changelog = changelog.replace(/\n+/g, "\n"); // Multiple /n
     changelog = changelog.trim();
 
     // Delete the version at the start of the changelog
