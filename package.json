@@ -1,7 +1,7 @@
 {
   "main": "./app/index.js",
   "name": "f95api",
-  "version": "1.6.13",
+  "version": "1.7.0",
   "author": "Millennium Earl",
   "description": "Unofficial Node JS module for scraping F95Zone platform",
   "repository": {
