@@ -63,6 +63,7 @@ class TagParser {
         for(const tag of tags) {
             // Extract the key from the value
             const key = this._getKeyByValue(this._tagsDict, tag);
+            /* istanbul ignore next */
             if(key) ids.push(parseInt(key));
         }
         return ids.sort((a, b) => a - b); // JS sort alphabetically, same old problem
@@ -78,6 +79,7 @@ class TagParser {
         for(const id of ids) {
             // Check if the key exists in the dict
             const exist = id in this._tagsDict;
+            /* istanbul ignore next */
             if (!exist) continue;
 
             // Save the value

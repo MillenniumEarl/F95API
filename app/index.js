@@ -54,6 +54,7 @@ const USER_NOT_LOGGED = "User not authenticated, unable to continue";
  * @returns {Promise<LoginResult>} Result of the operation
  */
 module.exports.login = async function (username, password) {
+    /* istanbul ignore next */
     if (shared.isLogged) {
         shared.logger.info(`${username} already authenticated`);
         return new LoginResult(true, `${username} already authenticated`);
@@ -81,6 +82,7 @@ module.exports.login = async function (username, password) {
  * @returns {Promise<Boolean>} true if an update is available, false otherwise
  */
 module.exports.checkIfGameHasUpdate = async function (info) {
+    /* istanbul ignore next */
     if (!shared.isLogged) {
         shared.logger.warn(USER_NOT_LOGGED);
         return false;
@@ -109,6 +111,7 @@ module.exports.checkIfGameHasUpdate = async function (info) {
  * an identified game (in the case of homonymy of titles)
  */
 module.exports.getGameData = async function (name, mod) {
+    /* istanbul ignore next */
     if (!shared.isLogged) {
         shared.logger.warn(USER_NOT_LOGGED);
         return null;
@@ -138,6 +141,7 @@ module.exports.getGameData = async function (name, mod) {
  * @returns {Promise<GameInfo>} Information about the game. If no game was found, null is returned
  */
 module.exports.getGameDataFromURL = async function (url) {
+    /* istanbul ignore next */
     if (!shared.isLogged) {
         shared.logger.warn(USER_NOT_LOGGED);
         return null;
@@ -159,6 +163,7 @@ module.exports.getGameDataFromURL = async function (url) {
  * @returns {Promise<UserData>} Data of the user currently logged in
  */
 module.exports.getUserData = async function () {
+    /* istanbul ignore next */
     if (!shared.isLogged) {
         shared.logger.warn(USER_NOT_LOGGED);
         return null;

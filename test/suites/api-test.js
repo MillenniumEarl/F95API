@@ -20,6 +20,7 @@ const PASSWORD = process.env.F95_PASSWORD;
 module.exports.suite = function suite() {
     // Global suite variables
     const gameURL = "https://f95zone.to/threads/perverted-education-v0-9601-april-ryan.1854/";
+    const updatedGameURL = "https://f95zone.to/threads/noxian-nights-v1-2-4-hreinn-games.2/";
 
     it("Test login", async function testLogin() {
         const result = await F95API.login(USERNAME, PASSWORD);
@@ -32,7 +33,7 @@ module.exports.suite = function suite() {
         expect(userdata.username).to.be.equal(USERNAME);
     });
 
-    it("Test game update checking", async function testGameUpdateCheck() {
+    it("Test game for existing update", async function checkUpdateByURL() {
         // We force the creation of a GameInfo object, 
         // knowing that the checkIfGameHasUpdate() function 
         // only needs the game URL
@@ -40,6 +41,38 @@ module.exports.suite = function suite() {
 
         // The gameURL identifies a game for which we know there is an update
         info.url = gameURL;
+
+        // Check for updates
+        const update = await F95API.checkIfGameHasUpdate(info);
+        expect(update).to.be.true;
+    });
+
+    it("Test game for non existing update", async function checkUpdateByVersion() {
+        // We force the creation of a GameInfo object, 
+        // knowing that the checkIfGameHasUpdate() function 
+        // only needs the game URL
+        const info = new F95API.GameInfo();
+
+        // The updatedGameURL identifies a game for which 
+        // we know there is **not** an update
+        info.url = updatedGameURL;
+        info.version = "1.2.4"; // The hame is marked as "Completed" so it shouldn't change it's version
+
+        // Check for updates
+        const update = await F95API.checkIfGameHasUpdate(info);
+        expect(update).to.be.false;
+    });
+
+    it("Test game for fake update", async function checkFakeUpdateByVersion() {
+        // We force the creation of a GameInfo object, 
+        // knowing that the checkIfGameHasUpdate() function 
+        // only needs the game URL
+        const info = new F95API.GameInfo();
+
+        // The updatedGameURL identifies a game for which 
+        // we know there is **not** an update
+        info.url = updatedGameURL;
+        info.version = "ThisIsAFakeVersion"; // The real version is "1.2.4"
 
         // Check for updates
         const update = await F95API.checkIfGameHasUpdate(info);
