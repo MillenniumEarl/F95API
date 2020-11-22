@@ -12,7 +12,7 @@ jobs:
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v1
         with:
-          node-version: 12.x
+          node-version: '12.x'
           always-auth: true
       - run: yarn install
 
@@ -23,7 +23,7 @@ jobs:
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v1
         with:
-          node-version: 12.x
+          node-version: '12.x'
           registry-url: https://npm.pkg.github.com/
           scope: '@MillenniumEarl'
           always-auth: true
@@ -34,3 +34,18 @@ jobs:
       - run: yarn publish
         env:
           NPM_AUTH_TOKEN: ${{secrets.NPM_AUTH_TOKEN}}
+  publich-npm:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      # Setup .npmrc file to publish to npm
+      - uses: actions/setup-node@v1
+        with:
+          node-version: '12.x'
+          registry-url: 'https://registry.npmjs.org'
+      - run: npm install
+      - run: npm publish
+        env:
+          NPM_AUTH_TOKEN: ${{secrets.NPM_AUTH_TOKEN}}
+
+
