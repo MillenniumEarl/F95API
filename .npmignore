@@ -1,0 +1,10 @@
+test
+coverage.lcov
+.nyc_output
+.eslintrc.json
+.gitignore
+.gitattribute
+.github
+.vscode
+.deepsource.toml
+.env
