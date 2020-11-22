@@ -1,7 +1,7 @@
 {
   "main": "./app/index.js",
   "name": "@millenniumearl/f95api",
-  "version": "1.6.4",
+  "version": "1.6.9",
   "author": {
     "name": "Millennium Earl"
   },
@@ -30,7 +30,7 @@
     "unit-test-mocha": "nyc --reporter=text mocha './test/index-test.js'",
     "report-coverage": "nyc report --reporter=text-lcov > coverage.lcov && codecov -t 38ad72bf-a29d-4c2e-9827-96cbe037afd2",
     "run-example": "node ./app/example.js",
-    "deploy": "npm pack"
+    "publish": "npm publish"
   },
   "engines": {
     "node": ">=10.0"
