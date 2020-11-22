@@ -3,7 +3,7 @@ name: publish
 on:
   push:
     branches:
-      - prod
+      - main
 
 jobs:
   build:
@@ -35,7 +35,7 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
   publish-npm:
-    needs: publish-gpr
+    needs: build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
