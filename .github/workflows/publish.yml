@@ -2,8 +2,7 @@ name: publish
 
 on:
   push:
-    branches:
-      - main
+    branches: [master]
 
 jobs:
   build:
@@ -34,7 +33,7 @@ jobs:
       - run: yarn publish
         env:
           NODE_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
-          
+
   publish-npm:
     needs: build
     runs-on: ubuntu-latest
