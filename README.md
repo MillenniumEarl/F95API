@@ -3,6 +3,7 @@
 [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2FMillenniumEarl%2FF95API.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2FMillenniumEarl%2FF95API?ref=badge_shield)
 [![Known Vulnerabilities](https://snyk.io/test/github/MillenniumEarl/F95API/badge.svg)](https://snyk.io/test/github/MillenniumEarl/F95API)
 [![codecov](https://codecov.io/gh/MillenniumEarl/F95API/branch/master/graph/badge.svg?token=KHN1TNIH7D)](https://codecov.io/gh/MillenniumEarl/F95API)
+![publish](https://github.com/MillenniumEarl/F95API/workflows/publish/badge.svg)
 
 # F95API
 
@@ -83,5 +84,5 @@ To log the behavior of the application [log4js](https://github.com/log4js-node/l
 - If you can, return a meaningful value
 - Return `null` only if the function should return a complex object (including strings)
 - Return an empty array if the function should return an array
-- Return `false`, `-1` when the function should retrn `boolean` or `number`
+- Return `false`, `-1` when the function should return `boolean` or `number`
 - Throw an exception only if it is an error or if a wrong value could mess up the functioning of the library
