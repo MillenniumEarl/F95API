@@ -224,12 +224,7 @@ module.exports.getLatestUpdates = async function(args, limit) {
     const urls = await latestFetch.fetchLatest(query, limit);
 
     // Get the gamedata from urls
-    const gameInfoList = [];
-    for(const url of urls) {
-        const gameinfo = await exports.getGameDataFromURL(url);
-        gameInfoList.push(gameinfo);
-    }
-
-    return gameInfoList;
+    const promiseList = urls.map(u => exports.getGameDataFromURL(u));
+    return await Promise.all(promiseList);
 };
 //#endregion
