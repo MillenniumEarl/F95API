@@ -6,6 +6,7 @@ const networkHelper = require("./scripts/network-helper.js");
 const scraper = require("./scripts/scraper.js");
 const searcher = require("./scripts/searcher.js");
 const uScraper = require("./scripts/user-scraper.js");
+const latestFetch = require("./scripts/latest-fetch.js");
 
 // Classes from file
 const Credentials = require("./scripts/classes/credentials.js");
@@ -170,5 +171,64 @@ module.exports.getUserData = async function () {
     }
 
     return await uScraper.getUserData();
+};
+
+/**
+ * @public
+ * Gets the latest updated games that match the specified parameters.
+ * You **must** be logged in to the portal before calling this method.
+ * @param {Object} args
+ * Parameters used for the search.
+ * @param {String[]} [args.tags]
+ * List of tags to be included in the search (max 5).
+ * @param {Number} [args.datelimit]
+ * Number of days since the game was last updated.
+ * The entered value will be approximated to the nearest valid one.
+ * Use `0` to select no time limit.
+ * @param {String[]} [args.prefixes]
+ * Prefixes to be included in the search.
+ * @param {String} [args.sorting]
+ * Method of sorting the results between (default: `date`):
+ * `date`, `likes`, `views`, `name`, `weighted`
+ * @param {Number} limit Maximum number of results
+ * @returns {Promise<GameInfo[]>} List of games
+ */
+module.exports.getLatestUpdates = async function(args, limit) {
+    // Check limit value
+    if(limit <= 0) throw new Error("limit must be greater than 0");
+
+    // Prepare the parser
+    const tp = new TagParser();
+    tp.fetch();
+
+    // Get the closest date limit
+    let filterDate = 0;
+    if(args.datelimit) {
+        // Script taken from:
+        // https://www.gavsblog.com/blog/find-closest-number-in-array-javascript
+        const validDate = [365, 180, 90, 30, 14, 7, 3, 1, 0];
+        validDate.sort((a, b) => {
+            return Math.abs(args.datelimit - a) - Math.abs(args.datelimit - b);
+        });
+        filterDate = validDate[0];
+    }
+
+    // Fetch the games
+    const query = {
+        tags: args.tags ? tp.tagsToIDs(args.tags) : [],
+        prefixes: [], // TODO: Add prefix parser
+        sort: args.sorting ? args.sorting : "date",
+        date: filterDate,
+    };
+    const urls = await latestFetch.fetchLatest(query, limit);
+
+    // Get the gamedata from urls
+    const gameInfoList = [];
+    for(const url of urls) {
+        const gameinfo = await exports.getGameDataFromURL(url);
+        gameInfoList.push(gameinfo);
+    }
+
+    return gameInfoList;
 };
 //#endregion
