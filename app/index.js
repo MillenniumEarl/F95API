@@ -187,6 +187,7 @@ module.exports.getUserData = async function () {
  * Use `0` to select no time limit.
  * @param {String[]} [args.prefixes]
  * Prefixes to be included in the search.
+ * **Currently not supported**
  * @param {String} [args.sorting]
  * Method of sorting the results between (default: `date`):
  * `date`, `likes`, `views`, `name`, `weighted`
