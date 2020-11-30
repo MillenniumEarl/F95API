@@ -375,13 +375,12 @@ function isMod(prefix) {
  */
 function extractIDFromURL(url) {
     // URL are in the format https://f95zone.to/threads/GAMENAME-VERSION-DEVELOPER.ID/
-    const splitted = url.split(".");
-
-    // We took the last part (clean it)
-    const value = splitted.pop().replace("/", "").trim();
+    // or https://f95zone.to/threads/ID/
+    const match = url.match(/(\.)?([0-9]+)(?!-)/);
+    if(!match) return -1;
 
     // Parse and return number
-    return parseInt(value, 10);
+    return parseInt(match[0], 10);
 }
 
 /**
