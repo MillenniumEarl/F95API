@@ -190,7 +190,7 @@ module.exports.getUserData = async function () {
  * **Currently not supported**
  * @param {String} [args.sorting]
  * Method of sorting the results between (default: `date`):
- * `date`, `likes`, `views`, `name`, `weighted`
+ * `date`, `likes`, `views`, `name`, `rating`
  * @param {Number} limit Maximum number of results
  * @returns {Promise<GameInfo[]>} List of games
  */

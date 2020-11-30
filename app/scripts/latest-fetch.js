@@ -16,7 +16,7 @@ const f95url = require("./constants/url.js");
  * List of prefixes to be included in the search.
  * @param {String} [query.sort] 
  * Sorting type between (default: `date`):
- * `date`, `likes`, `views`, `name`, `weighted`
+ *`date`, `likes`, `views`, `name`, `rating`
  * @param {Number} [query.date]
  * Date limit in days, to be understood as "less than".
  * Possible values:
