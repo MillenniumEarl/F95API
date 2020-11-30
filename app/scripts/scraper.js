@@ -376,7 +376,7 @@ function isMod(prefix) {
 function extractIDFromURL(url) {
     // URL are in the format https://f95zone.to/threads/GAMENAME-VERSION-DEVELOPER.ID/
     // or https://f95zone.to/threads/ID/
-    const match = url.match(/(\.)?([0-9]+)(?!-)/);
+    const match = url.match(/([0-9]+)(?=\/|\b)(?!-)/);
     if(!match) return -1;
 
     // Parse and return number
