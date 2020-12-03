@@ -1,5 +1,8 @@
 "use strict";
 
+// Core modules
+const {readFileSync, writeFileSync, existsSync} = require("fs");
+
 // Public modules from npm
 const axios = require("axios").default;
 const ky = require("ky-universal").create({
@@ -91,7 +94,11 @@ module.exports.authenticate = async function (credentials, force) {
         const errorMessage = $("body").find(f95selector.LOGIN_MESSAGE_ERROR).text().replace(/\n/g, "");
 
         // Return the result of the authentication
-        if (errorMessage === "") return new LoginResult(true, "Authentication successful");
+        if (errorMessage === "") {
+            // Fetch data
+            await exports.fetchPlatformData();
+            return new LoginResult(true, "Authentication successful");
+        }
         else return new LoginResult(false, errorMessage);
     } catch (e) {
         shared.logger.error(`Error ${e.message} occurred while authenticating to ${secureURL}`);
@@ -121,35 +128,60 @@ module.exports.getF95Token = async function() {
  * @protected
  * Gets the basic data used for game data processing 
  * (such as graphics engines and progress statuses)
- * @deprecated
  */
-/* istanbul ignore next */
 module.exports.fetchPlatformData = async function() {
-    // Fetch the response of the platform
-    const response = await exports.fetchGETResponse(f95url.F95_LATEST_UPDATES);
-    if (!response) {
-        shared.logger.warn("Unable to get the token for the session");
+    // Check if the data are cached
+    if(existsSync(shared.cachePath)) {
+        const data = readFileSync(shared.cachePath);
+        const json = JSON.parse(data);
+        shared.engines = json.engines;
+        shared.statuses = json.statuses;
+        shared.tags = json.tags;
+        shared.others = json.others;
         return;
     }
 
-    // The response is a HTML page, we need to find 
-    // the base data, used when scraping the games
-    const $ = cheerio.load(response.data);
+    // Load the HTML
+    const html = await exports.fetchHTML(f95url.F95_LATEST_UPDATES);
+    const $ = cheerio.load(html);
 
-    // Extract the elements
-    const engineElements = $("body").find(f95selector.BD_ENGINE_ID_SELECTOR);
-    const statusesElements = $("body").find(f95selector.BD_STATUS_ID_SELECTOR);
+    // Clean the JSON string
+    const unparsedText = $(f95selector.LU_TAGS_SCRIPT).html().trim();
+    const startIndex = unparsedText.indexOf("{");
+    const endIndex = unparsedText.lastIndexOf("}");
+    const parsedText = unparsedText.substring(startIndex, endIndex + 1);
+    const data = JSON.parse(parsedText);
 
-    // Extract the raw text
-    engineElements.each(function extractEngineNames(idx, el) {
-        const engine = cheerio.load(el).text().trim();
-        shared.engines.push(engine);
+    // Extract and parse the data
+    const prefixes = data.prefixes.games.map(e => {
+        return {
+            element: e.name,
+            data: e.prefixes
+        };
     });
+    
+    for(const p of prefixes) {
+        // Prepare the dict
+        const dict = {};
+        for (const e of p.data) dict[parseInt(e.id)] = e.name.replace("&#039;", "'");
 
-    statusesElements.each(function extractEngineNames(idx, el) {
-        const status = cheerio.load(el).text().trim();
-        shared.statuses.push(status);
-    });
+        if(p.element === "Engine") shared.engines = dict;
+        else if (p.element === "Status") shared.statuses = dict;
+        else if (p.element === "Other") shared.others = dict;
+    }
+
+    // Parse the tags
+    shared.tags = data.tags;
+    
+    // Cache data
+    const saveDict = {
+        engines: shared.engines,
+        statuses: shared.statuses,
+        tags: shared.tags,
+        others: shared.others,
+    };
+    const json = JSON.stringify(saveDict);
+    writeFileSync(shared.cachePath, json);
 };
 
 //#region Utility methods
