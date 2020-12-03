@@ -1,7 +1,4 @@
 module.exports = Object.freeze({
-    BD_ENGINE_ID_SELECTOR: "div[id^=\"btn-prefix_1_\"]>span",
-    BD_STATUS_ID_SELECTOR: "div[id^=\"btn-prefix_4_\"]>span",
-    
     GT_IMAGES: "img:not([title])[data-src^=\"https://attachments.f95zone.to\"][data-url=\"\"]",
     GT_TAGS: "a.tagItem",
     GT_TITLE: "h1.p-title-value",
