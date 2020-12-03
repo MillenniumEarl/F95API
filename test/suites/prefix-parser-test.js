@@ -7,7 +7,7 @@ const { isEqual } = require("lodash");
 
 // Modules from file
 const Credentials = require("../../app/scripts/classes/credentials.js");
-const TagParser = require("../../app/scripts/classes/tag-parser.js");
+const PrefixParser = require("../../app/scripts/classes/prefix-parser.js");
 const { authenticate } = require("../../app/scripts/network-helper.js");
 
 // Configure the .env reader
@@ -27,21 +27,17 @@ module.exports.suite = function suite() {
     });
     //#endregion Setup
 
-    it("Fetch tags and parse", async function testTagParser() {
+    it("Parse prefixes", async function testPrefixParser() {
         // Create a new parser
-        const tp = new TagParser();
-        await tp.fetch();
+        const parser = new PrefixParser();
         
-        const dictEquality = isEqual(tp._tagsDict, {});
-        expect(dictEquality, "The dictionary should be filled with values").to.be.false;
-        
-        const testTags = ["corruption", "pregnancy", "slave"];
-        const ids = tp.tagsToIDs(testTags);
-        const tags = tp.idsToTags(ids);
+        const testPrefixes = ["corruption", "pregnancy", "slave", "VN", "RPGM", "Ren'Py", "Abandoned"];
+        const ids = parser.prefixesToIDs(testPrefixes);
+        const tags = parser.idsToPrefixes(ids);
 
-        const tagsEquality = isEqual(testTags, tags);
+        const tagsEquality = isEqual(testPrefixes, tags);
         expect(tagsEquality, "The tags must be the same").to.be.true;
-        const idsEquality = isEqual([44, 103, 225], ids);
+        const idsEquality = isEqual([103, 225, 44, 13, 2, 7, 22], ids);
         expect(idsEquality, "The IDs must be the same").to.be.true;
     });
 };
