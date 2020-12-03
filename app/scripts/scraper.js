@@ -341,7 +341,7 @@ function getOverview(text, mod) {
  * @return {Boolean}
  */
 function isEngine(prefix) {
-    const engines = toUpperCaseArray(shared.engines);
+    const engines = toUpperCaseArray(Object.values(shared.engines));
     return engines.includes(prefix.toUpperCase());
 }
 
@@ -352,7 +352,7 @@ function isEngine(prefix) {
  * @return {Boolean}
  */
 function isStatus(prefix) {
-    const statuses = toUpperCaseArray(shared.statuses);
+    const statuses = toUpperCaseArray(Object.values(shared.statuses));
     return statuses.includes(prefix.toUpperCase());
 }
 
