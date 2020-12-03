@@ -43,7 +43,7 @@ class PrefixParser {
             const key = this._getKeyByValue(dict, p);
             if(key) ids.push(parseInt(key));
         }
-        return ids.sort((a, b) => a - b); // JS sort alphabetically, same old problem
+        return ids;
     }
 
     /**
@@ -65,7 +65,7 @@ class PrefixParser {
             // Check if the key exists in the dict
             if (id in dict) prefixes.push(dict[id]);
         }
-        return prefixes.sort();
+        return prefixes;
     }
 }
 
