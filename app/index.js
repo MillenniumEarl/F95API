@@ -13,13 +13,13 @@ const Credentials = require("./scripts/classes/credentials.js");
 const GameInfo = require("./scripts/classes/game-info.js");
 const LoginResult = require("./scripts/classes/login-result.js");
 const UserData = require("./scripts/classes/user-data.js");
-const TagParser = require("./scripts/classes/tag-parser.js");
+const PrefixParser = require("./scripts/classes/prefix-parser.js");
 
 //#region Export classes
 module.exports.GameInfo = GameInfo;
 module.exports.LoginResult = LoginResult;
 module.exports.UserData = UserData;
-module.exports.TagParser = TagParser;
+module.exports.PrefixParser = PrefixParser;
 //#endregion Export classes
 
 //#region Export properties
@@ -187,7 +187,6 @@ module.exports.getUserData = async function () {
  * Use `0` to select no time limit.
  * @param {String[]} [args.prefixes]
  * Prefixes to be included in the search.
- * **Currently not supported**
  * @param {String} [args.sorting]
  * Method of sorting the results between (default: `date`):
  * `date`, `likes`, `views`, `name`, `rating`
@@ -199,8 +198,7 @@ module.exports.getLatestUpdates = async function(args, limit) {
     if(limit <= 0) throw new Error("limit must be greater than 0");
 
     // Prepare the parser
-    const tp = new TagParser();
-    tp.fetch();
+    const parser = new PrefixParser();
 
     // Get the closest date limit
     let filterDate = 0;
@@ -216,8 +214,8 @@ module.exports.getLatestUpdates = async function(args, limit) {
 
     // Fetch the games
     const query = {
-        tags: args.tags ? tp.tagsToIDs(args.tags) : [],
-        prefixes: [], // TODO: Add prefix parser
+        tags: args.tags ? parser.prefixesToIDs(args.tags) : [],
+        prefixes: args.prefixes ? parser.prefixesToIDs(args.prefixes) : [],
         sort: args.sorting ? args.sorting : "date",
         date: filterDate,
     };
