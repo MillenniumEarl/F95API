@@ -56,7 +56,7 @@ module.exports.fetchHTML = async function (url) {
  * and token obtained previously. Save cookies on your 
  * device after authentication.
  * @param {Credentials} credentials Platform access credentials
- * @param {Boolea} force Specifies whether the request should be forced, ignoring any saved cookies
+ * @param {Boolean} force Specifies whether the request should be forced, ignoring any saved cookies
  * @returns {Promise<LoginResult>} Result of the operation
  */
 module.exports.authenticate = async function (credentials, force) {
