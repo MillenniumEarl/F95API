@@ -37,6 +37,7 @@
     "ky": "^0.25.0",
     "ky-universal": "^0.8.2",
     "log4js": "^6.3.0",
+    "luxon": "^1.25.0",
     "tough-cookie": "^4.0.0"
   },
   "devDependencies": {

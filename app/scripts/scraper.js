@@ -2,6 +2,7 @@
 
 // Public modules from npm
 const cheerio = require("cheerio");
+const {DateTime} = require("luxon");
 
 // Modules from file
 const { fetchHTML, getUrlRedirect } = require("./network-helper.js");
@@ -256,11 +257,11 @@ function parseMainPostText(text) {
     }
 
     // Last update of the main post
-    if (data.UPDATED) {
+    if (data.UPDATED && DateTime.fromISO(data.UPDATED).isValid) {
         parsedDict["LastUpdate"] = new Date(data.UPDATED);
         delete data.UPDATED;
     }
-    else if (data.THREAD_UPDATED) {
+    else if (data.THREAD_UPDATED && DateTime.fromISO(data.THREAD_UPDATED).isValid) {
         parsedDict["LastUpdate"] = new Date(data.THREAD_UPDATED);
         delete data.THREAD_UPDATED;
     }
