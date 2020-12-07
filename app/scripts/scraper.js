@@ -265,6 +265,7 @@ function parseMainPostText(text) {
         parsedDict["LastUpdate"] = new Date(data.THREAD_UPDATED);
         delete data.THREAD_UPDATED;
     }
+    else parsedDict["LastUpdate"] = null;
 
     // Parse the supported OS
     if (data.OS) {
