@@ -22,6 +22,7 @@ module.exports.getGameInfo = async function (url) {
 
     // Fetch HTML and prepare Cheerio
     const html = await fetchHTML(url);
+    if(!html) return null;
     const $ = cheerio.load(html);
     const body = $("body");
     const mainPost = $(f95Selector.GS_POSTS).first();
@@ -99,7 +100,7 @@ function parseGamePrefixes(body) {
     });
 
     // If the status is not set, then the game in in development (Ongoing)
-    if (!status) status = "Ongoing";
+    status = status ?? "Ongoing";
 
     return {
         engine,
@@ -144,7 +145,6 @@ function extractInfoFromTitle(body) {
         // Remove the trailing "v"
         if (version[0] === "v") version = version.replace("v", "");
     }
-    else shared.logger.trace(`Malformed title: ${title}`);
 
     // Last element (the regex [[\]]+ remove the square brackets)
     const author = matches[matches.length - 1].replace(/[[\]]+/g, "").trim();
@@ -295,28 +295,39 @@ function parseMainPostText(text) {
 
 /**
  * @private
+ * Parse a JSON-LD element.
+ * @param {cheerio.Element} element 
+ */
+function parseScriptTag(element) {
+    // Get the element HTML
+    const html = cheerio.load(element).html().trim();
+
+    // Obtain the JSON-LD
+    const data = html
+        .replace("<script type=\"application/ld+json\">", "")
+        .replace("</script>", "");
+
+    // Convert the string to an object
+    const json = JSON.parse(data);
+
+    // Return only the data of the game
+    if (json["@type"] === "Book") return json;
+}
+
+/**
+ * @private
  * Extracts and processes the JSON-LD values found at the bottom of the page.
  * @param {cheerio.Cheerio} body Page `body` selector
  * @returns {Object.<string, string>} JSON-LD or `null` if no valid JSON is found
  */
 function extractStructuredData(body) {
     shared.logger.trace("Extracting JSON-LD data...");
+
+    // Fetch the JSON-LD data
     const structuredDataElements = body.find(f95Selector.GT_JSONLD);
-    const json = structuredDataElements.map(function parseScriptTag(idx, el) {
-        // Get the element HTML
-        const html = cheerio.load(el).html().trim();
 
-        // Obtain the JSON-LD
-        const data = html
-            .replace("<script type=\"application/ld+json\">", "")
-            .replace("</script>", "");
-
-        // Convert the string to an object
-        const json = JSON.parse(data);
-
-        // Return only the data of the game
-        if (json["@type"] === "Book") return json;
-    }).get();
+    // Parse the data
+    const json = structuredDataElements.map((idx, el) => parseScriptTag(el)).get();
     return json.lenght !== 0 ? json[0] : null;
 }
 
@@ -389,12 +400,8 @@ function extractIDFromURL(url) {
  * @private
  * Makes an array of strings uppercase.
  * @param {String[]} a 
- * @returns {String[]}
  */
 function toUpperCaseArray(a) {
-    // If the array is empty, return
-    if(a.length === 0) return [];
-
     /**
      * Makes a string uppercase.
      * @param {String} s 
