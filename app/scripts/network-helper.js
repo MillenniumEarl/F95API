@@ -39,18 +39,23 @@ const commonConfig = {
  * @returns {Promise<String>} HTML code or `null` if an error arise
  */
 module.exports.fetchHTML = async function (url) {
+    // Local variables
+    let returnValue = null;
+
     // Fetch the response of the platform
     const response = await exports.fetchGETResponse(url);
+
+    // Manage response
     if (!response) {
         shared.logger.warn(`Unable to fetch HTML for ${url}`);
-        return null;
     }
     else if (!response.headers["content-type"].includes("text/html")) {
         // The response is not a HTML page
         shared.logger.warn(`The ${url} returned a ${response.headers["content-type"]} response`);
-        return null;
     }
-    return response.data;
+
+    returnValue = response.data;
+    return returnValue;
 };
 
 /**
