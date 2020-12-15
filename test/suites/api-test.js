@@ -94,4 +94,27 @@ module.exports.suite = function suite() {
         const equal = isEqual(game, gameFromURL);
         expect(equal).to.be.true;
     });
+
+    it("Test latest games fetching", async function testLatestFetch() {
+        // Prepare a search query
+        const query = {
+            datelimit: 0,
+            tags: ["male protagonist", "3dcg"],
+            prefixes: ["Completed", "Unity"],
+            sorting: "views",
+        };
+
+        // TODO
+        // First test the parameters validation
+        // assert.throws(() => { F95API.getLatestUpdates(query, 0); }, 
+        //     Error, 
+        //     "Error thrown if limit is <= 0");
+
+        // Now we fetch certain games that are "stables" as per 2020
+        const LIMIT = 3;
+        const result = await F95API.getLatestUpdates(query, LIMIT);
+        expect(result[0].id).to.be.equal(3691, "The game should be: 'Man of the house'");
+        expect(result[1].id).to.be.equal(5483, "The game should be: 'Lucky mark'");
+        expect(result[2].id).to.be.equal(5949, "The game should be: 'Timestamps, Unconditional Love'");
+    });
 };

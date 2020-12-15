@@ -41,9 +41,11 @@ module.exports.fetchHTML = async function (url) {
     const response = await exports.fetchGETResponse(url);
 
     // Manage response
+    /* istambul ignore next */
     if (!response) {
         shared.logger.warn(`Unable to fetch HTML for ${url}`);
     }
+    /* istambul ignore next */
     else if (!response.headers["content-type"].includes("text/html")) {
         // The response is not a HTML page
         shared.logger.warn(`The ${url} returned a ${response.headers["content-type"]} response`);
@@ -113,6 +115,7 @@ module.exports.authenticate = async function (credentials, force) {
 module.exports.getF95Token = async function() {
     // Fetch the response of the platform
     const response = await exports.fetchGETResponse(f95url.F95_LOGIN_URL);
+    /* istambul ignore next */
     if (!response) {
         shared.logger.warn("Unable to get the token for the session");
         return null;

@@ -69,6 +69,7 @@ module.exports.login = async function (username, password) {
     const result = await networkHelper.authenticate(creds);
     shared.isLogged = result.success;
 
+    /* istambul ignore next */
     if (result.success) shared.logger.info("User logged in through the platform");
     else shared.logger.warn(`Error during authentication: ${result.message}`);
 
