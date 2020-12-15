@@ -243,6 +243,24 @@ module.exports.isStringAValidURL = function (url) {
 };
 
 /**
+ * @private
+ * Check with Axios if a URL exists.
+ * @param {String} url 
+ */
+async function _axiosUrlExists(url) {
+    // Local variables
+    let valid = false;
+    try {
+        const response = await axios.head(url);
+        valid = response && !/4\d\d/.test(response.status);
+    } catch (error) {
+        if (error.code === "ENOTFOUND") valid = false;
+        else throw error;
+    }
+    return valid;
+}
+
+/**
  * @protected
  * Check if a particular URL is valid and reachable on the web.
  * @param {String} url URL to check
@@ -256,8 +274,7 @@ module.exports.urlExists = async function (url, checkRedirect = false) {
     let valid = false;
 
     if (exports.isStringAValidURL(url)) {
-        const response = await axios.head(url);
-        valid = response && !/4\d\d/.test(response.status);
+        valid = await _axiosUrlExists(url);
 
         if (valid && checkRedirect) {
             const redirectUrl = await exports.getUrlRedirect(url);
