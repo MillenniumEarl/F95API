@@ -133,57 +133,19 @@ module.exports.getF95Token = async function() {
  */
 module.exports.fetchPlatformData = async function() {
     // Check if the data are cached
-    if(existsSync(shared.cachePath)) {
-        const data = readFileSync(shared.cachePath);
-        const json = JSON.parse(data);
-        shared.engines = json.engines;
-        shared.statuses = json.statuses;
-        shared.tags = json.tags;
-        shared.others = json.others;
-        return;
+    if(!_readCache(shared.cachePath)) {
+        // Load the HTML
+        const html = await exports.fetchHTML(f95url.F95_LATEST_UPDATES);
+        
+        // Parse data
+        const data = _parseLatestPlatformHTML(html);
+
+        // Assign data
+        _assignLatestPlatformData(data);
+
+        // Cache data
+        _saveCache(shared.cachePath);
     }
-
-    // Load the HTML
-    const html = await exports.fetchHTML(f95url.F95_LATEST_UPDATES);
-    const $ = cheerio.load(html);
-
-    // Clean the JSON string
-    const unparsedText = $(f95selector.LU_TAGS_SCRIPT).html().trim();
-    const startIndex = unparsedText.indexOf("{");
-    const endIndex = unparsedText.lastIndexOf("}");
-    const parsedText = unparsedText.substring(startIndex, endIndex + 1);
-    const data = JSON.parse(parsedText);
-
-    // Extract and parse the data
-    const prefixes = data.prefixes.games.map(e => {
-        return {
-            element: e.name,
-            data: e.prefixes
-        };
-    });
-    
-    for(const p of prefixes) {
-        // Prepare the dict
-        const dict = {};
-        for (const e of p.data) dict[parseInt(e.id)] = e.name.replace("&#039;", "'");
-
-        if(p.element === "Engine") shared.engines = dict;
-        else if (p.element === "Status") shared.statuses = dict;
-        else if (p.element === "Other") shared.others = dict;
-    }
-
-    // Parse the tags
-    shared.tags = data.tags;
-    
-    // Cache data
-    const saveDict = {
-        engines: shared.engines,
-        statuses: shared.statuses,
-        tags: shared.tags,
-        others: shared.others,
-    };
-    const json = JSON.stringify(saveDict);
-    writeFileSync(shared.cachePath, json);
 };
 
 //#region Utility methods
@@ -243,24 +205,6 @@ module.exports.isStringAValidURL = function (url) {
 };
 
 /**
- * @private
- * Check with Axios if a URL exists.
- * @param {String} url 
- */
-async function _axiosUrlExists(url) {
-    // Local variables
-    let valid = false;
-    try {
-        const response = await axios.head(url);
-        valid = response && !/4\d\d/.test(response.status);
-    } catch (error) {
-        if (error.code === "ENOTFOUND") valid = false;
-        else throw error;
-    }
-    return valid;
-}
-
-/**
  * @protected
  * Check if a particular URL is valid and reachable on the web.
  * @param {String} url URL to check
@@ -296,3 +240,113 @@ module.exports.getUrlRedirect = async function (url) {
     return response.config.url;
 };
 //#endregion Utility methods
+
+//#region Private methods
+/**
+ * @private
+ * Check with Axios if a URL exists.
+ * @param {String} url 
+ */
+async function _axiosUrlExists(url) {
+    // Local variables
+    let valid = false;
+    try {
+        const response = await axios.head(url);
+        valid = response && !/4\d\d/.test(response.status);
+    } catch (error) {
+        if (error.code === "ENOTFOUND") valid = false;
+        else throw error;
+    }
+    return valid;
+}
+
+/**
+ * @private
+ * Read the platform cache (if available)
+ * @param {String} path Path to cache
+ */
+function _readCache(path) {
+    // Local variables
+    let returnValue = false;
+
+    if (existsSync(path)) {
+        const data = readFileSync(path);
+        const json = JSON.parse(data);
+        shared.engines = json.engines;
+        shared.statuses = json.statuses;
+        shared.tags = json.tags;
+        shared.others = json.others;
+        returnValue = true;
+    }
+    return returnValue;
+}
+
+/**
+ * @private
+ * Save the current platform variables to disk.
+ * @param {String} path Path to cache
+ */
+function _saveCache(path) {
+    const saveDict = {
+        engines: shared.engines,
+        statuses: shared.statuses,
+        tags: shared.tags,
+        others: shared.others,
+    };
+    const json = JSON.stringify(saveDict);
+    writeFileSync(path, json);
+}
+
+/**
+ * @private
+ * Given the HTML code of the response from the F95Zone, 
+ * parse it and return the result.
+ * @param {String} html 
+ * @returns {Object.<string, object>} Parsed data
+ */
+function _parseLatestPlatformHTML(html) {
+    const $ = cheerio.load(html);
+
+    // Clean the JSON string
+    const unparsedText = $(f95selector.LU_TAGS_SCRIPT).html().trim();
+    const startIndex = unparsedText.indexOf("{");
+    const endIndex = unparsedText.lastIndexOf("}");
+    const parsedText = unparsedText.substring(startIndex, endIndex + 1);
+    return JSON.parse(parsedText);
+}
+
+/**
+ * @private
+ * Assign to the local variables the values from the F95Zone.
+ * @param {Object.<string, object>} data 
+ */
+function _assignLatestPlatformData(data) {
+    // Local variables
+    const propertiesMap = {
+        "Engine": shared.engines,
+        "Status": shared.statuses,
+        "Other": shared.others,
+    };
+
+    // Extract and parse the data
+    const prefixes = data.prefixes.games.map(e => {
+        return {
+            element: e.name,
+            data: e.prefixes
+        };
+    });
+
+    // Parse and assign the values that are NOT tags
+    for (const p of prefixes) {
+        // Prepare the dict
+        const dict = {};
+        for (const e of p.data) dict[parseInt(e.id)] = e.name.replace("&#039;", "'");
+
+        // Save the property
+        propertiesMap[p] = dict;
+    }
+
+    // Parse the tags
+    shared.tags = data.tags;
+}
+//#endregion
