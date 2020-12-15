@@ -100,7 +100,7 @@ function parseGamePrefixes(body) {
     });
 
     // If the status is not set, then the game in in development (Ongoing)
-    status = status ?? "Ongoing";
+    status = !status ? "Ongoing" : status; // status ?? "Ongoing";
 
     return {
         engine,
