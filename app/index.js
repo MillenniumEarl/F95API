@@ -119,17 +119,16 @@ module.exports.getGameData = async function (name, mod) {
     }
 
     // Gets the search results of the game/mod being searched for
-    let urls = [];
-    if(mod) urls = await searcher.searchMod(name);
-    else urls = await searcher.searchGame(name);
+    const urls = mod ? 
+        await searcher.searchMod(name) : 
+        await searcher.searchGame(name);
 
     // Process previous partial results
     const results = [];
     for (const url of urls) {
         // Start looking for information
         const info = await scraper.getGameInfo(url);
-        if(!info) continue;
-        results.push(info);
+        if (info) results.push(info);
     }
     return results;
 };

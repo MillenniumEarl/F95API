@@ -10,6 +10,10 @@ class Credentials {
         this.token = null;
     }
 
+    /**
+     * @public
+     * Fetch and save the token used to log in to F95Zone.
+     */
     async fetchToken() {
         this.token = await getF95Token();
     }

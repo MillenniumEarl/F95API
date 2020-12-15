@@ -29,9 +29,6 @@ class PrefixParser {
      * @returns {String[]}
      */
     _toUpperCaseArray(a) {
-        // If the array is empty, return
-        if (a.length === 0) return [];
-
         /**
          * Makes a string uppercase.
          * @param {String} s 
