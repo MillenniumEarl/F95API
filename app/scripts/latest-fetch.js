@@ -43,10 +43,11 @@ module.exports.fetchLatest = async function(query, limit = 30) {
 
         // Save the URLs
         for(const result of response.data.msg.data) {
-            if(fetchedResults >= limit) continue;
-            const gameURL = new URL(result.thread_id, threadURL).href;
-            resultURLs.push(gameURL);
-            fetchedResults += 1;
+            if(fetchedResults < limit) {
+                const gameURL = new URL(result.thread_id, threadURL).href;
+                resultURLs.push(gameURL);
+                fetchedResults += 1;
+            }
         }
         
         // Increment page and check for it's existence
@@ -93,6 +94,7 @@ function parseLatestURL(query, page = 1) {
             url.searchParams.append("tags[]", tag);
         }
     }
+
     if (query.prefixes) {
         for (const p of query.prefixes) {
             url.searchParams.append("prefixes[]", p);
