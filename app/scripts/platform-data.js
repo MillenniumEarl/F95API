@@ -118,7 +118,7 @@ function _assignLatestPlatformData(data) {
     }
 
     // Save the values
-    shared.engines = scrapedData["Engines"];
+    shared.engines = scrapedData["Engine"];
     shared.statuses = scrapedData["Status"];
     shared.others = scrapedData["Other"];
     shared.tags = data.tags;
