@@ -11,7 +11,6 @@ const shared = require("./shared.js");
 const f95url = require("./constants/url.js");
 const f95selector = require("./constants/css-selector.js");
 const LoginResult = require("./classes/login-result.js");
-const fetchPlatformData = require("./platform-data.js").fetchPlatformData;
 
 // Global variables
 const userAgent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15) " + 
@@ -96,12 +95,9 @@ module.exports.authenticate = async function (credentials, force) {
         const errorMessage = $("body").find(f95selector.LOGIN_MESSAGE_ERROR).text().replace(/\n/g, "");
 
         // Return the result of the authentication
-        if (errorMessage === "") {
-            // Fetch data
-            await fetchPlatformData();
-            return new LoginResult(true, "Authentication successful");
-        }
-        else return new LoginResult(false, errorMessage);
+        const result = errorMessage.trim() === "";
+        const message = errorMessage.trim() === "" ? "Authentication successful" : errorMessage;
+        return new LoginResult(result, message);
     } catch (e) {
         shared.logger.error(`Error ${e.message} occurred while authenticating to ${secureURL}`);
         return new LoginResult(false, `Error ${e.message} while authenticating`);
@@ -230,10 +226,11 @@ async function _axiosUrlExists(url) {
     // Local variables
     let valid = false;
     try {
-        const response = await axios.head(url);
+        const response = await axios.head(url, {timeout: 3000});
         valid = response && !/4\d\d/.test(response.status);
     } catch (error) {
         if (error.code === "ENOTFOUND") valid = false;
+        else if (error.code === "ETIMEDOUT") valid = false;
         else throw error;
     }
     return valid;

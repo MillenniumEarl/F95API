@@ -7,6 +7,7 @@ const scraper = require("./scripts/scraper.js");
 const searcher = require("./scripts/searcher.js");
 const uScraper = require("./scripts/user-scraper.js");
 const latestFetch = require("./scripts/latest-fetch.js");
+const fetchPlatformData = require("./scripts/platform-data.js").fetchPlatformData;
 
 // Classes from file
 const Credentials = require("./scripts/classes/credentials.js");
@@ -68,6 +69,9 @@ module.exports.login = async function (username, password) {
     shared.logger.trace(`Authentication for ${username}`);
     const result = await networkHelper.authenticate(creds);
     shared.isLogged = result.success;
+
+    // Load platform data
+    if (result.success) await fetchPlatformData();
 
     /* istambul ignore next */
     if (result.success) shared.logger.info("User logged in through the platform");
