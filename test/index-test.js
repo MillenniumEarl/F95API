@@ -11,7 +11,7 @@ const prefixParser = require("./suites/prefix-parser-test.js").suite;
 
 describe("Test basic function", function testBasic() {
     //#region Set-up
-    this.timeout(15000); // All tests in this suite get 15 seconds before timeout
+    this.timeout(30000); // All tests in this suite get 30 seconds before timeout
     //#endregion Set-up
 
     describe("Test credentials class", credentials.bind(this));

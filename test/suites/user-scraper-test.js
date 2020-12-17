@@ -7,9 +7,8 @@ const dotenv = require("dotenv");
 // Modules from file
 const Credentials = require("../../app/scripts/classes/credentials.js");
 const uScraper = require("../../app/scripts/user-scraper.js");
-const {
-    authenticate
-} = require("../../app/scripts/network-helper.js");
+const { authenticate } = require("../../app/scripts/network-helper.js");
+const { fetchPlatformData } = require("../../app/scripts/platform-data.js");
 
 // Configure the .env reader
 dotenv.config();
@@ -49,6 +48,8 @@ module.exports.suite = function suite() {
 async function auth() {
     const creds = new Credentials(USERNAME, PASSWORD);
     await creds.fetchToken();
-    return await authenticate(creds);
+    const result = await authenticate(creds);
+    if (result.success) await fetchPlatformData();
+    return result;
 }
 //#endregion Private methods

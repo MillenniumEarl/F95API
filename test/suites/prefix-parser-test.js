@@ -9,6 +9,7 @@ const { isEqual } = require("lodash");
 const Credentials = require("../../app/scripts/classes/credentials.js");
 const PrefixParser = require("../../app/scripts/classes/prefix-parser.js");
 const { authenticate } = require("../../app/scripts/network-helper.js");
+const { fetchPlatformData } = require("../../app/scripts/platform-data.js");
 
 // Configure the .env reader
 dotenv.config();
@@ -24,6 +25,7 @@ module.exports.suite = function suite() {
         const creds = new Credentials(USERNAME, PASSWORD);
         await creds.fetchToken();
         await authenticate(creds);
+        await fetchPlatformData();
     });
     //#endregion Setup
 
