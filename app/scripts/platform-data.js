@@ -97,11 +97,7 @@ function _parseLatestPlatformHTML(html) {
  */
 function _assignLatestPlatformData(data) {
     // Local variables
-    const propertiesMap = {
-        "Engine": shared.engines,
-        "Status": shared.statuses,
-        "Other": shared.others,
-    };
+    const scrapedData = {};
 
     // Extract and parse the data
     const prefixes = data.prefixes.games.map(e => {
@@ -118,10 +114,13 @@ function _assignLatestPlatformData(data) {
         for (const e of p.data) dict[parseInt(e.id)] = e.name.replace("&#039;", "'");
 
         // Save the property
-        propertiesMap[p] = dict;
+        scrapedData[p.element] = dict;
     }
 
-    // Parse the tags
+    // Save the values
+    shared.engines = scrapedData["Engines"];
+    shared.statuses = scrapedData["Status"];
+    shared.others = scrapedData["Other"];
     shared.tags = data.tags;
 }
 //#endregion
