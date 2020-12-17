@@ -118,9 +118,9 @@ function _assignLatestPlatformData(data) {
     }
 
     // Save the values
-    shared.engines = scrapedData["Engine"];
-    shared.statuses = scrapedData["Status"];
-    shared.others = scrapedData["Other"];
+    shared.engines = Object.assign({}, scrapedData["Engine"]);
+    shared.statuses = Object.assign({}, scrapedData["Status"]);
+    shared.others = Object.assign({}, scrapedData["Other"]);
     shared.tags = data.tags;
 }
 //#endregion
