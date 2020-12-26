@@ -8,6 +8,9 @@ const {join} = require("path");
 // Public modules from npm
 const log4js = require("log4js");
 
+// Modules from file
+const Session = require("./classes/session");
+
 /**
  * Class containing variables shared between modules.
  */
@@ -43,6 +46,10 @@ class Shared {
      * @type log4js.Logger
      */
     static #_logger = log4js.getLogger();
+    /**
+     * Session on the F95Zone platform.
+     */
+    static #_session = new Session(join(tmpdir(), "f95session.json"));
     //#endregion Properties
 
     //#region Getters
@@ -93,6 +100,12 @@ class Shared {
      */
     static get cachePath() {
         return join(tmpdir(), "f95cache.json");
+    }
+    /**
+     * Session on the F95Zone platform.
+     */
+    static get session() {
+        return this.#_session;
     }
     //#endregion Getters
 
