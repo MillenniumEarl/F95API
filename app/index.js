@@ -16,6 +16,10 @@ const LoginResult = require("./scripts/classes/login-result.js");
 const UserData = require("./scripts/classes/user-data.js");
 const PrefixParser = require("./scripts/classes/prefix-parser.js");
 
+//#region Global variables
+const USER_NOT_LOGGED = "User not authenticated, unable to continue";
+//#endregion
+
 //#region Export classes
 module.exports.GameInfo = GameInfo;
 module.exports.LoginResult = LoginResult;
@@ -36,15 +40,10 @@ exports.loggerLevel = "warn"; // By default log only the warn messages
  * Indicates whether a user is logged in to the F95Zone platform or not.
  * @returns {String}
  */
-/* istambul ignore next */
 module.exports.isLogged = function isLogged() {
     return shared.isLogged;
 };
 //#endregion Export properties
-
-//#region Global variables
-const USER_NOT_LOGGED = "User not authenticated, unable to continue";
-//#endregion
 
 //#region Export methods
 /**
@@ -207,13 +206,8 @@ module.exports.getLatestUpdates = async function(args, limit) {
     // Get the closest date limit
     let filterDate = 0;
     if(args.datelimit) {
-        // Script taken from:
-        // https://www.gavsblog.com/blog/find-closest-number-in-array-javascript
         const validDate = [365, 180, 90, 30, 14, 7, 3, 1, 0];
-        validDate.sort((a, b) => {
-            return Math.abs(args.datelimit - a) - Math.abs(args.datelimit - b);
-        });
-        filterDate = validDate[0];
+        filterDate = getNearestValueFromArray(validDate, args.datelimit);
     }
 
     // Fetch the games
@@ -229,4 +223,21 @@ module.exports.getLatestUpdates = async function(args, limit) {
     const promiseList = urls.map(u => exports.getGameDataFromURL(u));
     return await Promise.all(promiseList);
 };
+//#endregion
+
+//#region Private Methods
+/**
+ * @private
+ * Given an array of numbers, get the nearest value for a given `value`.
+ * @param {Number[]} array List of default values
+ * @param {Number} value Value to search
+ */
+function getNearestValueFromArray(array, value) {
+    // Script taken from:
+    // https://www.gavsblog.com/blog/find-closest-number-in-array-javascript
+    array.sort((a, b) => {
+        return Math.abs(value - a) - Math.abs(value - b);
+    });
+    return array[0];
+}
 //#endregion
