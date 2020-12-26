@@ -86,9 +86,10 @@ function parseGamePrefixes(body) {
     // Obtain the title prefixes
     const prefixeElements = body.find(f95Selector.GT_TITLE_PREFIXES);
     
+    const $ = cheerio.load([].concat(body));
     prefixeElements.each(function parseGamePrefix(idx, el) {
         // Obtain the prefix text
-        let prefix = cheerio.load(el).text().trim();
+        let prefix = $(el).text().trim();
 
         // Remove the square brackets
         prefix = prefix.replace("[", "").replace("]", "");
@@ -167,8 +168,9 @@ function extractTags(body) {
 
     // Get the game tags
     const tagResults = body.find(f95Selector.GT_TAGS);
+    const $ = cheerio.load([].concat(body));
     return tagResults.map(function parseGameTags(idx, el) {
-        return cheerio.load(el).text().trim();
+        return $(el).text().trim();
     }).get();
 }
 
@@ -300,7 +302,7 @@ function parseMainPostText(text) {
  */
 function parseScriptTag(element) {
     // Get the element HTML
-    const html = cheerio.load(element).html().trim();
+    const html = cheerio.load([].concat(element)).html().trim();
 
     // Obtain the JSON-LD
     const data = html
