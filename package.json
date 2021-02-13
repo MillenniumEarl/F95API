@@ -39,17 +39,19 @@
     "luxon": "^1.25.0",
     "md5": "^2.3.0",
     "source-map-loader": "^2.0.1",
-    "tough-cookie": "^4.0.0",
-    "typescript": "^4.2.0-beta"
+    "tough-cookie": "^4.0.0"
   },
   "devDependencies": {
-    "babel-eslint": "^10.1.0",
+    "@types/node": "^14.14.27",
+    "@typescript-eslint/eslint-plugin": "^4.15.0",
+    "@typescript-eslint/parser": "^4.15.0",
     "chai": "^4.2.0",
     "dotenv": "^8.2.0",
-    "eslint": "^7.12.1",
+    "eslint": "^7.20.0",
     "lodash": "^4.17.20",
     "mocha": "^8.1.3",
-    "nyc": "^15.1.0"
+    "nyc": "^15.1.0",
+    "typescript": "^4.2.0-insiders.20210210"
   },
   "bugs": {
     "url": "https://github.com/MillenniumEarl/F95API/issues"
