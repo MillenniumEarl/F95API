@@ -1,15 +1,12 @@
 "use strict";
 
 // Modules from file
-const shared = require("../shared.js");
+import shared = require("../shared.js");
 
 /**
  * Convert prefixes and platform tags from string to ID and vice versa.
  */
-class PrefixParser {
-    constructor() {
-    }
-
+export class PrefixParser {
     //#region Private methods
     /**
      * @private
@@ -18,23 +15,19 @@ class PrefixParser {
      * @param {Any} value Value associated with the key
      * @returns {String|undefined} Key found or undefined
      */
-    _getKeyByValue(object, value) {
+    _getKeyByValue(object: { [x: string]: unknown; }, value: unknown): string | undefined {
         return Object.keys(object).find(key => object[key] === value);
     }
 
     /**
      * @private
      * Makes an array of strings uppercase.
-     * @param {String[]} a 
-     * @returns {String[]}
      */
-    _toUpperCaseArray(a) {
+    _toUpperCaseArray(a: string[]): string[] {
         /**
          * Makes a string uppercase.
-         * @param {String} s 
-         * @returns {String}
          */
-        function toUpper(s) {
+        function toUpper(s: string): string {
             return s.toUpperCase();
         }
         return a.map(toUpper);
@@ -43,10 +36,8 @@ class PrefixParser {
     /**
      * @private
      * Check if `dict` contains `value` as a value.
-     * @param {Object.<number, string>} dict 
-     * @param {String} value 
      */
-    _valueInDict(dict, value) {
+    _valueInDict(dict: { [s: number]: string; }, value: string): boolean {
         const array = Object.values(dict);
         const upperArr = this._toUpperCaseArray(array);
         const element = value.toUpperCase();
@@ -57,10 +48,9 @@ class PrefixParser {
     /**
      * @public
      * Convert a list of prefixes to their respective IDs.
-     * @param {String[]} prefixes 
      */
-    prefixesToIDs(prefixes) {
-        const ids = [];
+    prefixesToIDs(prefixes: string[]) : number[] {
+        const ids: number[] = [];
         for(const p of prefixes) {
             // Check what dict contains the value
             let dict = null;
@@ -80,10 +70,9 @@ class PrefixParser {
     /**
      * @public
      * It converts a list of IDs into their respective prefixes.
-     * @param {number[]} ids 
      */
-    idsToPrefixes(ids) {
-        const prefixes = [];
+    idsToPrefixes(ids: number[]): string[] {
+        const prefixes:string[] = [];
         for(const id of ids) {
             // Check what dict contains the key
             let dict = null;
@@ -99,5 +88,3 @@ class PrefixParser {
         return prefixes;
     }
 }
-
-module.exports = PrefixParser;

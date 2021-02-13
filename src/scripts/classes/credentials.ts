@@ -1,22 +1,35 @@
 "use strict";
 
 // Modules from file
-const { getF95Token } = require("../network-helper.js");
+import { getF95Token } from "../network-helper.js";
 
-class Credentials {
-    constructor(username, password) {
+/**
+ * Represents the credentials used to access the platform.
+ */
+export class Credentials {
+    /**
+     * Username
+     */
+    username: string;
+    /**
+     * Password of the user.
+     */
+    password: string;
+    /**
+     * One time token used during login.
+     */
+    token: string = null;
+
+    constructor(username: string, password: string) {
         this.username = username;
         this.password = password;
-        this.token = null;
     }
 
     /**
      * @public
      * Fetch and save the token used to log in to F95Zone.
      */
-    async fetchToken() {
+    async fetchToken(): Promise<void> {
         this.token = await getF95Token();
     }
 }
-
-module.exports = Credentials;

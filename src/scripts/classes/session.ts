@@ -1,53 +1,53 @@
 "use strict";
 
 // Core modules
-const fs = require("fs");
-const promisify = require("util").promisify;
+import * as fs from "fs";
+import { promisify } from "util";
 
 // Public modules from npm
-const md5 = require("md5");
+import * as md5 from "md5";
 
 // Promisifed functions
 const areadfile = promisify(fs.readFile);
 const awritefile = promisify(fs.writeFile);
 const aunlinkfile = promisify(fs.unlink);
 
-class Session {
-    constructor(path) {
-        /**
-         * Max number of days the session is valid.
-         */
-        this.SESSION_TIME = 1;
+export class Session {
+    //#region Properties
+    /**
+    * Max number of days the session is valid.
+    */
+    private readonly SESSION_TIME: number = 1;
+    /**
+     * Path of the session map file on disk.
+     */
+    private path: string  = null;
+    /**
+     * Indicates if the session is mapped on disk.
+     */
+    private isMapped = null;
+    /**
+     * Date of creation of the session.
+     */
+    private created = null;
+    /**
+     * MD5 hash of the username and the password.
+     */
+    private hash = null;
+    //#endregion Properties
 
-        /**
-         * Path of the session map file on disk.
-         */
-        this._path = path;
-
-        /**
-         * Indicates if the session is mapped on disk.
-         */
-        this._isMapped = fs.existsSync(this._path);
-        
-        /**
-         * Date of creation of the session.
-         */
-        this._created = new Date(Date.now());
-
-        /**
-         * MD5 hash of the username and the password.
-         */
-        this._hash = null;
+    constructor(path: string) {
+        this.path = path;
+        this.isMapped = fs.existsSync(this.path);
+        this.created = new Date(Date.now());
+        this.hash = null;
     }
 
     //#region Private Methods
     /**
-     * @private
      * Get the difference in days between two dates.
-     * @param {Date} a 
-     * @param {Date} b 
      */
-    _dateDiffInDays(a, b) {
+    private dateDiffInDays(a: Date, b: Date) {
         const MS_PER_DAY = 1000 * 60 * 60 * 24;
 
         // Discard the time and time-zone information.
@@ -58,72 +58,70 @@ class Session {
     }
 
     /**
-     * @private
      * Convert the object to a dictionary serializable in JSON.
      */
-    _toJSON() {
+    private toJSON(): Record<string, unknown> {
         return {
-            created: this._created,
-            hash: this._hash,
+            created: this.created,
+            hash: this.hash,
         };
     }
     //#endregion Private Methods
 
     //#region Public Methods
-    create(username, password) {
+    /**
+     * Create a new session
+     */
+    create(username: string, password: string):void {
         // First, create the hash of the credentials
         const value = `${username}%%%${password}`;
-        this._hash = md5(value);
+        this.hash = md5(value);
 
         // Update the creation date
-        this._created = new Date(Date.now());
+        this.created = new Date(Date.now());
     }
 
     /**
-     * @public
      * Save the session to disk.
      */
-    async save() {
+    async save() : Promise<void> {
         // Update the creation date
-        this._created = new Date(Date.now());
+        this.created = new Date(Date.now());
 
         // Convert data
-        const json = this._toJSON();
+        const json = this.toJSON();
         const data = JSON.stringify(json);
 
         // Write data
-        await awritefile(this._path, data);
+        await awritefile(this.path, data);
     }
 
     /**
-     * @public
      * Load the session from disk.
      */
-    async load() {
+    async load(): Promise<void> {
         // Read data
-        const data = await areadfile(this._path);
+        const data = await areadfile(this.path, { encoding: 'utf-8', flag: 'r' });
         const json = JSON.parse(data);
 
         // Assign values
-        this._created = json.created;
-        this._hash = json.hash;
+        this.created = json.created;
+        this.hash = json.hash;
     }
 
     /**
-     * @public
      * Delete the session from disk.
      */
-    async delete() {
-        await aunlinkfile(this._path);
+    async delete(): Promise<void> {
+        await aunlinkfile(this.path);
     }
 
     /**
-     * @public
      * Check if the session is valid.
      */
-    isValid(username, password) {
+    isValid(username:string, password:string) : boolean {
         // Get the number of days from the file creation
-        const diff = this._dateDiffInDays(new Date(Date.now()), this._created);
+        const diff = this.dateDiffInDays(new Date(Date.now()), this.created);
 
         // The session is valid if the number of days is minor than SESSION_TIME
         let valid = diff < this.SESSION_TIME;
@@ -131,11 +129,9 @@ class Session {
         if(valid) {
             // Check the hash
             const value = `${username}%%%${password}`;
-            valid = md5(value) === this._hash;
+            valid = md5(value) === this.hash;
         }
         return valid;
     }
     //#endregion Public Methods
 }
-
-module.exports = Session;

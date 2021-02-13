@@ -3,18 +3,18 @@
 /**
  * Object obtained in response to an attempt to login to the portal.
  */
-class LoginResult {
-    constructor(success, message) {
-        /**
-        * Result of the login operation
-        * @type Boolean
-        */
+export class LoginResult {
+    /**
+    * Result of the login operation
+    */
+    success: boolean;
+    /**
+    * Login response message
+    */
+    message: string;
+    
+    constructor(success: boolean, message: string) {
         this.success = success;
-        /**
-        * Login response message
-        * @type String
-        */
         this.message = message;
     }
 }
-module.exports = LoginResult;
