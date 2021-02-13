@@ -37,7 +37,8 @@
     "log4js": "^6.3.0",
     "luxon": "^1.25.0",
     "md5": "^2.3.0",
-    "tough-cookie": "^4.0.0"
+    "tough-cookie": "^4.0.0",
+    "typescript": "^4.2.0-beta"
   },
   "devDependencies": {
     "babel-eslint": "^10.1.0",
