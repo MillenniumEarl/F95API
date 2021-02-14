@@ -1,8 +1,11 @@
 {
     "compilerOptions": {
+        "experimentalDecorators": true,
         "outDir": "./dist",
         "allowJs": true,
-        "target": "es6"
+        "target": "es6",
+        "moduleResolution": "node",
+        "allowSyntheticDefaultImports": true,
     },
     "include": [
         "./src/**/*"
