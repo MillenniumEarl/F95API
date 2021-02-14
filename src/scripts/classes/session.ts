@@ -5,14 +5,14 @@ import * as fs from "fs";
 import { promisify } from "util";
 
 // Public modules from npm
-import * as md5 from "md5";
+import md5 from "md5";
 
 // Promisifed functions
 const areadfile = promisify(fs.readFile);
 const awritefile = promisify(fs.writeFile);
 const aunlinkfile = promisify(fs.unlink);
 
-export class Session {
+export default class Session {
     //#region Properties
     /**
     * Max number of days the session is valid.
