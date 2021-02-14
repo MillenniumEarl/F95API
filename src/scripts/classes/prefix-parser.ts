@@ -1,7 +1,7 @@
 "use strict";
 
 // Modules from file
-import shared = require("../shared.js");
+import shared from "../shared";
 
 /**
  * Convert prefixes and platform tags from string to ID and vice versa.
