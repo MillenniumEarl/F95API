@@ -1,4 +1,4 @@
-module.exports = Object.freeze({
+export const selectors = {
     GT_IMAGES: "img:not([title])[data-src^=\"https://attachments.f95zone.to\"][data-url=\"\"]",
     GT_TAGS: "a.tagItem",
     GT_TITLE: "h1.p-title-value",
@@ -18,4 +18,4 @@ module.exports = Object.freeze({
     UD_AVATAR_PIC: "a[href=\"/account/\"] > span.avatar > img[class^=\"avatar\"]",
     LOGIN_MESSAGE_ERROR: "div.blockMessage.blockMessage--error.blockMessage--iconic",
     LU_TAGS_SCRIPT: "script:contains('latestUpdates')",
-});
+};
