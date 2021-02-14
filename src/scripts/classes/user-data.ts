@@ -3,7 +3,7 @@
 /**
  * Class containing the data of the user currently connected to the F95Zone platform.
  */
-export class UserData {
+export default class UserData {
     /**
     * User name.
     */

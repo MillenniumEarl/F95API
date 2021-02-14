@@ -3,7 +3,7 @@
 /**
  * Object obtained in response to an attempt to login to the portal.
  */
-export class LoginResult {
+export default class LoginResult {
     /**
     * Result of the login operation
     */

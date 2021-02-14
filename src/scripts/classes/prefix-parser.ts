@@ -6,7 +6,7 @@ import shared = require("../shared.js");
 /**
  * Convert prefixes and platform tags from string to ID and vice versa.
  */
-export class PrefixParser {
+export default class PrefixParser {
     //#region Private methods
     /**
      * @private

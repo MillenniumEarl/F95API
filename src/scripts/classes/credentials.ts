@@ -6,7 +6,7 @@ import { getF95Token } from "../network-helper.js";
 /**
  * Represents the credentials used to access the platform.
  */
-export class Credentials {
+export default class Credentials {
     /**
      * Username
      */

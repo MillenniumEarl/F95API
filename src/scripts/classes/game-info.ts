@@ -3,7 +3,7 @@
 /**
  * Information of a game/mod on the platform.
  */
-export class GameInfo {
+export default class GameInfo {
     //#region Properties
     /**
     * Unique ID of the game on the platform.
