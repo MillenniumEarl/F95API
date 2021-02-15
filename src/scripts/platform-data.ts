@@ -1,56 +1,85 @@
 "use strict";
 
 // Core modules
-const {readFileSync, writeFileSync, existsSync} = require("fs");
+import { readFileSync, writeFileSync, existsSync } from "fs";
 
 // Public modules from npm
-const cheerio = require("cheerio");
+import cheerio from "cheerio";
 
 // Modules from file
-const shared = require("./shared.js");
-const f95url = require("./constants/url.js");
-const f95selector = require("./constants/css-selector.js");
-const {fetchHTML} = require("./network-helper.js");
+import shared, { DictType } from "./shared";
+import { urls as f95url } from "./constants/url";
+import { selectors as f95selector} from "./constants/css-selector";
+import { fetchHTML } from "./network-helper";
+
+//#region Interface definitions
+/**
+ * Represents the single element contained in the data categories.
+ */
+interface SingleOptionObj {
+    ID: number,
+    Name: string,
+    Class: string
+}
 
 /**
- * @protected
+ * Represents the set of values associated with a specific category of data.
+ */
+interface CategoryResObj {
+    ID: number,
+    Name: string,
+    Prefixes: SingleOptionObj[]
+}
+
+/**
+ * Represents the set of tags present on the platform-
+ */
+interface LatestResObj {
+    Prefixes: CategoryResObj[],
+    Tags: DictType,
+    Options: string
+}
+//#endregion Interface definitions
+
+//#region Public methods
+/**
  * Gets the basic data used for game data processing 
  * (such as graphics engines and progress statuses)
  */
-module.exports.fetchPlatformData = async function () {
+export async function fetchPlatformData(): Promise<void> {
     // Check if the data are cached
-    if (!_readCache(shared.cachePath)) {
+    if (!readCache(shared.cachePath)) {
         // Load the HTML
         const html = await fetchHTML(f95url.F95_LATEST_UPDATES);
 
         // Parse data
-        const data = _parseLatestPlatformHTML(html);
+        const data = parseLatestPlatformHTML(html);
 
         // Assign data
-        _assignLatestPlatformData(data);
+        assignLatestPlatformData(data);
 
         // Cache data
-        _saveCache(shared.cachePath);
+        saveCache(shared.cachePath);
     }
-};
+}
+//#endregion Public methods
 
 //#region Private methods
 /**
  * @private
  * Read the platform cache (if available)
- * @param {String} path Path to cache
  */
-function _readCache(path) {
+function readCache(path: string) {
     // Local variables
     let returnValue = false;
 
     if (existsSync(path)) {
-        const data = readFileSync(path);
-        const json = JSON.parse(data);
-        shared.engines = json.engines;
-        shared.statuses = json.statuses;
-        shared.tags = json.tags;
-        shared.others = json.others;
+        const data = readFileSync(path, {encoding: "utf-8", flag: "r"});
+        const json: { [s: string]: DictType } = JSON.parse(data);
+        shared.setEngines(json.engines);
+        shared.setStatuses(json.statuses);
+        shared.setTags(json.tags);
+        shared.setOthers(json.others);
         returnValue = true;
     }
     return returnValue;
@@ -59,9 +88,8 @@ function _readCache(path) {
 /**
  * @private
  * Save the current platform variables to disk.
- * @param {String} path Path to cache
  */
-function _saveCache(path) {
+function saveCache(path: string): void {
     const saveDict = {
         engines: shared.engines,
         statuses: shared.statuses,
@@ -76,10 +104,8 @@ function _saveCache(path) {
  * @private
  * Given the HTML code of the response from the F95Zone, 
  * parse it and return the result.
- * @param {String} html 
- * @returns {Object.<string, object>} Parsed data
  */
-function _parseLatestPlatformHTML(html) {
+function parseLatestPlatformHTML(html: string): LatestResObj{
     const $ = cheerio.load(html);
 
     // Clean the JSON string
@@ -93,34 +119,25 @@ function _parseLatestPlatformHTML(html) {
 /**
  * @private
  * Assign to the local variables the values from the F95Zone.
- * @param {Object.<string, object>} data 
  */
-function _assignLatestPlatformData(data) {
+function assignLatestPlatformData(data: LatestResObj): void {
     // Local variables
     const scrapedData = {};
 
-    // Extract and parse the data
-    const prefixes = data.prefixes.games.map(e => {
-        return {
-            element: e.name,
-            data: e.prefixes
-        };
-    });
-
     // Parse and assign the values that are NOT tags
-    for (const p of prefixes) {
+    for (const p of data.Prefixes) {
         // Prepare the dict
-        const dict = {};
-        for (const e of p.data) dict[parseInt(e.id)] = e.name.replace("&#039;", "'");
+        const dict: DictType = {};
+        for (const e of p.Prefixes) dict[e.ID] = e.Name.replace("&#039;", "'");
 
         // Save the property
-        scrapedData[p.element] = dict;
+        scrapedData[p.Name] = dict;
     }
 
     // Save the values
-    shared.engines = Object.assign({}, scrapedData["Engine"]);
-    shared.statuses = Object.assign({}, scrapedData["Status"]);
-    shared.others = Object.assign({}, scrapedData["Other"]);
-    shared.tags = data.tags;
+    shared.setEngines(Object.assign({}, scrapedData["Engine"]));
+    shared.setStatuses(Object.assign({}, scrapedData["Status"]));
+    shared.setOthers(Object.assign({}, scrapedData["Other"]));
+    shared.setTags(data.Tags);
 }
 //#endregion
