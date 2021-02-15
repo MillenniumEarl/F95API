@@ -2,132 +2,123 @@
 "use strict";
 
 // Core modules
-const {tmpdir} = require("os");
-const {join} = require("path");
+import { tmpdir } from "os";
+import { join } from "path";
 
 // Public modules from npm
-const log4js = require("log4js");
+import { getLogger, Logger } from "log4js";
 
 // Modules from file
-const Session = require("./classes/session");
+import Session from "./classes/session";
+
+// Types declaration
+export type DictType = { [n: number]: string; };
 
 /**
  * Class containing variables shared between modules.
  */
-class Shared {
+export default abstract class Shared {
     //#region Properties
     /**
      * Indicates whether a user is logged in to the F95Zone platform or not.
-     * @type Boolean
      */
-    static #_isLogged = false;
+    static _isLogged = false;
     /**
      * List of possible game engines used for development.
-     * @type Object<number,string>
      */
-    static #_engines = {};
+    static _engines: DictType = {};
     /**
      * List of possible development statuses that a game can assume.
-     * @type Object<number,string>
      */
-    static #_statuses = {};
+    static _statuses: DictType = {};
     /**
      * List of other prefixes that a game can assume.
-     * @type Object<number,string>
      */
-    static #_others = {};
+    static _others: DictType = {};
     /**
      * List of possible tags that a game can assume.
-     * @type Object<number,string>
      */
-    static #_tags = {};
+    static _tags: DictType = {};
     /**
      * Logger object used to write to both file and console.
-     * @type log4js.Logger
      */
-    static #_logger = log4js.getLogger();
+    static _logger: Logger = getLogger();
     /**
      * Session on the F95Zone platform.
      */
-    static #_session = new Session(join(tmpdir(), "f95session.json"));
+    static _session = new Session(join(tmpdir(), "f95session.json"));
     //#endregion Properties
 
     //#region Getters
     /**
      * Indicates whether a user is logged in to the F95Zone platform or not.
-     * @returns {Boolean}
      */
-    static get isLogged() {
-        return this.#_isLogged;
+    static get isLogged(): boolean {
+        return this._isLogged;
     }
     /**
      * List of possible game engines used for development.
-     * @returns @returns {Object<number, string>}
      */
-    static get engines() {
-        return this.#_engines;
+    static get engines(): DictType {
+        return this._engines;
     }
     /**
      * List of possible development states that a game can assume.
-     * @returns {Object<number, string>}
      */
-    static get statuses() {
-        return this.#_statuses;
+    static get statuses(): DictType {
+        return this._statuses;
     }
     /**
      * List of other prefixes that a game can assume.
-     * @returns {Object<number, string>}
      */
-    static get others() {
-        return this.#_others;
+    static get others(): DictType {
+        return this._others;
     }
     /**
      * List of possible tags that a game can assume.
-     * @returns {Object<number, string>}
      */
-    static get tags() {
-        return this.#_tags;
+    static get tags(): DictType {
+        return this._tags;
     }
     /**
      * Logger object used to write to both file and console.
-     * @returns {log4js.Logger}
      */
-    static get logger() {
-        return this.#_logger;
+    static get logger(): Logger {
+        return this._logger;
     }
     /**
      * Path to the cache used by this module wich contains engines, statuses, tags...
      */
-    static get cachePath() {
+    static get cachePath(): string {
         return join(tmpdir(), "f95cache.json");
     }
     /**
      * Session on the F95Zone platform.
      */
-    static get session() {
-        return this.#_session;
+    static get session(): Session {
+        return this._session;
     }
     //#endregion Getters
 
     //#region Setters
-    static set engines(val) {
-        this.#_engines = val;
+    static setEngines(val: DictType): void {
+        this._engines = val;
     }
 
-    static set statuses(val) {
-        this.#_statuses = val;
+    static setStatuses(val: DictType): void {
+        this._statuses = val;
     }
 
-    static set tags(val) {
-        this.#_tags = val;
+    static setTags(val: DictType): void {
+        this._tags = val;
     }
 
-    static set others(val) {
-        this.#_others = val;
+    static setOthers(val: DictType): void {
+        this._others = val;
     }
 
-    static set isLogged(val) {
-        this.#_isLogged = val;
+    static setIsLogged(val: boolean): void {
+        this._isLogged = val;
     }
     //#endregion Setters
 }
