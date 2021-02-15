@@ -1,20 +1,18 @@
 "use strict";
 
 // Public modules from npm
-const cheerio = require("cheerio");
+import cheerio from "cheerio";
 
 // Modules from file
-const networkHelper = require("./network-helper.js");
-const f95Selector = require("./constants/css-selector.js");
-const f95url = require("./constants/url.js");
-const UserData = require("./classes/user-data.js");
+import { fetchHTML } from "./network-helper.js";
+import { selectors as f95Selector } from "./constants/css-selector.js";
+import { urls as f95url } from "./constants/url.js";
+import UserData from "./classes/user-data.js";
 
 /**
- * @protected
  * Gets user data, such as username, url of watched threads, and profile picture url.
- * @return {Promise<UserData>} User data
  */
-module.exports.getUserData = async function() {
+export async function getUserData(): Promise<UserData> {
     // Fetch data
     const data = await fetchUsernameAndAvatar();
     const urls = await fetchWatchedGameThreadURLs();
@@ -30,15 +28,13 @@ module.exports.getUserData = async function() {
 
 //#region Private methods
 /**
- * @private
  * It connects to the page and extracts the name 
  * of the currently logged in user and the URL 
  * of their profile picture.
- * @return {Promise<Object.<string, string>>}
  */
-async function fetchUsernameAndAvatar() {
+async function fetchUsernameAndAvatar(): Promise<{ [s: string]: string; }> {
     // Fetch page
-    const html = await networkHelper.fetchHTML(f95url.F95_BASE_URL);
+    const html = await fetchHTML(f95url.F95_BASE_URL);
 
     // Load HTML response
     const $ = cheerio.load(html);
@@ -57,11 +53,10 @@ async function fetchUsernameAndAvatar() {
 }
 
 /**
- * @private
  * Gets the list of URLs of game threads watched by the user.
  * @returns {Promise<String[]>} List of URLs
  */
-async function fetchWatchedGameThreadURLs() {
+async function fetchWatchedGameThreadURLs(): Promise<string[]> {
     // Local variables
     const watchedGameThreadURLs = [];
 
@@ -76,7 +71,7 @@ async function fetchWatchedGameThreadURLs() {
 
     do {
         // Fetch page
-        const html = await networkHelper.fetchHTML(currentURL);
+        const html = await fetchHTML(currentURL);
 
         // Load HTML response
         const $ = cheerio.load(html);
@@ -95,17 +90,15 @@ async function fetchWatchedGameThreadURLs() {
 }
 
 /**
- * @private
  * Gets the URLs of the watched threads on the page.
  * @param {cheerio.Cheerio} body Page `body` selector
- * @returns {String[]}
  */
-function fetchPageURLs(body) {
+function fetchPageURLs(body: cheerio.Cheerio): string[] {
     const elements = body.find(f95Selector.WT_URLS);
-
+    
     return elements.map(function extractURLs(idx, e) {
         // Obtain the link (replace "unread" only for the unread threads)
-        const partialLink = e.attribs.href.replace("unread", "");
+        const partialLink = cheerio(e).attr("href").replace("unread", "");
 
         // Compose and return the URL
         return new URL(partialLink, f95url.F95_BASE_URL).toString();
@@ -113,13 +106,11 @@ function fetchPageURLs(body) {
 }
 
 /**
- * @private
  * Gets the URL of the next page containing the watched threads 
  * or `null` if that page does not exist.
  * @param {cheerio.Cheerio} body Page `body` selector
- * @returns {String}
  */
-function fetchNextPageURL(body) {
+function fetchNextPageURL(body: cheerio.Cheerio): string {
     const element = body.find(f95Selector.WT_NEXT_PAGE).first();
 
     // No element found

@@ -1,16 +1,17 @@
 "use strict";
 
 // Public modules from npm
-const axios = require("axios").default;
-const cheerio = require("cheerio");
-const axiosCookieJarSupport = require("axios-cookiejar-support").default;
-const tough = require("tough-cookie");
+import axios, { AxiosResponse } from "axios";
+import cheerio from "cheerio";
+import axiosCookieJarSupport from "axios-cookiejar-support";
+import tough from "tough-cookie";
 
 // Modules from file
-const shared = require("./shared.js");
-const f95url = require("./constants/url.js");
-const f95selector = require("./constants/css-selector.js");
-const LoginResult = require("./classes/login-result.js");
+import shared from "./shared";
+import { urls as f95url } from "./constants/url";
+import { selectors as f95selector } from "./constants/css-selector";
+import LoginResult from "./classes/login-result";
+import credentials from "./classes/credentials";
 
 // Global variables
 const userAgent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15) " + 
@@ -27,12 +28,10 @@ const commonConfig = {
 };
 
 /**
- * @protected
  * Gets the HTML code of a page.
- * @param {String} url URL to fetch
  * @returns {Promise<String>} HTML code or `null` if an error arise
  */
-module.exports.fetchHTML = async function (url) {
+export async function fetchHTML(url: string): Promise<string|null> {
     // Local variables
     let returnValue = null;
 
@@ -52,18 +51,17 @@ module.exports.fetchHTML = async function (url) {
 
     returnValue = response.data;
     return returnValue;
-};
+}
 
 /**
- * @protected
  * It authenticates to the platform using the credentials 
  * and token obtained previously. Save cookies on your 
  * device after authentication.
- * @param {Credentials} credentials Platform access credentials
+ * @param {module:./classes/credentials.ts:Credentials} credentials Platform access credentials
  * @param {Boolean} force Specifies whether the request should be forced, ignoring any saved cookies
  * @returns {Promise<LoginResult>} Result of the operation
  */
-module.exports.authenticate = async function (credentials, force) {
+export async function authenticate(credentials: credentials, force: boolean = false): Promise<LoginResult> {
     shared.logger.info(`Authenticating with user ${credentials.username}`);
     if (!credentials.token) throw new Error(`Invalid token for auth: ${credentials.token}`);
 
@@ -108,7 +106,7 @@ module.exports.authenticate = async function (credentials, force) {
  * Obtain the token used to authenticate the user to the platform.
  * @returns {Promise<String>} Token or `null` if an error arise
  */
-module.exports.getF95Token = async function() {
+export async function getF95Token(): Promise<string|null> {
     // Fetch the response of the platform
     const response = await exports.fetchGETResponse(f95url.F95_LOGIN_URL);
     /* istambul ignore next */
@@ -119,18 +117,15 @@ module.exports.getF95Token = async function() {
 
     // The response is a HTML page, we need to find the <input> with name "_xfToken"
     const $ = cheerio.load(response.data);
-    const token = $("body").find(f95selector.GET_REQUEST_TOKEN).attr("value");
-    return token;
-};
+    return $("body").find(f95selector.GET_REQUEST_TOKEN).attr("value");
+}
 
 //#region Utility methods
 /**
- * @protected
  * Performs a GET request to a specific URL and returns the response.
  * If the request generates an error (for example 400) `null` is returned.
- * @param {String} url 
  */
-module.exports.fetchGETResponse = async function(url) {
+export async function fetchGETResponse(url: string): Promise<AxiosResponse<unknown>> {
     // Secure the URL
     const secureURL = exports.enforceHttpsUrl(url);
 
@@ -141,37 +136,34 @@ module.exports.fetchGETResponse = async function(url) {
         shared.logger.error(`Error ${e.message} occurred while trying to fetch ${secureURL}`);
         return null;
     }
-};
+}
 
 /**
- * @protected
  * Enforces the scheme of the URL is https and returns the new URL.
  * @param {String} url 
  * @returns {String} Secure URL or `null` if the argument is not a string
  */
-module.exports.enforceHttpsUrl = function (url) {
+export function enforceHttpsUrl(url: string): string {
     return exports.isStringAValidURL(url) ? url.replace(/^(https?:)?\/\//, "https://") : null;
 };
 
 /**
- * @protected
  * Check if the url belongs to the domain of the F95 platform.
  * @param {String} url URL to check
  * @returns {Boolean} true if the url belongs to the domain, false otherwise
  */
-module.exports.isF95URL = function (url) {
+export function isF95URL(url: string): boolean {
     if (url.toString().startsWith(f95url.F95_BASE_URL)) return true;
     else return false;
 };
 
 /**
- * @protected
  * Checks if the string passed by parameter has a 
  * properly formatted and valid path to a URL (HTTP/HTTPS).
  * @param {String} url String to check for correctness
  * @returns {Boolean} true if the string is a valid URL, false otherwise
  */
-module.exports.isStringAValidURL = function (url) {
+export function isStringAValidURL(url: string): boolean {
     // Many thanks to Daveo at StackOverflow (https://preview.tinyurl.com/y2f2e2pc)
     const expression = /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_+.~#?&//=]*)/;
     const regex = new RegExp(expression);
@@ -180,20 +172,19 @@ module.exports.isStringAValidURL = function (url) {
 };
 
 /**
- * @protected
  * Check if a particular URL is valid and reachable on the web.
- * @param {String} url URL to check
- * @param {Boolean} [checkRedirect] 
+ * @param {string} url URL to check
+ * @param {boolean} [checkRedirect] 
  * If true, the function will consider redirects a violation and return false.
  * Default: false
  * @returns {Promise<Boolean>} true if the URL exists, false otherwise
  */
-module.exports.urlExists = async function (url, checkRedirect = false) {
+export async function urlExists(url: string, checkRedirect: boolean = false): Promise<boolean> {
     // Local variables
     let valid = false;
 
     if (exports.isStringAValidURL(url)) {
-        valid = await _axiosUrlExists(url);
+        valid = await axiosUrlExists(url);
 
         if (valid && checkRedirect) {
             const redirectUrl = await exports.getUrlRedirect(url);
@@ -202,18 +193,17 @@ module.exports.urlExists = async function (url, checkRedirect = false) {
     }
 
     return valid;
-};
+}
 
 /**
- * @protected
  * Check if the URL has a redirect to another page.
  * @param {String} url URL to check for redirect
  * @returns {Promise<String>} Redirect URL or the passed URL
  */
-module.exports.getUrlRedirect = async function (url) {
+export async function getUrlRedirect(url: string): Promise<string> {
     const response = await axios.head(url);
     return response.config.url;
-};
+}
 //#endregion Utility methods
 
 //#region Private methods
@@ -222,12 +212,12 @@ module.exports.getUrlRedirect = async function (url) {
  * Check with Axios if a URL exists.
  * @param {String} url 
  */
-async function _axiosUrlExists(url) {
+async function axiosUrlExists(url: string): Promise<boolean> {
     // Local variables
     let valid = false;
     try {
         const response = await axios.head(url, {timeout: 3000});
-        valid = response && !/4\d\d/.test(response.status);
+        valid = response && !/4\d\d/.test(response.status.toString());
     } catch (error) {
         if (error.code === "ENOTFOUND") valid = false;
         else if (error.code === "ETIMEDOUT") valid = false;

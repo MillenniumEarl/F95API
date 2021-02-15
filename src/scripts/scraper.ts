@@ -1,23 +1,22 @@
 "use strict";
 
 // Public modules from npm
-const cheerio = require("cheerio");
-const {DateTime} = require("luxon");
+import cheerio from "cheerio";
+import { DateTime } from "luxon";
 
 // Modules from file
-const { fetchHTML, getUrlRedirect } = require("./network-helper.js");
-const shared = require("./shared.js");
-const GameInfo = require("./classes/game-info.js");
-const f95Selector = require("./constants/css-selector.js");
+import { fetchHTML, getUrlRedirect } from "./network-helper.js";
+import shared from "./shared.js";
+import GameInfo from "./classes/game-info.js";
+import { selectors as f95Selector} from "./constants/css-selector.js";
 
 /**
- * @protected
  * Get information from the game's main page.
  * @param {String} url URL of the game/mod to extract data from
  * @return {Promise<GameInfo>} Complete information about the game you are
  * looking for or `null` if is impossible to parse information
  */
-module.exports.getGameInfo = async function (url) {
+export async function getGameInfo(url: string): Promise<GameInfo|null> {
     shared.logger.info("Obtaining game info");
 
     // Fetch HTML and prepare Cheerio
@@ -39,7 +38,7 @@ module.exports.getGameInfo = async function (url) {
     if(!structuredData) return null;
 
     const parsedInfos = parseMainPostText(structuredData.description);
-    const overview = getOverview(structuredData.description, prefixesData.mod);
+    const overview = getOverview(structuredData.description, prefixesData.mod as boolean);
     
     // Obtain the updated URL
     const redirectUrl = await getUrlRedirect(url);
@@ -49,23 +48,23 @@ module.exports.getGameInfo = async function (url) {
     info.id = extractIDFromURL(url);
     info.name = titleData.name;
     info.author = titleData.author;
-    info.isMod = prefixesData.mod;
-    info.engine = prefixesData.engine;
-    info.status = prefixesData.status;
+    info.isMod = prefixesData.mod as boolean;
+    info.engine = prefixesData.engine as string;
+    info.status = prefixesData.status as string;
     info.tags = tags;
     info.url = redirectUrl;
-    info.language = parsedInfos.Language;
+    info.language = parsedInfos.Language as unknown as string;
     info.overview = overview;
-    info.supportedOS = parsedInfos.SupportedOS;
-    info.censored = parsedInfos.Censored;
-    info.lastUpdate = parsedInfos.LastUpdate;
+    info.supportedOS = parsedInfos.SupportedOS as string[];
+    info.censored = parsedInfos.Censored as unknown as boolean;
+    info.lastUpdate = parsedInfos.LastUpdate as Date;
     info.previewSrc = src;
     info.changelog = changelog;
     info.version = titleData.version;
     
     shared.logger.info(`Founded data for ${info.name}`);
     return info;
-};
+}
 
 //#region Private methods
 /**
@@ -75,7 +74,7 @@ module.exports.getGameInfo = async function (url) {
  * @param {cheerio.Cheerio} body Page `body` selector
  * @returns {Object.<string, object>} Dictionary of values with keys `engine`, `status`, `mod`
  */
-function parseGamePrefixes(body) {
+function parseGamePrefixes(body: cheerio.Cheerio): { [s: string]: string | boolean; } {
     shared.logger.trace("Parsing prefixes...");
 
     // Local variables
@@ -86,10 +85,9 @@ function parseGamePrefixes(body) {
     // Obtain the title prefixes
     const prefixeElements = body.find(f95Selector.GT_TITLE_PREFIXES);
     
-    const $ = cheerio.load([].concat(body));
     prefixeElements.each(function parseGamePrefix(idx, el) {
         // Obtain the prefix text
-        let prefix = $(el).text().trim();
+        let prefix = cheerio(el).text().trim();
 
         // Remove the square brackets
         prefix = prefix.replace("[", "").replace("]", "");
@@ -100,8 +98,8 @@ function parseGamePrefixes(body) {
         else if (isMod(prefix)) mod = true;
     });
 
-    // If the status is not set, then the game in in development (Ongoing)
-    status = !status ? "Ongoing" : status; // status ?? "Ongoing";
+    // If the status is not set, then the game is in development (Ongoing)
+    status = status ?? "Ongoing";
 
     return {
         engine,
@@ -116,7 +114,7 @@ function parseGamePrefixes(body) {
  * @param {cheerio.Cheerio} body Page `body` selector
  * @returns {Object.<string, string>} Dictionary of values with keys `name`, `author`, `version`
  */
-function extractInfoFromTitle(body) {
+function extractInfoFromTitle(body: cheerio.Cheerio): { [s: string]: string; } {
     shared.logger.trace("Extracting information from title...");
     const title = body
         .find(f95Selector.GT_TITLE)
@@ -163,14 +161,14 @@ function extractInfoFromTitle(body) {
  * @param {cheerio.Cheerio} body Page `body` selector
  * @returns {String[]} List of tags
  */
-function extractTags(body) {
+function extractTags(body: cheerio.Cheerio): string[] {
     shared.logger.trace("Extracting tags...");
 
     // Get the game tags
     const tagResults = body.find(f95Selector.GT_TAGS);
-    const $ = cheerio.load([].concat(body));
+    
     return tagResults.map(function parseGameTags(idx, el) {
-        return $(el).text().trim();
+        return cheerio(el).text().trim();
     }).get();
 }
 
@@ -180,7 +178,7 @@ function extractTags(body) {
  * @param {cheerio.Cheerio} body Page `body` selector
  * @returns {String} URL of the image
  */
-function extractPreviewSource(body) {
+function extractPreviewSource(body: cheerio.Cheerio): string {
     shared.logger.trace("Extracting image preview source...");
     const image = body.find(f95Selector.GT_IMAGES);
     
@@ -196,7 +194,7 @@ function extractPreviewSource(body) {
  * @param {cheerio.Cheerio} mainPost main post selector
  * @returns {String} Changelog of the last version or `null` if no changelog is fetched
  */
-function extractChangelog(mainPost) {
+function extractChangelog(mainPost: cheerio.Cheerio): string|null {
     shared.logger.trace("Extracting last changelog...");
 
     // Obtain the changelog for ALL the versions
@@ -229,10 +227,17 @@ function extractChangelog(mainPost) {
  * @param {String} text Structured text of the post
  * @returns {Object.<string, object>} Dictionary of information
  */
-function parseMainPostText(text) {
+function parseMainPostText(text: string): { [s: string]: object; } {
     shared.logger.trace("Parsing main post raw text...");
 
-    const data = {};
+    interface DataFormat {
+        CENSORED: string,
+        UPDATED: string,
+        THREAD_UPDATED: string,
+        OS: string,
+        LANGUAGE: string
+    }
+    const data = {} as DataFormat;
 
     // The information searched in the game post are one per line
     const splittedText = text.split("\n");
@@ -275,7 +280,7 @@ function parseMainPostText(text) {
 
         // Usually the string is something like "Windows, Linux, Mac"
         const splitted = data.OS.split(",");
-        splitted.forEach(function (os) {
+        splitted.forEach(function (os: string) {
             listOS.push(os.trim());
         });
 
@@ -296,13 +301,11 @@ function parseMainPostText(text) {
 }
 
 /**
- * @private
  * Parse a JSON-LD element.
- * @param {cheerio.Element} element 
  */
-function parseScriptTag(element) {
+function parseJSONLD(element: cheerio.Element) {
     // Get the element HTML
-    const html = cheerio.load([].concat(element)).html().trim();
+    const html = cheerio.load(element).html().trim();
 
     // Obtain the JSON-LD
     const data = html
@@ -310,10 +313,7 @@ function parseScriptTag(element) {
         .replace("</script>", "");
 
     // Convert the string to an object
-    const json = JSON.parse(data);
-
-    // Return only the data of the game
-    if (json["@type"] === "Book") return json;
+    return JSON.parse(data);
 }
 
 /**
@@ -322,15 +322,15 @@ function parseScriptTag(element) {
  * @param {cheerio.Cheerio} body Page `body` selector
  * @returns {Object.<string, string>} JSON-LD or `null` if no valid JSON is found
  */
-function extractStructuredData(body) {
+function extractStructuredData(body: cheerio.Cheerio): { [s: string]: string; } {
     shared.logger.trace("Extracting JSON-LD data...");
 
     // Fetch the JSON-LD data
     const structuredDataElements = body.find(f95Selector.GT_JSONLD);
 
     // Parse the data
-    const json = structuredDataElements.map((idx, el) => parseScriptTag(el)).get();
-    return json.lenght !== 0 ? json[0] : null;
+    const json = structuredDataElements.map((idx, el) => parseJSONLD(el)).get();
+    return json.length !== 0 ? json[0] : null;
 }
 
 /**
@@ -341,7 +341,7 @@ function extractStructuredData(body) {
  * @param {Boolean} mod Specify if it is a game or a mod
  * @returns {String} Game description
  */
-function getOverview(text, mod) {
+function getOverview(text: string, mod: boolean): string {
     shared.logger.trace("Extracting game overview...");
 
     // Get overview (different parsing for game and mod)
@@ -355,7 +355,7 @@ function getOverview(text, mod) {
  * @param {String} prefix Prefix to check
  * @return {Boolean}
  */
-function isEngine(prefix) {
+function isEngine(prefix: string): boolean {
     const engines = toUpperCaseArray(Object.values(shared.engines));
     return engines.includes(prefix.toUpperCase());
 }
@@ -366,7 +366,7 @@ function isEngine(prefix) {
  * @param {String} prefix Prefix to check
  * @return {Boolean}
  */
-function isStatus(prefix) {
+function isStatus(prefix: string): boolean {
     const statuses = toUpperCaseArray(Object.values(shared.statuses));
     return statuses.includes(prefix.toUpperCase());
 }
@@ -377,7 +377,7 @@ function isStatus(prefix) {
  * @param {String} prefix Prefix to check
  * @return {Boolean}
  */
-function isMod(prefix) {
+function isMod(prefix: string): boolean {
     const modPrefixes = ["MOD", "CHEAT MOD"];
     return modPrefixes.includes(prefix.toUpperCase());
 }
@@ -388,7 +388,7 @@ function isMod(prefix) {
  * @param {String} url Game's URL
  * @return {Number} Game's ID
  */
-function extractIDFromURL(url) {
+function extractIDFromURL(url: string): number {
     // URL are in the format https://f95zone.to/threads/GAMENAME-VERSION-DEVELOPER.ID/
     // or https://f95zone.to/threads/ID/
     const match = url.match(/([0-9]+)(?=\/|\b)(?!-|\.)/);
@@ -403,13 +403,13 @@ function extractIDFromURL(url) {
  * Makes an array of strings uppercase.
  * @param {String[]} a 
  */
-function toUpperCaseArray(a) {
+function toUpperCaseArray(a: string[]) {
     /**
      * Makes a string uppercase.
      * @param {String} s 
      * @returns {String}
      */
-    function toUpper(s) {
+    function toUpper(s: string): string {
         return s.toUpperCase();
     }
     return a.map(toUpper);

@@ -1,8 +1,9 @@
 "use strict";
 
 // Modules from file
-import { fetchGETResponse } from "./network-helper.js";
+import { fetchGETResponse } from "./network-helper";
 import SearchQuery from "./classes/search-query";
+import { urls as f95url } from "./constants/url";
 
 /**
  * @public

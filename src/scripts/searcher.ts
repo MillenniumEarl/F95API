@@ -1,22 +1,20 @@
 "use strict";
 
 // Public modules from npm
-const cheerio = require("cheerio");
+import cheerio from "cheerio";
 
 // Modules from file
-const { fetchHTML } = require("./network-helper.js");
-const shared = require("./shared.js");
-const f95Selector = require("./constants/css-selector.js");
-const { F95_BASE_URL } = require("./constants/url.js");
+import { fetchHTML } from "./network-helper.js";
+import shared from "./shared.js";
+import { selectors as f95Selector } from "./constants/css-selector.js";
+import { urls as f95urls } from "./constants/url.js";
 
 //#region Public methods
 /**
- * @protected
  * Search for a game on F95Zone and return a list of URLs, one for each search result.
- * @param {String} name Game name
  * @returns {Promise<String[]>} URLs of results
  */
-module.exports.searchGame = async function (name) {
+export async function searchGame(name: string): Promise<string[]> {
     shared.logger.info(`Searching games with name ${name}`);
 
     // Replace the whitespaces with +
@@ -30,12 +28,10 @@ module.exports.searchGame = async function (name) {
 };
 
 /**
- * @protected
  * Search for a mod on F95Zone and return a list of URLs, one for each search result.
- * @param {String} name Mod name
  * @returns {Promise<String[]>} URLs of results
  */
-module.exports.searchMod = async function (name) {
+export async function searchMod(name: string): Promise<string[]> {
     shared.logger.info(`Searching mods with name ${name}`);
     
     // Replace the whitespaces with +
@@ -51,12 +47,10 @@ module.exports.searchMod = async function (name) {
 
 //#region Private methods
 /**
- * @private
  * Gets the URLs of the threads resulting from the F95Zone search.
- * @param {String} url Search URL
  * @return {Promise<String[]>} List of URLs
  */
-async function fetchResultURLs(url) {
+async function fetchResultURLs(url: string): Promise<string[]> {
     shared.logger.trace(`Fetching ${url}...`);
 
     // Fetch HTML and prepare Cheerio
@@ -76,12 +70,11 @@ async function fetchResultURLs(url) {
 }
 
 /**
- * @private
  * Look for the URL to the thread referenced by the item.
  * @param {cheerio.Cheerio} selector Element to search
  * @returns {String} URL to thread
  */
-function extractLinkFromResult(selector) {
+function extractLinkFromResult(selector: cheerio.Cheerio): string {
     shared.logger.trace("Extracting thread link from result...");
     
     const partialLink = selector
@@ -90,6 +83,6 @@ function extractLinkFromResult(selector) {
         .trim();
 
     // Compose and return the URL
-    return new URL(partialLink, F95_BASE_URL).toString();
+    return new URL(partialLink, f95urls.F95_BASE_URL).toString();
 }
 //#endregion Private methods
