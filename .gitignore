@@ -1,6 +1,6 @@
-node_modules/
-f95cache/
 .nyc_output/
+dist/
+node_modules/
 .env
 coverage.lcov
 **/*.js
