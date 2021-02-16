@@ -7,16 +7,17 @@ import axiosCookieJarSupport from "axios-cookiejar-support";
 import tough from "tough-cookie";
 
 // Modules from file
-import shared from "./shared";
-import { urls as f95url } from "./constants/url";
-import { selectors as f95selector } from "./constants/css-selector";
-import LoginResult from "./classes/login-result";
-import credentials from "./classes/credentials";
+import shared from "./shared.js";
+import { urls as f95url } from "./constants/url.js";
+import { selectors as f95selector } from "./constants/css-selector.js";
+import LoginResult from "./classes/login-result.js";
+import credentials from "./classes/credentials.js";
 
 // Global variables
 const userAgent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15) " + 
     "AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0 Safari/605.1.15";
-axiosCookieJarSupport(axios);
+// @ts-ignore
+axiosCookieJarSupport.default(axios);
 
 const commonConfig = {
     headers: {
@@ -36,7 +37,7 @@ export async function fetchHTML(url: string): Promise<string|null> {
     let returnValue = null;
 
     // Fetch the response of the platform
-    const response = await exports.fetchGETResponse(url);
+    const response = await fetchGETResponse(url);
 
     // Manage response
     /* istambul ignore next */
@@ -66,7 +67,7 @@ export async function authenticate(credentials: credentials, force: boolean = fa
     if (!credentials.token) throw new Error(`Invalid token for auth: ${credentials.token}`);
 
     // Secure the URL
-    const secureURL = exports.enforceHttpsUrl(f95url.F95_LOGIN_URL);
+    const secureURL = enforceHttpsUrl(f95url.F95_LOGIN_URL);
 
     // Prepare the parameters to send to the platform to authenticate
     const params = new URLSearchParams();
@@ -108,7 +109,7 @@ export async function authenticate(credentials: credentials, force: boolean = fa
  */
 export async function getF95Token(): Promise<string|null> {
     // Fetch the response of the platform
-    const response = await exports.fetchGETResponse(f95url.F95_LOGIN_URL);
+    const response = await fetchGETResponse(f95url.F95_LOGIN_URL);
     /* istambul ignore next */
     if (!response) {
         shared.logger.warn("Unable to get the token for the session");
@@ -116,7 +117,7 @@ export async function getF95Token(): Promise<string|null> {
     }
 
     // The response is a HTML page, we need to find the <input> with name "_xfToken"
-    const $ = cheerio.load(response.data);
+    const $ = cheerio.load(response.data as string);
     return $("body").find(f95selector.GET_REQUEST_TOKEN).attr("value");
 }
 
@@ -127,7 +128,7 @@ export async function getF95Token(): Promise<string|null> {
  */
 export async function fetchGETResponse(url: string): Promise<AxiosResponse<unknown>> {
     // Secure the URL
-    const secureURL = exports.enforceHttpsUrl(url);
+    const secureURL = enforceHttpsUrl(url);
 
     try {
         // Fetch and return the response
@@ -144,7 +145,7 @@ export async function fetchGETResponse(url: string): Promise<AxiosResponse<unkno
  * @returns {String} Secure URL or `null` if the argument is not a string
  */
 export function enforceHttpsUrl(url: string): string {
-    return exports.isStringAValidURL(url) ? url.replace(/^(https?:)?\/\//, "https://") : null;
+    return isStringAValidURL(url) ? url.replace(/^(https?:)?\/\//, "https://") : null;
 };
 
 /**
@@ -183,11 +184,11 @@ export async function urlExists(url: string, checkRedirect: boolean = false): Pr
     // Local variables
     let valid = false;
 
-    if (exports.isStringAValidURL(url)) {
+    if (isStringAValidURL(url)) {
         valid = await axiosUrlExists(url);
 
         if (valid && checkRedirect) {
-            const redirectUrl = await exports.getUrlRedirect(url);
+            const redirectUrl = await getUrlRedirect(url);
             valid = redirectUrl === url;
         }
     }

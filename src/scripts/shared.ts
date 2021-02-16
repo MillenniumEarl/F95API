@@ -6,10 +6,10 @@ import { tmpdir } from "os";
 import { join } from "path";
 
 // Public modules from npm
-import { getLogger, Logger } from "log4js";
+import log4js from "log4js";
 
 // Modules from file
-import Session from "./classes/session";
+import Session from "./classes/session.js";
 
 // Types declaration
 export type DictType = { [n: number]: string; };
@@ -42,7 +42,7 @@ export default abstract class Shared {
     /**
      * Logger object used to write to both file and console.
      */
-    static _logger: Logger = getLogger();
+    static _logger: log4js.Logger = log4js.getLogger();
     /**
      * Session on the F95Zone platform.
      */
@@ -83,7 +83,7 @@ export default abstract class Shared {
     /**
      * Logger object used to write to both file and console.
      */
-    static get logger(): Logger {
+    static get logger(): log4js.Logger {
         return this._logger;
     }
     /**
@@ -122,5 +122,3 @@ export default abstract class Shared {
     }
     //#endregion Setters
 }
-
-module.exports = Shared;

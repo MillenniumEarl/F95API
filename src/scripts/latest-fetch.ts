@@ -1,9 +1,9 @@
 "use strict";
 
 // Modules from file
-import { fetchGETResponse } from "./network-helper";
-import SearchQuery from "./classes/search-query";
-import { urls as f95url } from "./constants/url";
+import { fetchGETResponse } from "./network-helper.js";
+import SearchQuery from "./classes/search-query.js";
+import { urls as f95url } from "./constants/url.js";
 
 /**
  * @public
@@ -31,17 +31,17 @@ export async function fetchLatest(query: SearchQuery, limit = 30): Promise<strin
         const response = await fetchGETResponse(url);
 
         // Save the URLs
-        for(const result of response.data.msg.data) {
-            if(fetchedResults < limit) {
-                const gameURL = new URL(result.thread_id, threadURL).href;
-                resultURLs.push(gameURL);
-                fetchedResults += 1;
-            }
-        }
+        // for(const result of response.data.msg.data) {
+        //     if(fetchedResults < limit) {
+        //         const gameURL = new URL(result.thread_id, threadURL).href;
+        //         resultURLs.push(gameURL);
+        //         fetchedResults += 1;
+        //     }
+        // }
         
         // Increment page and check for it's existence
         page += 1;
-        if (page > response.data.msg.pagination.total) noMorePages = true;
+        //if (page > response.data.msg.pagination.total) noMorePages = true;
     }
     while (fetchedResults < limit && !noMorePages);
 
