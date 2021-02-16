@@ -3,6 +3,7 @@ import validator from 'class-validator';
 
 // Modules from file
 import { urls } from "../constants/url.js";
+import PrefixParser from './prefix-parser.js';
 
 /**
  * Query used to search for specific threads on the platform.
@@ -37,14 +38,14 @@ export default class SearchQuery {
     @validator.ArrayMaxSize(SearchQuery.MAX_TAGS, {
         message: "Too many tags: $value instead of $constraint1"
     })
-    public tags: number[] = [];
+    public tags: string[] = [];
     /**
      * List of IDs of prefixes to be included in the search.
      */
     @validator.IsArray({
         message: "Expected an array, received $value"
     })
-    public prefixes: number[] = [];
+    public prefixes: string[] = [];
     /**
      * Sorting type between (default: `date`):
      * `date`, `likes`, `views`, `title`, `rating`
@@ -104,11 +105,12 @@ export default class SearchQuery {
         url.searchParams.set("cat", this.category);
 
         // Add tags and prefixes
-        for (const tag of this.tags) {
+        const parser = new PrefixParser();
+        for (const tag of parser.prefixesToIDs(this.tags)) {
             url.searchParams.append("tags[]", tag.toString());
         }
         
-        for (const p of this.prefixes) {
+        for (const p of parser.prefixesToIDs(this.prefixes)) {
             url.searchParams.append("prefixes[]", p.toString());
         }
         
