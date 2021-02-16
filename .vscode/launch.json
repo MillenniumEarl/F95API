@@ -2,9 +2,16 @@
     "configurations": [
         {
             "type": "node-terminal",
-            "name": "Run Script: test",
+            "name": "Test",
             "request": "launch",
             "command": "npm run test",
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "node-terminal",
+            "name": "Compile",
+            "request": "launch",
+            "command": "npm run compile",
             "cwd": "${workspaceFolder}"
         }
     ]
