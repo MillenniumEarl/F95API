@@ -24,21 +24,9 @@ export default abstract class Shared {
      */
     static _isLogged = false;
     /**
-     * List of possible game engines used for development.
+     * List of platform prefixes and tags.
      */
-    static _engines: DictType = {};
-    /**
-     * List of possible development statuses that a game can assume.
-     */
-    static _statuses: DictType = {};
-    /**
-     * List of other prefixes that a game can assume.
-     */
-    static _others: DictType = {};
-    /**
-     * List of possible tags that a game can assume.
-     */
-    static _tags: DictType = {};
+    static _prefixes: {[s: string]: DictType} = {}
     /**
      * Logger object used to write to both file and console.
      */
@@ -57,28 +45,10 @@ export default abstract class Shared {
         return this._isLogged;
     }
     /**
-     * List of possible game engines used for development.
+     * List of platform prefixes and tags.
      */
-    static get engines(): DictType {
-        return this._engines;
-    }
-    /**
-     * List of possible development states that a game can assume.
-     */
-    static get statuses(): DictType {
-        return this._statuses;
-    }
-    /**
-     * List of other prefixes that a game can assume.
-     */
-    static get others(): DictType {
-        return this._others;
-    }
-    /**
-     * List of possible tags that a game can assume.
-     */
-    static get tags(): DictType {
-        return this._tags;
+    static get prefixes(): { [s: string]: DictType } {
+        return this._prefixes;
     }
     /**
      * Logger object used to write to both file and console.
@@ -101,20 +71,8 @@ export default abstract class Shared {
     //#endregion Getters
 
     //#region Setters
-    static setEngines(val: DictType): void {
-        this._engines = val;
-    }
-
-    static setStatuses(val: DictType): void {
-        this._statuses = val;
-    }
-
-    static setTags(val: DictType): void {
-        this._tags = val;
-    }
-
-    static setOthers(val: DictType): void {
-        this._others = val;
+    static setPrefixPair(key: string, val: DictType): void {
+        this._prefixes[key] = val;
     }
 
     static setIsLogged(val: boolean): void {
