@@ -1,29 +1,28 @@
 "use strict";
 
 // Modules from file
-import shared from "../shared";
+import shared, { DictType } from "../shared.js";
 
 /**
  * Convert prefixes and platform tags from string to ID and vice versa.
  */
 export default class PrefixParser {
+
     //#region Private methods
     /**
-     * @private
      * Gets the key associated with a given value from a dictionary.
      * @param {Object} object Dictionary to search 
      * @param {Any} value Value associated with the key
      * @returns {String|undefined} Key found or undefined
      */
-    _getKeyByValue(object: { [x: string]: unknown; }, value: unknown): string | undefined {
+    getKeyByValue(object: DictType, value: string): string | undefined {
         return Object.keys(object).find(key => object[key] === value);
     }
 
     /**
-     * @private
      * Makes an array of strings uppercase.
      */
-    _toUpperCaseArray(a: string[]): string[] {
+    toUpperCaseArray(a: string[]): string[] {
         /**
          * Makes a string uppercase.
          */
@@ -34,56 +33,70 @@ export default class PrefixParser {
     }
 
     /**
-     * @private
      * Check if `dict` contains `value` as a value.
      */
-    _valueInDict(dict: { [s: number]: string; }, value: string): boolean {
+    valueInDict(dict: DictType, value: string): boolean {
         const array = Object.values(dict);
-        const upperArr = this._toUpperCaseArray(array);
+        const upperArr = this.toUpperCaseArray(array);
         const element = value.toUpperCase();
         return upperArr.includes(element);
+    }
+
+    searchElementInPrefixes(element: string | number): DictType | null {
+        // Local variables
+        let dictName = null;
+
+        // Iterate the key/value pairs in order to find the element
+        for (const [key, subdict] of Object.entries(shared.prefixes)) {
+            // Check if the element is a value in the sub-dict
+            const valueInDict = typeof element === "string" && this.valueInDict(subdict, element as string);
+
+            // Check if the element is a key in the subdict
+            const keyInDict = typeof element === "number" && Object.keys(subdict).includes(element.toString());
+            
+            if (valueInDict || keyInDict) {
+                dictName = key;
+                break;
+            }
+        }
+
+        return shared.prefixes[dictName] ?? null;
     }
     //#endregion Private methods
 
     /**
-     * @public
      * Convert a list of prefixes to their respective IDs.
      */
-    prefixesToIDs(prefixes: string[]) : number[] {
+    public prefixesToIDs(prefixes: string[]) : number[] {
         const ids: number[] = [];
+
         for(const p of prefixes) {
             // Check what dict contains the value
-            let dict = null;
-            if (this._valueInDict(shared.statuses, p)) dict = shared.statuses;
-            else if (this._valueInDict(shared.engines, p)) dict = shared.engines;
-            else if (this._valueInDict(shared.tags, p)) dict = shared.tags;
-            else if (this._valueInDict(shared.others, p)) dict = shared.others;
-            else continue;
+            const dict = this.searchElementInPrefixes(p);
 
-            // Extract the key from the dict
-            const key = this._getKeyByValue(dict, p);
-            if(key) ids.push(parseInt(key));
+            if (dict) {
+                // Extract the key from the dict
+                const key = this.getKeyByValue(dict, p);
+                ids.push(parseInt(key));
+            }
         }
         return ids;
     }
 
     /**
-     * @public
      * It converts a list of IDs into their respective prefixes.
      */
-    idsToPrefixes(ids: number[]): string[] {
+    public idsToPrefixes(ids: number[]): string[] {
         const prefixes:string[] = [];
+
         for(const id of ids) {
             // Check what dict contains the key
-            let dict = null;
-            if (Object.keys(shared.statuses).includes(id.toString())) dict = shared.statuses;
-            else if (Object.keys(shared.engines).includes(id.toString())) dict = shared.engines;
-            else if (Object.keys(shared.tags).includes(id.toString())) dict = shared.tags;
-            else if (Object.keys(shared.others).includes(id.toString())) dict = shared.others;
-            else continue;
+            const dict = this.searchElementInPrefixes(id);
 
-            // Check if the key exists in the dict
-            if (id in dict) prefixes.push(dict[id]);
+            // Add the key to the list
+            if (dict) {
+                prefixes.push(dict[id]);
+            }
         }
         return prefixes;
     }
