@@ -9,9 +9,9 @@
         },
         {
             "type": "node-terminal",
-            "name": "Compile",
+            "name": "Devtest",
             "request": "launch",
-            "command": "npm run compile",
+            "command": "npm run run-devtest",
             "cwd": "${workspaceFolder}"
         }
     ]
