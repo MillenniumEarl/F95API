@@ -25,10 +25,10 @@
   "scripts": {
     "test": "nyc --reporter=text mocha './test/index-test.ts'",
     "report-coverage": "nyc report --reporter=text-lcov > coverage.lcov && codecov -t 38ad72bf-a29d-4c2e-9827-96cbe037afd2",
-    "run-example": "node ./dist/example.ts",
+    "run-example": "tsc | node ./dist/example.ts",
     "publish": "npm publish",
     "compile": "tsc",
-    "run-devtest": "node ./dist/test.js"
+    "run-devtest": "tsc | node ./dist/test.js"
   },
   "engines": {
     "node": ">=10.0"
