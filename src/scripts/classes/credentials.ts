@@ -26,7 +26,6 @@ export default class Credentials {
     }
 
     /**
-     * @public
      * Fetch and save the token used to log in to F95Zone.
      */
     async fetchToken(): Promise<void> {
