@@ -76,10 +76,12 @@ function readCache(path: string) {
     if (existsSync(path)) {
         const data = readFileSync(path, {encoding: "utf-8", flag: "r"});
         const json: { [s: string]: DictType } = JSON.parse(data);
-        shared.setEngines(json.engines);
-        shared.setStatuses(json.statuses);
-        shared.setTags(json.tags);
-        shared.setOthers(json.others);
+
+        shared.setPrefixPair("engines", json.engines);
+        shared.setPrefixPair("statuses", json.statuses);
+        shared.setPrefixPair("tags", json.tags);
+        shared.setPrefixPair("others", json.others);
+        
         returnValue = true;
     }
     return returnValue;
@@ -91,10 +93,10 @@ function readCache(path: string) {
  */
 function saveCache(path: string): void {
     const saveDict = {
-        engines: shared.engines,
-        statuses: shared.statuses,
-        tags: shared.tags,
-        others: shared.others,
+        engines: shared.prefixes["engines"],
+        statuses: shared.prefixes["statuses"],
+        tags: shared.prefixes["tags"],
+        others: shared.prefixes["others"],
     };
     const json = JSON.stringify(saveDict);
     writeFileSync(path, json);
@@ -135,9 +137,9 @@ function assignLatestPlatformData(data: LatestResObj): void {
     }
 
     // Save the values
-    shared.setEngines(Object.assign({}, scrapedData["Engine"]));
-    shared.setStatuses(Object.assign({}, scrapedData["Status"]));
-    shared.setOthers(Object.assign({}, scrapedData["Other"]));
-    shared.setTags(data.Tags);
+    shared.setPrefixPair("engines", Object.assign({}, scrapedData["Engine"]));
+    shared.setPrefixPair("statuses", Object.assign({}, scrapedData["Status"]));
+    shared.setPrefixPair("others", Object.assign({}, scrapedData["Other"]));
+    shared.setPrefixPair("tags", data.Tags);
 }
 //#endregion
