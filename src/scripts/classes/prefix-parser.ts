@@ -42,6 +42,11 @@ export default class PrefixParser {
         return upperArr.includes(element);
     }
 
+    /**
+     * Search within the platform prefixes for the 
+     * desired element and return the dictionary that contains it.
+     * @param element Element to search in the prefixes as a key or as a value
+     */
     searchElementInPrefixes(element: string | number): DictType | null {
         // Local variables
         let dictName = null;
