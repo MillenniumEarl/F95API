@@ -1,7 +1,7 @@
 "use strict";
 
 // Modules from files
-import { AuthorI, ComicI, RatingI } from "../../interfaces";
+import { IAuthor, ComicI, IRating } from "../../interfaces";
 
 export default class Comic implements ComicI {
     
@@ -9,7 +9,7 @@ export default class Comic implements ComicI {
     Genre: string[];
     Pages: string;
     Resolution: string[];
-    Authors: AuthorI[];
+    Authors: IAuthor[];
     Category: string;
     Changelog: string[];
     Cover: string;
@@ -18,7 +18,7 @@ export default class Comic implements ComicI {
     Name: string;
     Overview: string;
     Prefixes: string[];
-    Rating: RatingI;
+    Rating: IRating;
     Tags: string[];
     ThreadPublishingDate: Date;
     Url: string;

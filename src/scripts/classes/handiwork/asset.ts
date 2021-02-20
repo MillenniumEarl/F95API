@@ -1,7 +1,7 @@
 "use strict";
 
 // Modules from files
-import { AuthorI, AssetI, RatingI } from "../../interfaces";
+import { IAuthor, AssetI, IRating } from "../../interfaces";
 
 export default class Asset implements AssetI {
 
@@ -12,7 +12,7 @@ export default class Asset implements AssetI {
     IncludedAssets: string[];
     OfficialLinks: string[];
     SKU: string;
-    Authors: AuthorI[];
+    Authors: IAuthor[];
     Category: string;
     Changelog: string[];
     Cover: string;
@@ -21,7 +21,7 @@ export default class Asset implements AssetI {
     Name: string;
     Overview: string;
     Prefixes: string[];
-    Rating: RatingI;
+    Rating: IRating;
     Tags: string[];
     ThreadPublishingDate: Date;
     Url: string;

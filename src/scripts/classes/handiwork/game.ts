@@ -1,7 +1,7 @@
 "use strict";
 
 // Modules from files
-import { AuthorI, GameI, RatingI } from "../../interfaces";
+import { IAuthor, GameI, IRating } from "../../interfaces";
 
 export default class Game implements GameI {
 
@@ -13,7 +13,7 @@ export default class Game implements GameI {
     LastRelease: Date;
     OS: string[];
     Version: string;
-    Authors: AuthorI[];
+    Authors: IAuthor[];
     Category: string;
     Changelog: string[];
     Cover: string;
@@ -22,7 +22,7 @@ export default class Game implements GameI {
     Name: string;
     Overview: string;
     Prefixes: string[];
-    Rating: RatingI;
+    Rating: IRating;
     Tags: string[];
     ThreadPublishingDate: Date;
     Url: string;

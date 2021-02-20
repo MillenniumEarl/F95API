@@ -1,12 +1,12 @@
 "use strict";
 
 // Modules from files
-import { AuthorI, RatingI, HandiworkI } from "../../interfaces";
+import { IAuthor, IRating, IHandiwork } from "../../interfaces";
 
 /**
  * It represents a generic work, be it a game, a comic, an animation or an asset.
  */
-export default class HandiWork implements HandiworkI  {
+export default class HandiWork implements IHandiwork {
 
     //#region Properties
     AssetLink: string;
@@ -27,7 +27,7 @@ export default class HandiWork implements HandiworkI  {
     Resolution: string[];
     SKU: string;
     Version: string;
-    Authors: AuthorI[];
+    Authors: IAuthor[];
     Category: string;
     Cover: string;
     ID: number;
@@ -35,7 +35,7 @@ export default class HandiWork implements HandiworkI  {
     Name: string;
     Overview: string;
     Prefixes: string[];
-    Rating: RatingI;
+    Rating: IRating;
     Tags: string[];
     ThreadPublishingDate: Date;
     Url: string;

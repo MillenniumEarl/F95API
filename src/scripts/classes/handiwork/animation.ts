@@ -1,7 +1,7 @@
 "use strict";
 
 // Modules from files
-import { AuthorI, AnimationI, RatingI } from "../../interfaces";
+import { IAuthor, AnimationI, IRating } from "../../interfaces";
 
 export default class Animation implements AnimationI {
     
@@ -13,7 +13,7 @@ export default class Animation implements AnimationI {
     Lenght: string;
     Pages: string;
     Resolution: string[];
-    Authors: AuthorI[];
+    Authors: IAuthor[];
     Category: string;
     Changelog: string[];
     Cover: string;
@@ -22,7 +22,7 @@ export default class Animation implements AnimationI {
     Name: string;
     Overview: string;
     Prefixes: string[];
-    Rating: RatingI;
+    Rating: IRating;
     Tags: string[];
     ThreadPublishingDate: Date;
     Url: string;

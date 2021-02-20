@@ -1,7 +1,7 @@
 /**
  * Data relating to an external platform (i.e. Patreon).
  */
-export type ExternalPlatformI = {
+export type IExternalPlatform = {
     /**
      * Name of the platform.
      */
@@ -15,7 +15,7 @@ export type ExternalPlatformI = {
 /**
  * Information about the author of a work.
  */
-export type AuthorI = {
+export type IAuthor = {
     /**
      * Plain name or username of the author.
      */
@@ -23,13 +23,13 @@ export type AuthorI = {
     /**
      * 
      */
-    Platforms: ExternalPlatformI[],
+    Platforms: IExternalPlatform[],
 }
 
 /**
  * Information on the evaluation of a work.
  */
-export type RatingI = {
+export type IRating = {
     /**
      * Average value of evaluations.
      */
@@ -48,11 +48,11 @@ export type RatingI = {
  * Collection of values defined for each 
  * handiwork on the F95Zone platform.
  */
-interface BasicI {
+interface IBasic {
     /**
      * Authors of the work.
      */
-    Authors: AuthorI[],
+    Authors: IAuthor[],
     /**
      * Category of the work between `games`, `comics`, `animations`, `assets`.
      */
@@ -88,7 +88,7 @@ interface BasicI {
     /**
      * Evaluation of the work by the users of the platform.
      */
-    Rating: RatingI,
+    Rating: IRating,
     /**
      * List of tags associated with the work.
      */
@@ -106,7 +106,7 @@ interface BasicI {
 /**
  * Collection of values representing a game present on the F95Zone platform.
  */
-export interface GameI extends BasicI {
+export interface GameI extends IBasic {
     /**
      * Specify whether the work has censorship
      * measures regarding NSFW scenes
@@ -141,7 +141,7 @@ export interface GameI extends BasicI {
 /**
  * Collection of values representing a comic present on the F95Zone platform.
  */
-export interface ComicI extends BasicI {
+export interface ComicI extends IBasic {
     /**
      * List of genres associated with the work.
      */
@@ -159,7 +159,7 @@ export interface ComicI extends BasicI {
 /**
  * Collection of values representing an animation present on the F95Zone platform.
  */
-export interface AnimationI extends BasicI {
+export interface AnimationI extends IBasic {
     /**
      * Specify whether the work has censorship
      * measures regarding NSFW scenes
@@ -194,7 +194,7 @@ export interface AnimationI extends BasicI {
 /**
  * Collection of values representing an asset present on the F95Zone platform.
  */
-export interface AssetI extends BasicI {
+export interface AssetI extends IBasic {
     /**
      * External URL of the asset.
      */
@@ -226,4 +226,4 @@ export interface AssetI extends BasicI {
  * Collection of values extrapolated from the 
  * F95 platform representing a particular work.
  */
-export interface HandiworkI extends GameI, ComicI, AnimationI, AssetI {}
+export interface IHandiwork extends GameI, ComicI, AnimationI, AssetI { }
