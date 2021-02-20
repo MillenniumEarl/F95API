@@ -7,10 +7,10 @@ import { readFileSync, writeFileSync, existsSync } from "fs";
 import cheerio from "cheerio";
 
 // Modules from file
-import shared, { DictType } from "./shared";
-import { urls as f95url } from "./constants/url";
-import { selectors as f95selector} from "./constants/css-selector";
-import { fetchHTML } from "./network-helper";
+import shared, { DictType } from "./shared.js";
+import { urls as f95url } from "./constants/url.js";
+import { selectors as f95selector} from "./constants/css-selector.js";
+import { fetchHTML } from "./network-helper.js";
 
 //#region Interface definitions
 /**

@@ -1,7 +1,7 @@
 "use strict";
 
-import { fetchLatest } from "./scripts/latest-fetch";
-import SearchQuery from "./scripts/classes/search-query";
+import { fetchLatest } from "./scripts/latest-fetch.js";
+import SearchQuery from "./scripts/classes/search-query.js";
 
 
 async function test() {
