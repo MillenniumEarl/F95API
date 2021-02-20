@@ -1,4 +1,5 @@
 {
+    "compileOnSave": true,
     "compilerOptions": {
         "experimentalDecorators": true,
         "outDir": "./dist",
@@ -10,7 +11,7 @@
         "allowSyntheticDefaultImports": true,
         "incremental": true,
         "sourceMap": true,
-        "alwaysStrict": true
+        "alwaysStrict": true,
     },
     "include": ["./src/**/*.ts"]
 }
