@@ -12,9 +12,8 @@ import log4js from "log4js";
 import Session from "./classes/session.js";
 
 // Types declaration
-export type DictType = { [n: number]: string; };
-type KeyPrefixesType = "engines" | "statuses" | "tags" | "others";
-type PrefixesType = { [key in KeyPrefixesType]: DictType }
+export type TPrefixDict = { [n: number]: string; };
+type TPrefixKey = "engines" | "statuses" | "tags" | "others";
 
 /**
  * Class containing variables shared between modules.
@@ -28,7 +27,7 @@ export default abstract class Shared {
     /**
      * List of platform prefixes and tags.
      */
-    static _prefixes: PrefixesType = {} as PrefixesType;
+    static _prefixes: { [key in TPrefixKey]: TPrefixDict } = {} as { [key in TPrefixKey]: TPrefixDict };
     /**
      * Logger object used to write to both file and console.
      */
@@ -49,7 +48,7 @@ export default abstract class Shared {
     /**
      * List of platform prefixes and tags.
      */
-    static get prefixes(): { [s: string]: DictType } {
+    static get prefixes(): { [s: string]: TPrefixDict } {
         return this._prefixes;
     }
     /**
@@ -73,7 +72,7 @@ export default abstract class Shared {
     //#endregion Getters
 
     //#region Setters
-    static setPrefixPair(key: KeyPrefixesType, val: DictType): void {
+    static setPrefixPair(key: TPrefixKey, val: TPrefixDict): void {
         this._prefixes[key] = val;
     }
 

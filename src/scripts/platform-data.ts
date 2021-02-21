@@ -7,7 +7,7 @@ import { readFileSync, writeFileSync, existsSync } from "fs";
 import cheerio from "cheerio";
 
 // Modules from file
-import shared, { DictType } from "./shared.js";
+import shared, { TPrefixDict } from "./shared.js";
 import { urls as f95url } from "./constants/url.js";
 import { selectors as f95selector} from "./constants/css-selector.js";
 import { fetchHTML } from "./network-helper.js";
@@ -36,7 +36,7 @@ interface ICategoryResource {
  */
 interface ILatestResource {
     prefixes: ICategoryResource[],
-    tags: DictType,
+    tags: TPrefixDict,
     options: string
 }
 //#endregion Interface definitions
@@ -75,7 +75,7 @@ function readCache(path: string) {
 
     if (existsSync(path)) {
         const data = readFileSync(path, {encoding: "utf-8", flag: "r"});
-        const json: { [s: string]: DictType } = JSON.parse(data);
+        const json: { [s: string]: TPrefixDict } = JSON.parse(data);
 
         shared.setPrefixPair("engines", json.engines);
         shared.setPrefixPair("statuses", json.statuses);
@@ -129,7 +129,7 @@ function assignLatestPlatformData(data: ILatestResource): void {
     // Parse and assign the values that are NOT tags
     for (const p of data.prefixes) {
         // Prepare the dict
-        const dict: DictType = {};
+        const dict: TPrefixDict = {};
         for (const e of p.prefixes) dict[e.id] = e.name.replace("&#039;", "'");
 
         // Save the property

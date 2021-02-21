@@ -1,7 +1,7 @@
 "use strict";
 
 // Modules from file
-import shared, { DictType } from "../shared.js";
+import shared, { TPrefixDict } from "../shared.js";
 
 /**
  * Convert prefixes and platform tags from string to ID and vice versa.
@@ -15,7 +15,7 @@ export default class PrefixParser {
      * @param {Any} value Value associated with the key
      * @returns {String|undefined} Key found or undefined
      */
-    getKeyByValue(object: DictType, value: string): string | undefined {
+    getKeyByValue(object: TPrefixDict, value: string): string | undefined {
         return Object.keys(object).find(key => object[key] === value);
     }
 
@@ -35,7 +35,7 @@ export default class PrefixParser {
     /**
      * Check if `dict` contains `value` as a value.
      */
-    valueInDict(dict: DictType, value: string): boolean {
+    valueInDict(dict: TPrefixDict, value: string): boolean {
         const array = Object.values(dict);
         const upperArr = this.toUpperCaseArray(array);
         const element = value.toUpperCase();
@@ -47,7 +47,7 @@ export default class PrefixParser {
      * desired element and return the dictionary that contains it.
      * @param element Element to search in the prefixes as a key or as a value
      */
-    searchElementInPrefixes(element: string | number): DictType | null {
+    searchElementInPrefixes(element: string | number): TPrefixDict | null {
         // Local variables
         let dictName = null;
 
