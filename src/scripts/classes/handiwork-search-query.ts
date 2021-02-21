@@ -8,7 +8,7 @@ import PrefixParser from './prefix-parser.js';
 /**
  * Query used to search for specific threads on the platform.
  */
-export default class SearchQuery {
+export default class HandiworkSearchQuery {
 
     //#region Private fields
     private static MAX_TAGS = 5;
@@ -24,7 +24,7 @@ export default class SearchQuery {
      * `games`, `comics`, `animations`, `assets`.
      * Default: `games`
      */
-    @validator.IsIn(SearchQuery.VALID_CATEGORY, {
+    @validator.IsIn(HandiworkSearchQuery.VALID_CATEGORY, {
         message: "Invalid $property parameter: $value"
     })
     public category = 'games';
@@ -35,7 +35,7 @@ export default class SearchQuery {
     @validator.IsArray({
         message: "Expected an array, received $value"
     })
-    @validator.ArrayMaxSize(SearchQuery.MAX_TAGS, {
+    @validator.ArrayMaxSize(HandiworkSearchQuery.MAX_TAGS, {
         message: "Too many tags: $value instead of $constraint1"
     })
     public tags: string[] = [];
@@ -50,7 +50,7 @@ export default class SearchQuery {
      * Sorting type between (default: `date`):
      * `date`, `likes`, `views`, `title`, `rating`
      */
-    @validator.IsIn(SearchQuery.VALID_SORT, {
+    @validator.IsIn(HandiworkSearchQuery.VALID_SORT, {
         message: "Invalid $property parameter: $value"
     })
     public sort = 'date';
@@ -61,7 +61,7 @@ export default class SearchQuery {
      * Use `1` to indicate "today" or `null` to indicate "anytime".
      * Default: `null`
      */
-    @validator.IsIn(SearchQuery.VALID_DATE, {
+    @validator.IsIn(HandiworkSearchQuery.VALID_DATE, {
         message: "Invalid $property parameter: $value"
     })
     public date: number = null;
@@ -73,10 +73,10 @@ export default class SearchQuery {
     @validator.IsInt({
         message: "$property expect an integer, received $value"
     })
-    @validator.Min(SearchQuery.MIN_PAGE, {
+    @validator.Min(HandiworkSearchQuery.MIN_PAGE, {
         message: "The minimum $property value must be $constraint1, received $value"
     })
-    public page = SearchQuery.MIN_PAGE;
+    public page = HandiworkSearchQuery.MIN_PAGE;
     //#endregion Properties
     
     //#region Public methods
