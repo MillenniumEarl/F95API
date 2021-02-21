@@ -21,11 +21,11 @@ export default class UserData {
      */
     bookmarks: string[] = [];
     /**
-     * List of notification messages for the user.
+     * List of alerts.
      */
-    notifications: string[] = [];
+    alerts: string[] = [];
     /**
-     * List of messages received.
+     * List of conversations.
      */
-    messages: string[];
+    conversations: string[];
 }
