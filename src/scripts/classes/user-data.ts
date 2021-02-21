@@ -11,9 +11,21 @@ export default class UserData {
     /**
      * Path to the user's profile picture.
      */
-    avatarSrc: string = null;
+    avatar: string = null;
     /**
-     * List of followed game thread URLs.
+     * List of followed thread URLs.
      */
-    watchedGameThreads: string[] = [];
+    watched: string[] = [];
+    /**
+     * List of bookmarked thread URLs.
+     */
+    bookmarks: string[] = [];
+    /**
+     * List of notification messages for the user.
+     */
+    notifications: string[] = [];
+    /**
+     * List of messages received.
+     */
+    messages: string[];
 }
