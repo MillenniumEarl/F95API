@@ -1,7 +1,7 @@
 /**
  * Data relating to an external platform (i.e. Patreon).
  */
-export type IExternalPlatform = {
+export type ExternalPlatformType = {
     /**
      * Name of the platform.
      */
@@ -15,7 +15,7 @@ export type IExternalPlatform = {
 /**
  * Information about the author of a work.
  */
-export type IAuthor = {
+export type AuthorType = {
     /**
      * Plain name or username of the author.
      */
@@ -23,13 +23,13 @@ export type IAuthor = {
     /**
      * 
      */
-    Platforms: IExternalPlatform[],
+    Platforms: ExternalPlatformType[],
 }
 
 /**
  * Information on the evaluation of a work.
  */
-export type IRating = {
+export type RatingType = {
     /**
      * Average value of evaluations.
      */
@@ -45,18 +45,33 @@ export type IRating = {
 }
 
 /**
+ * List of possible graphics engines used for game development.
+ */
+export type EngineType = "QSP" | "RPGM" | "Unity" | "HTML" | "RAGS" | "Java" | "Ren'Py" | "Flash" | "ADRIFT" | "Others" | "Tads" | "Wolf RPG" | "Unreal Engine" | "WebGL";
+
+/**
+ * List of possible progress states associated with a game.
+ */
+export type StatusType = "Completed" | "Ongoing" | "Abandoned" | "Onhold";
+
+/**
+ * List of possible categories of a particular work.
+ */
+export type CategoryType = "games" | "comics" | "animations" | "assets";
+
+/**
  * Collection of values defined for each 
  * handiwork on the F95Zone platform.
  */
-interface IBasic {
+export interface IBasic {
     /**
      * Authors of the work.
      */
-    Authors: IAuthor[],
+    Authors: AuthorType[],
     /**
-     * Category of the work between `games`, `comics`, `animations`, `assets`.
+     * Category of the work..
      */
-    Category: string,
+    Category: CategoryType,
     /**
      * List of changes of the work for each version.
      */
@@ -88,7 +103,7 @@ interface IBasic {
     /**
      * Evaluation of the work by the users of the platform.
      */
-    Rating: IRating,
+    Rating: RatingType,
     /**
      * List of tags associated with the work.
      */
@@ -106,12 +121,16 @@ interface IBasic {
 /**
  * Collection of values representing a game present on the F95Zone platform.
  */
-export interface GameI extends IBasic {
+export interface IGame extends IBasic {
     /**
      * Specify whether the work has censorship
      * measures regarding NSFW scenes
      */
     Censored: boolean,
+    /**
+     * Graphics engine used for game development.
+     */
+    Engine: EngineType,
     /**
      * List of genres associated with the work.
      */
@@ -129,9 +148,17 @@ export interface GameI extends IBasic {
      */
     LastRelease: Date,
     /**
+     * Indicates that this item represents a mod.
+     */
+    Mod: boolean,
+    /**
      * List of OS for which the work is compatible.
      */
     OS: string[],
+    /**
+     * Indicates the progress of a game.
+     */
+    Status: StatusType,
     /**
      * Version of the work.
      */
@@ -141,7 +168,7 @@ export interface GameI extends IBasic {
 /**
  * Collection of values representing a comic present on the F95Zone platform.
  */
-export interface ComicI extends IBasic {
+export interface IComic extends IBasic {
     /**
      * List of genres associated with the work.
      */
@@ -159,7 +186,7 @@ export interface ComicI extends IBasic {
 /**
  * Collection of values representing an animation present on the F95Zone platform.
  */
-export interface AnimationI extends IBasic {
+export interface IAnimation extends IBasic {
     /**
      * Specify whether the work has censorship
      * measures regarding NSFW scenes
@@ -194,7 +221,7 @@ export interface AnimationI extends IBasic {
 /**
  * Collection of values representing an asset present on the F95Zone platform.
  */
-export interface AssetI extends IBasic {
+export interface IAsset extends IBasic {
     /**
      * External URL of the asset.
      */
@@ -226,4 +253,4 @@ export interface AssetI extends IBasic {
  * Collection of values extrapolated from the 
  * F95 platform representing a particular work.
  */
-export interface IHandiwork extends GameI, ComicI, AnimationI, AssetI { }
+export interface IHandiwork extends IGame, IComic, IAnimation, IAsset { }
