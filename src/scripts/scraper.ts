@@ -7,13 +7,11 @@ import luxon from "luxon";
 // Modules from file
 import shared from "./shared.js";
 import { fetchHTML } from "./network-helper.js";
-import { getJSONLD, JSONLD } from "./json-ld.js";
+import { getJSONLD, TJsonLD } from "./json-ld.js";
 import { selectors as f95Selector } from "./constants/css-selector.js";
 import HandiWork from "./classes/handiwork/handiwork.js";
-import { RatingType, IBasic, AuthorType, ExternalPlatformType, EngineType, StatusType, CategoryType } from "./interfaces.js";
-import { login } from "../index.js";
+import { TRating, IBasic, TAuthor, TExternalPlatform, TEngine, TStatus, TCategory } from "./interfaces.js";
 import { ILink, IPostElement, parseCheerioMainPost } from "./post-parser.js";
-import Game from "./classes/handiwork/game.js";
 
 //#region Public methods
 /**
@@ -34,16 +32,16 @@ export async function getPostInformation<T extends IBasic>(url: string): Promise
     
     // Extract data
     const postData = parseCheerioMainPost($, mainPost);
-    const JSONLD = getJSONLD($, body);
+    const TJsonLD = getJSONLD(body);
 
     // Fill in the HandiWork element with the information obtained
     const hw: HandiWork = {} as HandiWork;
-    fillWithJSONLD(hw, JSONLD);
+    fillWithJSONLD(hw, TJsonLD);
     fillWithPostData(hw, postData);
     fillWithPrefixes(hw, body);
-    hw.Tags = extractTags(body);
+    hw.tags = extractTags(body);
 
-    shared.logger.info(`Founded data for ${hw.Name}`);
+    shared.logger.info(`Founded data for ${hw.name}`);
     return <T><unknown>hw;
 };
 //#endregion Public methods
@@ -52,6 +50,10 @@ export async function getPostInformation<T extends IBasic>(url: string): Promise
 
 //#region Generic Utility
 
+/**
+ * Convert a string to a boolean.
+ * Check also for `yes`/`no` and `1`/`0`.
+ */
 function stringToBoolean(s: string): boolean {
     // Local variables
     const positiveTerms = ["true", "yes", "1"];
@@ -67,15 +69,15 @@ function stringToBoolean(s: string): boolean {
 /**
  * It processes the evaluations of a particular work starting from the data contained in the JSON+LD tag.
  */
-function parseRating(data: JSONLD): RatingType {
+function parseRating(data: TJsonLD): TRating {
     shared.logger.trace("Parsing rating...");
 
     // Local variables
-    const ratingTree = data["aggregateRating"] as JSONLD;
-    const rating: RatingType = {
-        Average: parseFloat(ratingTree["ratingValue"] as string),
-        Best: parseInt(ratingTree["bestRating"] as string),
-        Count: parseInt(ratingTree["ratingCount"] as string),
+    const ratingTree = data["aggregateRating"] as TJsonLD;
+    const rating: TRating = {
+        average: parseFloat(ratingTree["ratingValue"] as string),
+        best: parseInt(ratingTree["bestRating"] as string),
+        count: parseInt(ratingTree["ratingCount"] as string),
     };
 
     return rating;
@@ -96,6 +98,11 @@ function extractIDFromURL(url: string): number {
     return parseInt(match[0], 10);
 }
 
+/**
+ * Clean the title of a HandiWork, removing prefixes
+ * and generic elements between square brackets, and
+ * returns the clean title of the work.
+ */
 function cleanHeadline(headline: string): string {
     shared.logger.trace("Cleaning headline...");
 
@@ -105,9 +112,7 @@ function cleanHeadline(headline: string): string {
 
     // Get the title name
     let name = headline;
-    matches.forEach(function replaceElementsInTitle(e) {
-        name = name.replace(e, "");
-    });
+    matches.forEach(e => name = name.replace(e, ""));
     return name.trim();
 }
 
@@ -117,7 +122,7 @@ function cleanHeadline(headline: string): string {
  */
 function getPostElementByName(elements: IPostElement[], name: string): IPostElement | undefined {
     return elements.find(el => {
-        return el.Name.toUpperCase() === name.toUpperCase();
+        return el.name.toUpperCase() === name.toUpperCase();
     });
 }
 
@@ -164,6 +169,7 @@ function isMod(prefix: string): boolean {
 }
 //#endregion Prefix Utility
 
+
 /**
  * Compiles a HandiWork object with the data extracted 
  * from the JSON+LD tags related to the object itself.
@@ -171,25 +177,25 @@ function isMod(prefix: string): boolean {
  * `URL`, `ID`, `Category`, `Rating`, 
  * `Name`, `ThreadPublishingDate`, `LastThreadUpdate`.
  */
-function fillWithJSONLD(hw: HandiWork, data: JSONLD) {
+function fillWithJSONLD(hw: HandiWork, data: TJsonLD) {
     shared.logger.trace("Extracting data from JSON+LD...");
 
     // Set the basic values
-    hw.Url = data["@id"] as string;
-    hw.ID = extractIDFromURL(hw.Url);
-    hw.Category = data["articleSection"] as CategoryType;
-    hw.Rating = parseRating(data);
-    hw.Name = cleanHeadline(data["headline"] as string);
+    hw.url = data["@id"] as string;
+    hw.id = extractIDFromURL(hw.url);
+    hw.category = data["articleSection"] as TCategory;
+    hw.rating = parseRating(data);
+    hw.name = cleanHeadline(data["headline"] as string);
 
     // Check and set the dates
     const published = data["datePublished"] as string;
     if (luxon.DateTime.fromISO(published).isValid) {
-        hw.ThreadPublishingDate = new Date(published);
+        hw.threadPublishingDate = new Date(published);
     }
 
     const modified = data["dateModified"] as string;
     if (luxon.DateTime.fromISO(modified).isValid) {
-        hw.LastThreadUpdate = new Date(modified);
+        hw.lastThreadUpdate = new Date(modified);
     }
 }
 
@@ -199,66 +205,70 @@ function fillWithJSONLD(hw: HandiWork, data: JSONLD) {
  * The values that will be added are:
  * `Overview`, `OS`, `Language`, `Version`, `Installation`,
  * `Pages`, `Resolution`, `Lenght`, `Genre`, `Censored`,
- * `LastRelease`, `Authors`, `Changelog`.
+ * `LastRelease`, `Authors`, `Changelog`, `Cover`.
  */
 function fillWithPostData(hw: HandiWork, elements: IPostElement[]) {
     // First fill the "simple" elements
-    hw.Overview = getPostElementByName(elements, "overview")?.Text;
-    hw.OS = getPostElementByName(elements, "os")?.Text?.split(",").map(s => s.trim());
-    hw.Language = getPostElementByName(elements, "language")?.Text?.split(",").map(s => s.trim());
-    hw.Version = getPostElementByName(elements, "version")?.Text;
-    hw.Installation = getPostElementByName(elements, "installation")?.Content.shift()?.Text;
-    hw.Pages = getPostElementByName(elements, "pages")?.Text;
-    hw.Resolution = getPostElementByName(elements, "resolution")?.Text?.split(",").map(s => s.trim());
-    hw.Lenght = getPostElementByName(elements, "lenght")?.Text;
+    hw.overview = getPostElementByName(elements, "overview")?.text;
+    hw.os = getPostElementByName(elements, "os")?.text?.split(",").map(s => s.trim());
+    hw.language = getPostElementByName(elements, "language")?.text?.split(",").map(s => s.trim());
+    hw.version = getPostElementByName(elements, "version")?.text;
+    hw.installation = getPostElementByName(elements, "installation")?.content.shift()?.text;
+    hw.pages = getPostElementByName(elements, "pages")?.text;
+    hw.resolution = getPostElementByName(elements, "resolution")?.text?.split(",").map(s => s.trim());
+    hw.lenght = getPostElementByName(elements, "lenght")?.text;
 
     // Parse the censorship
     const censored = getPostElementByName(elements, "censored") || getPostElementByName(elements, "censorship");
-    if (censored) hw.Censored = stringToBoolean(censored.Text);
+    if (censored) hw.censored = stringToBoolean(censored.text);
 
     // Get the genres
-    const genre = getPostElementByName(elements, "genre")?.Content.shift()?.Text;
-    hw.Genre = genre?.split(",").map(s => s.trim());
+    const genre = getPostElementByName(elements, "genre")?.content.shift()?.text;
+    hw.genre = genre?.split(",").map(s => s.trim());
+
+    // Get the cover
+    const cover = getPostElementByName(elements, "overview")?.content.find(el => el.type === "Image") as ILink;
+    hw.cover = cover?.href;
 
     // Fill the dates
-    const releaseDate = getPostElementByName(elements, "release date")?.Text;
-    if (luxon.DateTime.fromISO(releaseDate).isValid) hw.LastRelease = new Date(releaseDate);
+    const releaseDate = getPostElementByName(elements, "release date")?.text;
+    if (luxon.DateTime.fromISO(releaseDate).isValid) hw.lastRelease = new Date(releaseDate);
 
     //#region Convert the author
     const authorElement = getPostElementByName(elements, "developer") ||
         getPostElementByName(elements, "developer/publisher") ||
         getPostElementByName(elements, "artist");
-    const author: AuthorType = {
-        Name: authorElement.Text,
-        Platforms: []
+    const author: TAuthor = {
+        name: authorElement.text,
+        platforms: []
     };
 
     // Add the found platforms
-    authorElement?.Content.forEach((el: ILink, idx) => {
-        const platform: ExternalPlatformType = {
-            Name: el.Text,
-            Link: el.Href,
+    authorElement?.content.forEach((el: ILink, idx) => {
+        const platform: TExternalPlatform = {
+            name: el.text,
+            link: el.href,
         };
 
-        author.Platforms.push(platform);
+        author.platforms.push(platform);
     });
-    hw.Authors = [author];
+    hw.authors = [author];
     //#endregion Convert the author
 
     //#region Get the changelog
-    hw.Changelog = [];
+    hw.changelog = [];
     const changelogElement = getPostElementByName(elements, "changelog") || getPostElementByName(elements, "change-log");
-    const changelogSpoiler = changelogElement?.Content.find(el => {
-        return el.Type === "Spoiler" && el.Content.length > 0;
+    const changelogSpoiler = changelogElement?.content.find(el => {
+        return el.type === "Spoiler" && el.content.length > 0;
     });
 
     // Add to the changelog the single spoilers
-    changelogSpoiler.Content.forEach(el => {
-        if (el.Text.trim()) hw.Changelog.push(el.Text);
+    changelogSpoiler.content.forEach(el => {
+        if (el.text.trim()) hw.changelog.push(el.text);
     });
 
     // Add at the ened also the text of the "changelog" element
-    hw.Changelog.push(changelogSpoiler.Text);
+    hw.changelog.push(changelogSpoiler.text);
     //#endregion Get the changelog
 }
 
@@ -288,11 +298,11 @@ function fillWithPrefixes(hw: HandiWork, body: cheerio.Cheerio) {
 
     // Local variables
     let mod = false;
-    let engine: EngineType = null;
-    let status: StatusType = null;
+    let engine: TEngine = null;
+    let status: TStatus = null;
 
     // Initialize the array
-    hw.Prefixes = [];
+    hw.prefixes = [];
 
     // Obtain the title prefixes
     const prefixeElements = body.find(f95Selector.GT_TITLE_PREFIXES);
@@ -305,20 +315,20 @@ function fillWithPrefixes(hw: HandiWork, body: cheerio.Cheerio) {
         prefix = prefix.replace("[", "").replace("]", "");
 
         // Check what the prefix indicates
-        if (isEngine(prefix)) engine = prefix as EngineType;
-        else if (isStatus(prefix)) status = prefix as StatusType;
+        if (isEngine(prefix)) engine = prefix as TEngine;
+        else if (isStatus(prefix)) status = prefix as TStatus;
         else if (isMod(prefix)) mod = true;
 
         // Anyway add the prefix to list
-        hw.Prefixes.push(prefix);
+        hw.prefixes.push(prefix);
     });
 
     // If the status is not set, then the game is in development (Ongoing)
-    status = (!status && hw.Category === "games") ? status : "Ongoing";
+    status = (!status && hw.category === "games") ? status : "Ongoing";
 
-    hw.Engine = engine;
-    hw.Status = status;
-    hw.Mod = mod;
+    hw.engine = engine;
+    hw.status = status;
+    hw.mod = mod;
 }
 
 //#endregion

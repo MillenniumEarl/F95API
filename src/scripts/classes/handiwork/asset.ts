@@ -1,30 +1,30 @@
 "use strict";
 
 // Modules from files
-import { AuthorType, IAsset, RatingType, CategoryType } from "../../interfaces";
+import { TAuthor, IAsset, TRating, TCategory } from "../../interfaces";
 
 export default class Asset implements IAsset {
 
     //#region Properties
-    AssetLink: string;
-    AssociatedAssets: string[];
-    CompatibleSoftware: string;
-    IncludedAssets: string[];
-    OfficialLinks: string[];
-    SKU: string;
-    Authors: AuthorType[];
-    Category: CategoryType;
-    Changelog: string[];
-    Cover: string;
-    ID: number;
-    LastThreadUpdate: Date;
-    Name: string;
-    Overview: string;
-    Prefixes: string[];
-    Rating: RatingType;
-    Tags: string[];
-    ThreadPublishingDate: Date;
-    Url: string;
+    assetLink: string;
+    associatedAssets: string[];
+    compatibleSoftware: string;
+    includedAssets: string[];
+    officialLinks: string[];
+    sku: string;
+    authors: TAuthor[];
+    category: TCategory;
+    changelog: string[];
+    cover: string;
+    id: number;
+    lastThreadUpdate: Date;
+    name: string;
+    overview: string;
+    prefixes: string[];
+    rating: TRating;
+    tags: string[];
+    threadPublishingDate: Date;
+    url: string;
     //#endregion Properties
 
 }

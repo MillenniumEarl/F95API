@@ -2,15 +2,15 @@
 //#region Interfaces
 
 export interface IPostElement {
-    Type: "Empty" | "Text" | "Link" | "Image" | "Spoiler",
-    Name: string,
-    Text: string,
-    Content: IPostElement[]
+    type: "Empty" | "Text" | "Link" | "Image" | "Spoiler",
+    name: string,
+    text: string,
+    content: IPostElement[]
 }
 
 export interface ILink extends IPostElement {
-    Type: "Image" | "Link",
-    Href: string,
+    type: "Image" | "Link",
+    href: string,
 }
 
 //#endregion Interfaces
@@ -30,7 +30,7 @@ export function parseCheerioMainPost($: cheerio.Root, post: cheerio.Cheerio): IP
     // First fetch all the elements in the post
     const elements = post.contents().toArray().map(el => {
         const node = parseCheerioNode($, el);
-        if (node.Name || node.Text || node.Content.length != 0) {
+        if (node.name || node.text || node.content.length != 0) {
             return node;
         }
     }).filter(el => el);
@@ -56,15 +56,15 @@ function parseCheerioSpoilerNode($: cheerio.Root, spoiler: cheerio.Cheerio): IPo
     const BUTTON_CLASS = "button.bbCodeSpoiler-button";
     const SPOILER_CONTENT_CLASS = "div.bbCodeSpoiler-content > div.bbCodeBlock--spoiler > div.bbCodeBlock-content";
     const content: IPostElement = {
-        Type: "Spoiler",
-        Name: "",
-        Text: "",
-        Content: []
+        type: "Spoiler",
+        name: "",
+        text: "",
+        content: []
     };
 
     // Find the title of the spoiler (contained in the button)
     const button = spoiler.find(BUTTON_CLASS).toArray().shift();
-    content.Name = $(button).text().trim();
+    content.name = $(button).text().trim();
 
     // Parse the content of the spoiler
     spoiler.find(SPOILER_CONTENT_CLASS).contents().map((idx, el) => {
@@ -74,21 +74,21 @@ function parseCheerioSpoilerNode($: cheerio.Root, spoiler: cheerio.Cheerio): IPo
         // Parse nested spoiler
         if (element.attr("class") === "bbCodeSpoiler") {
             const spoiler = parseCheerioSpoilerNode($, element);
-            content.Content.push(spoiler);
+            content.content.push(spoiler);
         }
         //@ts-ignore
         // else if (el.name === "br") {
         //     // Add new line
-        //     content.Text += "\n";
+        //     content.text += "\n";
         // }
         else if (el.type === "text") {
             // Append text
-            content.Text += element.text();
+            content.text += element.text();
         }
     });
 
     // Clean text
-    content.Text = content.Text.replace(/\s\s+/g, ' ').trim();
+    content.text = content.text.replace(/\s\s+/g, ' ').trim();
     return content;
 }
 
@@ -125,28 +125,26 @@ function getCheerioNonChildrenText(node: cheerio.Cheerio): string {
 function parseCheerioLinkNode(element: cheerio.Cheerio): ILink | null {
     //@ts-ignore
     const name = element[0]?.name;
-    let returnValue: ILink = null;
+    const link: ILink = {
+        name: "",
+        type: "Link",
+        text: "",
+        href: "",
+        content: []
+    };
 
     if (name === "img") {
-        returnValue = {
-            Name: "",
-            Type: "Image",
-            Text: element.attr("alt"),
-            Href: element.attr("data-src"),
-            Content: []
-        }
+        link.type = "Image";
+        link.text = element.attr("alt");
+        link.href = element.attr("data-src");
     }
     else if (name === "a") {
-        returnValue = {
-            Name: "",
-            Type: "Link",
-            Text: element.text().replace(/\s\s+/g, ' ').trim(),
-            Href: element.attr("href"),
-            Content: []
-        }
+        link.type = "Link";
+        link.text = element.text().replace(/\s\s+/g, ' ').trim();
+        link.href = element.attr("href");
     }
 
-    return returnValue;
+    return link.href ? link : null;
 }
 
 /**
@@ -154,21 +152,21 @@ function parseCheerioLinkNode(element: cheerio.Cheerio): ILink | null {
  * in the `Content` field in case it has no information.
  */
 function reducePostElement(element: IPostElement): IPostElement {
-    if (element.Content.length === 1) {
-        const content = element.Content[0] as IPostElement;
-        const nullValues = (!element.Name || !content.Name) && (!element.Text || !content.Text);
-        const sameValues = (element.Name === content.Name) || (element.Text === content.Text)
+    if (element.content.length === 1) {
+        const content = element.content[0] as IPostElement;
+        const nullValues = (!element.name || !content.name) && (!element.text || !content.text);
+        const sameValues = (element.name === content.name) || (element.text === content.text)
 
         if (nullValues || sameValues) {
-            element.Name = element.Name || content.Name;
-            element.Text = element.Text || content.Text;
-            element.Content = content.Content;
-            element.Type = content.Type;
+            element.name = element.name || content.name;
+            element.text = element.text || content.text;
+            element.content = content.content;
+            element.type = content.type;
 
             // If the content is a link, add the HREF to the element
             const contentILink = content as ILink;
             const elementILink = element as ILink;
-            if (contentILink.Href) elementILink.Href = contentILink.Href;
+            if (contentILink.href) elementILink.href = contentILink.href;
         }
     }
 
@@ -182,22 +180,22 @@ function reducePostElement(element: IPostElement): IPostElement {
 function parseCheerioNode($: cheerio.Root, node: cheerio.Element, reduce = true): IPostElement {
     // Local variables
     let content: IPostElement = {
-        Type: "Empty",
-        Name: "",
-        Text: "",
-        Content: []
+        type: "Empty",
+        name: "",
+        text: "",
+        content: []
     };
     const cheerioNode = $(node);
 
     if (isTextNode(node)) {
-        content.Text = cheerioNode.text().replace(/\s\s+/g, ' ').trim();
-        content.Type = "Text";
+        content.text = cheerioNode.text().replace(/\s\s+/g, ' ').trim();
+        content.type = "Text";
     } else {
         // Get the number of children that the element own
         const nChildren = cheerioNode.children().length;
 
         // Get the text of the element without childrens
-        content.Text = getCheerioNonChildrenText(cheerioNode);
+        content.text = getCheerioNonChildrenText(cheerioNode);
 
         // Parse spoilers
         if (cheerioNode.attr("class") === "bbCodeSpoiler") {
@@ -205,8 +203,8 @@ function parseCheerioNode($: cheerio.Root, node: cheerio.Element, reduce = true)
 
             // Add element if not null
             if (spoiler) {
-                content.Content.push(spoiler);
-                content.Type = "Spoiler";
+                content.content.push(spoiler);
+                content.type = "Spoiler";
             }
         }
         // Parse links
@@ -215,8 +213,8 @@ function parseCheerioNode($: cheerio.Root, node: cheerio.Element, reduce = true)
 
             // Add element if not null
             if (link) {
-                content.Content.push(link);
-                content.Type = "Link";
+                content.content.push(link);
+                content.type = "Link";
             }
         } else {
             cheerioNode.children().map((idx, el) => {
@@ -224,8 +222,8 @@ function parseCheerioNode($: cheerio.Root, node: cheerio.Element, reduce = true)
                 const childElement = parseCheerioNode($, el);
 
                 // If the children is valid (not empty) push it
-                if ((childElement.Text || childElement.Content.length !== 0) && !isTextNode(el)) {
-                    content.Content.push(childElement);
+                if ((childElement.text || childElement.content.length !== 0) && !isTextNode(el)) {
+                    content.content.push(childElement);
                 }
             });
         }
@@ -246,41 +244,41 @@ function parsePostElements(elements: IPostElement[]): IPostElement[] {
 
     for (let i = 0; i < elements.length; i++) {
         // If the text starts with a special char, clean it
-        const startWithSpecial = specialRegex.test(elements[i].Text);
+        const startWithSpecial = specialRegex.test(elements[i].text);
 
         // /^[-!$%^&*()_+|~=`{}\[\]:";'<>?,.\/]/
         // Get the uppercase text
-        const upperText = elements[i].Text.toUpperCase();
+        const upperText = elements[i].text.toUpperCase();
 
         // Get the latest IPostElement in "pairs"
         const lastIndex = pairs.length - 1;
         const lastPair = pairs[lastIndex];
 
         // If this statement is valid, we have a "data"
-        if (elements[i].Type === "Text" && startWithSpecial && pairs.length > 0) {
+        if (elements[i].type === "Text" && startWithSpecial && pairs.length > 0) {
             // We merge this element with the last element appended to 'pairs'
-            const cleanText = elements[i].Text.replace(specialCharsRegex, "").trim();
-            lastPair.Text = lastPair.Text || cleanText;
-            lastPair.Content.push(...elements[i].Content);
+            const cleanText = elements[i].text.replace(specialCharsRegex, "").trim();
+            lastPair.text = lastPair.text || cleanText;
+            lastPair.content.push(...elements[i].content);
         }
         // This is a special case
-        else if (elements[i].Text.startsWith("Overview:\n")) {
+        else if (elements[i].text.startsWith("Overview:\n")) {
             // We add the overview to the pairs as a text element
-            elements[i].Type = "Text";
-            elements[i].Name = "Overview";
-            elements[i].Text = elements[i].Text.replace("Overview:\n", "");
+            elements[i].type = "Text";
+            elements[i].name = "Overview";
+            elements[i].text = elements[i].text.replace("Overview:\n", "");
             pairs.push(elements[i]);
         }
         // We have an element referred to the previous "title"
-        else if (elements[i].Type != "Text" && pairs.length > 0) {
+        else if (elements[i].type != "Text" && pairs.length > 0) {
             // We append this element to the content of the last title
-            lastPair.Content.push(elements[i]);
+            lastPair.content.push(elements[i]);
         }
         // ... else we have a "title" (we need to swap the text to the name because it is a title)
         else {
             const swap: IPostElement = Object.assign({}, elements[i]);
-            swap.Name = elements[i].Text;
-            swap.Text = "";
+            swap.name = elements[i].text;
+            swap.text = "";
             pairs.push(swap);
         }
     }

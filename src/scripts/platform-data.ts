@@ -16,28 +16,28 @@ import { fetchHTML } from "./network-helper.js";
 /**
  * Represents the single element contained in the data categories.
  */
-interface SingleOptionObj {
-    ID: number,
-    Name: string,
-    Class: string
+interface ISingleOption {
+    id: number,
+    name: string,
+    class: string
 }
 
 /**
  * Represents the set of values associated with a specific category of data.
  */
-interface CategoryResObj {
-    ID: number,
-    Name: string,
-    Prefixes: SingleOptionObj[]
+interface ICategoryResource {
+    id: number,
+    name: string,
+    prefixes: ISingleOption[]
 }
 
 /**
  * Represents the set of tags present on the platform-
  */
-interface LatestResObj {
-    Prefixes: CategoryResObj[],
-    Tags: DictType,
-    Options: string
+interface ILatestResource {
+    prefixes: ICategoryResource[],
+    tags: DictType,
+    options: string
 }
 //#endregion Interface definitions
 
@@ -107,7 +107,7 @@ function saveCache(path: string): void {
  * Given the HTML code of the response from the F95Zone, 
  * parse it and return the result.
  */
-function parseLatestPlatformHTML(html: string): LatestResObj{
+function parseLatestPlatformHTML(html: string): ILatestResource{
     const $ = cheerio.load(html);
 
     // Clean the JSON string
@@ -122,24 +122,24 @@ function parseLatestPlatformHTML(html: string): LatestResObj{
  * @private
  * Assign to the local variables the values from the F95Zone.
  */
-function assignLatestPlatformData(data: LatestResObj): void {
+function assignLatestPlatformData(data: ILatestResource): void {
     // Local variables
     const scrapedData = {};
 
     // Parse and assign the values that are NOT tags
-    for (const p of data.Prefixes) {
+    for (const p of data.prefixes) {
         // Prepare the dict
         const dict: DictType = {};
-        for (const e of p.Prefixes) dict[e.ID] = e.Name.replace("&#039;", "'");
+        for (const e of p.prefixes) dict[e.id] = e.name.replace("&#039;", "'");
 
         // Save the property
-        scrapedData[p.Name] = dict;
+        scrapedData[p.name] = dict;
     }
 
     // Save the values
     shared.setPrefixPair("engines", Object.assign({}, scrapedData["Engine"]));
     shared.setPrefixPair("statuses", Object.assign({}, scrapedData["Status"]));
     shared.setPrefixPair("others", Object.assign({}, scrapedData["Other"]));
-    shared.setPrefixPair("tags", data.Tags);
+    shared.setPrefixPair("tags", data.tags);
 }
 //#endregion

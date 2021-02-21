@@ -1,7 +1,7 @@
 "use strict";
 
 // Modules from files
-import { AuthorType, RatingType, IHandiwork , EngineType, CategoryType, StatusType} from "../../interfaces";
+import { TAuthor, TRating, IHandiwork, TEngine, TCategory, TStatus } from "../../interfaces";
 
 /**
  * It represents a generic work, be it a game, a comic, an animation or an asset.
@@ -9,39 +9,38 @@ import { AuthorType, RatingType, IHandiwork , EngineType, CategoryType, StatusTy
 export default class HandiWork implements IHandiwork {
 
     //#region Properties
-    AssetLink: string;
-    AssociatedAssets: string[];
-    Censored: boolean;
-    Changelog: string[];
-    CompatibleSoftware: string;
-    Genre: string[];
-    IncludedAssets: string[];
-    Installation: string;
-    Language: string[];
-    LastRelease: Date;
-    Lenght: string;
-    OfficialLinks: string[];
-    OS: string[];
-    Pages: string;
-    Password: string;
-    Resolution: string[];
-    SKU: string;
-    Version: string;
-    Authors: AuthorType[];
-    Category: CategoryType;
-    Cover: string;
-    ID: number;
-    LastThreadUpdate: Date;
-    Name: string;
-    Overview: string;
-    Prefixes: string[];
-    Rating: RatingType;
-    Tags: string[];
-    ThreadPublishingDate: Date;
-    Url: string;
-    Engine: EngineType;
-    Mod: boolean;
-    Status: StatusType;
+    censored: boolean;
+    engine: TEngine;
+    genre: string[];
+    installation: string;
+    language: string[];
+    lastRelease: Date;
+    mod: boolean;
+    os: string[];
+    status: TStatus;
+    version: string;
+    authors: TAuthor[];
+    category: TCategory;
+    changelog: string[];
+    cover: string;
+    id: number;
+    lastThreadUpdate: Date;
+    name: string;
+    overview: string;
+    prefixes: string[];
+    rating: TRating;
+    tags: string[];
+    threadPublishingDate: Date;
+    url: string;
+    pages: string;
+    resolution: string[];
+    lenght: string;
+    assetLink: string;
+    associatedAssets: string[];
+    compatibleSoftware: string;
+    includedAssets: string[];
+    officialLinks: string[];
+    sku: string;
     //#endregion Properties
 
 }
