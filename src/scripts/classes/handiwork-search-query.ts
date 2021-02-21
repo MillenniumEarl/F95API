@@ -4,9 +4,9 @@ import validator from 'class-validator';
 // Modules from file
 import { urls } from "../constants/url.js";
 import PrefixParser from './prefix-parser.js';
+import { TCategory } from "../interfaces";
 
 // Type definitions
-type TCategory = "games" | "comics" | "animations" | "assets";
 type TSort = "date" | "likes" | "views" | "title" | "rating";
 type TDate = 365 | 180 | 90 | 30 | 14 | 7 | 3 | 1;
 
