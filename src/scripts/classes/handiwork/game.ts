@@ -1,10 +1,10 @@
 "use strict";
 
 // Modules from files
-import { IAuthor, GameI, IRating } from "../../interfaces";
+import { AuthorType, EngineType, IGame, RatingType, StatusType, CategoryType } from "../../interfaces";
 
-export default class Game implements GameI {
-
+export default class Game implements IGame {
+    
     //#region Properties
     Censored: boolean;
     Genre: string[];
@@ -13,8 +13,8 @@ export default class Game implements GameI {
     LastRelease: Date;
     OS: string[];
     Version: string;
-    Authors: IAuthor[];
-    Category: string;
+    Authors: AuthorType[];
+    Category: CategoryType;
     Changelog: string[];
     Cover: string;
     ID: number;
@@ -22,10 +22,13 @@ export default class Game implements GameI {
     Name: string;
     Overview: string;
     Prefixes: string[];
-    Rating: IRating;
+    Rating: RatingType;
     Tags: string[];
     ThreadPublishingDate: Date;
     Url: string;
+    Engine: EngineType;
+    Mod: boolean;
+    Status: StatusType;
     //#endregion Properties
 
 }

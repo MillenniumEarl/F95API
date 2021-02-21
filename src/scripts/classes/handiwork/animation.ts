@@ -1,9 +1,9 @@
 "use strict";
 
 // Modules from files
-import { IAuthor, AnimationI, IRating } from "../../interfaces";
+import { AuthorType, IAnimation, RatingType, CategoryType } from "../../interfaces";
 
-export default class Animation implements AnimationI {
+export default class Animation implements IAnimation {
     
     //#region Properties
     Censored: boolean;
@@ -13,8 +13,8 @@ export default class Animation implements AnimationI {
     Lenght: string;
     Pages: string;
     Resolution: string[];
-    Authors: IAuthor[];
-    Category: string;
+    Authors: AuthorType[];
+    Category: CategoryType;
     Changelog: string[];
     Cover: string;
     ID: number;
@@ -22,7 +22,7 @@ export default class Animation implements AnimationI {
     Name: string;
     Overview: string;
     Prefixes: string[];
-    Rating: IRating;
+    Rating: RatingType;
     Tags: string[];
     ThreadPublishingDate: Date;
     Url: string;

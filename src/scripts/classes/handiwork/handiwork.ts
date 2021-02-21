@@ -1,7 +1,7 @@
 "use strict";
 
 // Modules from files
-import { IAuthor, IRating, IHandiwork } from "../../interfaces";
+import { AuthorType, RatingType, IHandiwork , EngineType, CategoryType, StatusType} from "../../interfaces";
 
 /**
  * It represents a generic work, be it a game, a comic, an animation or an asset.
@@ -27,18 +27,21 @@ export default class HandiWork implements IHandiwork {
     Resolution: string[];
     SKU: string;
     Version: string;
-    Authors: IAuthor[];
-    Category: string;
+    Authors: AuthorType[];
+    Category: CategoryType;
     Cover: string;
     ID: number;
     LastThreadUpdate: Date;
     Name: string;
     Overview: string;
     Prefixes: string[];
-    Rating: IRating;
+    Rating: RatingType;
     Tags: string[];
     ThreadPublishingDate: Date;
     Url: string;
+    Engine: EngineType;
+    Mod: boolean;
+    Status: StatusType;
     //#endregion Properties
 
 }

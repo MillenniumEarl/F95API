@@ -1,9 +1,9 @@
 "use strict";
 
 // Modules from files
-import { IAuthor, AssetI, IRating } from "../../interfaces";
+import { AuthorType, IAsset, RatingType, CategoryType } from "../../interfaces";
 
-export default class Asset implements AssetI {
+export default class Asset implements IAsset {
 
     //#region Properties
     AssetLink: string;
@@ -12,8 +12,8 @@ export default class Asset implements AssetI {
     IncludedAssets: string[];
     OfficialLinks: string[];
     SKU: string;
-    Authors: IAuthor[];
-    Category: string;
+    Authors: AuthorType[];
+    Category: CategoryType;
     Changelog: string[];
     Cover: string;
     ID: number;
@@ -21,7 +21,7 @@ export default class Asset implements AssetI {
     Name: string;
     Overview: string;
     Prefixes: string[];
-    Rating: IRating;
+    Rating: RatingType;
     Tags: string[];
     ThreadPublishingDate: Date;
     Url: string;
