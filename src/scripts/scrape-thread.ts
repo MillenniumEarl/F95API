@@ -11,7 +11,7 @@ import { getJSONLD, TJsonLD } from "./json-ld.js";
 import { selectors as f95Selector } from "./constants/css-selector.js";
 import HandiWork from "./classes/handiwork/handiwork.js";
 import { TRating, IBasic, TAuthor, TExternalPlatform, TEngine, TStatus, TCategory } from "./interfaces.js";
-import { ILink, IPostElement, parseCheerioMainPost } from "./post-parser.js";
+import { ILink, IPostElement, parseCheerioMainPost } from "./post-parse.js";
 
 //#region Public methods
 /**
