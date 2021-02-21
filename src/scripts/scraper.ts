@@ -2,89 +2,301 @@
 
 // Public modules from npm
 import cheerio from "cheerio";
-import { DateTime } from "luxon";
+import luxon from "luxon";
 
 // Modules from file
-import { fetchHTML, getUrlRedirect } from "./network-helper.js";
 import shared from "./shared.js";
-import GameInfo from "./classes/game-info.js";
-import { selectors as f95Selector} from "./constants/css-selector.js";
+import { fetchHTML } from "./network-helper.js";
+import { getJSONLD, JSONLD } from "./json-ld.js";
+import { selectors as f95Selector } from "./constants/css-selector.js";
+import HandiWork from "./classes/handiwork/handiwork.js";
+import { RatingType, IBasic, AuthorType, ExternalPlatformType, EngineType, StatusType, CategoryType } from "./interfaces.js";
+import { login } from "../index.js";
+import { ILink, IPostElement, parseCheerioMainPost } from "./post-parser.js";
+import Game from "./classes/handiwork/game.js";
 
+//#region Public methods
 /**
- * Get information from the game's main page.
- * @param {String} url URL of the game/mod to extract data from
- * @return {Promise<GameInfo>} Complete information about the game you are
- * looking for or `null` if is impossible to parse information
+ * Gets information from the post of a particular job. 
+ * If you don't want to specify the object type, use `HandiWork`.
+ * @todo It does not currently support assets.
  */
-export async function getGameInfo(url: string): Promise<GameInfo|null> {
-    shared.logger.info("Obtaining game info");
+export async function getPostInformation<T extends IBasic>(url: string): Promise<T | null> {
+    shared.logger.info(`Obtaining post info from ${url}`);
 
     // Fetch HTML and prepare Cheerio
     const html = await fetchHTML(url);
-    if(!html) return null;
+    if (!html) return null;
+
     const $ = cheerio.load(html);
     const body = $("body");
     const mainPost = $(f95Selector.GS_POSTS).first();
-
+    
     // Extract data
-    const titleData = extractInfoFromTitle(body);
-    const tags = extractTags(body);
-    const prefixesData = parseGamePrefixes(body);
-    const src = extractPreviewSource(body);
-    const changelog = extractChangelog(mainPost);
-    const structuredData = extractStructuredData(body);
+    const postData = parseCheerioMainPost($, mainPost);
+    const JSONLD = getJSONLD($, body);
 
-    // Sometimes the JSON-LD are not set, especially in low-profile game
-    if(!structuredData) return null;
+    // Fill in the HandiWork element with the information obtained
+    const hw: HandiWork = {} as HandiWork;
+    fillWithJSONLD(hw, JSONLD);
+    fillWithPostData(hw, postData);
+    fillWithPrefixes(hw, body);
+    hw.Tags = extractTags(body);
 
-    const parsedInfos = parseMainPostText(structuredData.description);
-    const overview = getOverview(structuredData.description, prefixesData.mod as boolean);
-    
-    // Obtain the updated URL
-    const redirectUrl = await getUrlRedirect(url);
-
-    // Fill in the GameInfo element with the information obtained
-    const info = new GameInfo();
-    info.id = extractIDFromURL(url);
-    info.name = titleData.name;
-    info.author = titleData.author;
-    info.isMod = prefixesData.mod as boolean;
-    info.engine = prefixesData.engine as string;
-    info.status = prefixesData.status as string;
-    info.tags = tags;
-    info.url = redirectUrl;
-    info.language = parsedInfos.Language as unknown as string;
-    info.overview = overview;
-    info.supportedOS = parsedInfos.SupportedOS as string[];
-    info.censored = parsedInfos.Censored as unknown as boolean;
-    info.lastUpdate = parsedInfos.LastUpdate as Date;
-    info.previewSrc = src;
-    info.changelog = changelog;
-    info.version = titleData.version;
-    
-    shared.logger.info(`Founded data for ${info.name}`);
-    return info;
-}
+    shared.logger.info(`Founded data for ${hw.Name}`);
+    return <T><unknown>hw;
+};
+//#endregion Public methods
 
 //#region Private methods
+
+//#region Generic Utility
+
+function stringToBoolean(s: string): boolean {
+    // Local variables
+    const positiveTerms = ["true", "yes", "1"];
+    const negativeTerms = ["false", "no", "0"];
+    const cleanString = s.toLowerCase().trim();
+    let result = Boolean(s);
+
+    if (positiveTerms.includes(cleanString)) result = true;
+    else if (negativeTerms.includes(cleanString)) result = false;
+    return result;
+}
+
 /**
- * @private
- * Parse the game prefixes obtaining the engine used, 
- * the advancement status and if the game is actually a game or a mod.
- * @param {cheerio.Cheerio} body Page `body` selector
- * @returns {Object.<string, object>} Dictionary of values with keys `engine`, `status`, `mod`
+ * It processes the evaluations of a particular work starting from the data contained in the JSON+LD tag.
  */
-function parseGamePrefixes(body: cheerio.Cheerio): { [s: string]: string | boolean; } {
+function parseRating(data: JSONLD): RatingType {
+    shared.logger.trace("Parsing rating...");
+
+    // Local variables
+    const ratingTree = data["aggregateRating"] as JSONLD;
+    const rating: RatingType = {
+        Average: parseFloat(ratingTree["ratingValue"] as string),
+        Best: parseInt(ratingTree["bestRating"] as string),
+        Count: parseInt(ratingTree["ratingCount"] as string),
+    };
+
+    return rating;
+}
+
+/**
+ * Extracts the work's unique ID from its URL.
+ */
+function extractIDFromURL(url: string): number {
+    shared.logger.trace("Extracting ID from URL...");
+
+    // URL are in the format https://f95zone.to/threads/GAMENAME-VERSION-DEVELOPER.ID/
+    // or https://f95zone.to/threads/ID/
+    const match = url.match(/([0-9]+)(?=\/|\b)(?!-|\.)/);
+    if (!match) return -1;
+
+    // Parse and return number
+    return parseInt(match[0], 10);
+}
+
+function cleanHeadline(headline: string): string {
+    shared.logger.trace("Cleaning headline...");
+
+    // From the title we can extract: Name, author and version
+    // [PREFIXES] TITLE [VERSION] [AUTHOR]
+    const matches = headline.match(/\[(.*?)\]/g);
+
+    // Get the title name
+    let name = headline;
+    matches.forEach(function replaceElementsInTitle(e) {
+        name = name.replace(e, "");
+    });
+    return name.trim();
+}
+
+/**
+ * Gets the element with the given name or `undefined`.
+ * Case-insensitive.
+ */
+function getPostElementByName(elements: IPostElement[], name: string): IPostElement | undefined {
+    return elements.find(el => {
+        return el.Name.toUpperCase() === name.toUpperCase();
+    });
+}
+
+/**
+ * Makes an array of strings uppercase.
+ */
+function toUpperCaseArray(a: string[]): string[] {
+    /**
+     * Makes a string uppercase.
+     */
+    function toUpper(s: string): string {
+        return s.toUpperCase();
+    }
+    return a.map(toUpper);
+}
+
+//#endregion Generic Utility
+
+
+//#region Prefix Utility
+
+/**
+ * Check if the prefix is a game's engine.
+ */
+function isEngine(prefix: string): boolean {
+    const engines = toUpperCaseArray(Object.values(shared.prefixes["engines"]));
+    return engines.includes(prefix.toUpperCase());
+}
+
+/**
+ * Check if the prefix is a game's status.
+ */
+function isStatus(prefix: string): boolean {
+    const statuses = toUpperCaseArray(Object.values(shared.prefixes["statuses"]));
+    return statuses.includes(prefix.toUpperCase());
+}
+
+/**
+ * Check if the prefix indicates a mod.
+ */
+function isMod(prefix: string): boolean {
+    const modPrefixes = ["MOD", "CHEAT MOD"];
+    return modPrefixes.includes(prefix.toUpperCase());
+}
+//#endregion Prefix Utility
+
+/**
+ * Compiles a HandiWork object with the data extracted 
+ * from the JSON+LD tags related to the object itself.
+ * The values that will be added are: 
+ * `URL`, `ID`, `Category`, `Rating`, 
+ * `Name`, `ThreadPublishingDate`, `LastThreadUpdate`.
+ */
+function fillWithJSONLD(hw: HandiWork, data: JSONLD) {
+    shared.logger.trace("Extracting data from JSON+LD...");
+
+    // Set the basic values
+    hw.Url = data["@id"] as string;
+    hw.ID = extractIDFromURL(hw.Url);
+    hw.Category = data["articleSection"] as CategoryType;
+    hw.Rating = parseRating(data);
+    hw.Name = cleanHeadline(data["headline"] as string);
+
+    // Check and set the dates
+    const published = data["datePublished"] as string;
+    if (luxon.DateTime.fromISO(published).isValid) {
+        hw.ThreadPublishingDate = new Date(published);
+    }
+
+    const modified = data["dateModified"] as string;
+    if (luxon.DateTime.fromISO(modified).isValid) {
+        hw.LastThreadUpdate = new Date(modified);
+    }
+}
+
+/**
+ * Compiles a HandiWork object with the data extracted
+ * from the main post of the HandiWork page.
+ * The values that will be added are:
+ * `Overview`, `OS`, `Language`, `Version`, `Installation`,
+ * `Pages`, `Resolution`, `Lenght`, `Genre`, `Censored`,
+ * `LastRelease`, `Authors`, `Changelog`.
+ */
+function fillWithPostData(hw: HandiWork, elements: IPostElement[]) {
+    // First fill the "simple" elements
+    hw.Overview = getPostElementByName(elements, "overview")?.Text;
+    hw.OS = getPostElementByName(elements, "os")?.Text?.split(",").map(s => s.trim());
+    hw.Language = getPostElementByName(elements, "language")?.Text?.split(",").map(s => s.trim());
+    hw.Version = getPostElementByName(elements, "version")?.Text;
+    hw.Installation = getPostElementByName(elements, "installation")?.Content.shift()?.Text;
+    hw.Pages = getPostElementByName(elements, "pages")?.Text;
+    hw.Resolution = getPostElementByName(elements, "resolution")?.Text?.split(",").map(s => s.trim());
+    hw.Lenght = getPostElementByName(elements, "lenght")?.Text;
+
+    // Parse the censorship
+    const censored = getPostElementByName(elements, "censored") || getPostElementByName(elements, "censorship");
+    if (censored) hw.Censored = stringToBoolean(censored.Text);
+
+    // Get the genres
+    const genre = getPostElementByName(elements, "genre")?.Content.shift()?.Text;
+    hw.Genre = genre?.split(",").map(s => s.trim());
+
+    // Fill the dates
+    const releaseDate = getPostElementByName(elements, "release date")?.Text;
+    if (luxon.DateTime.fromISO(releaseDate).isValid) hw.LastRelease = new Date(releaseDate);
+
+    //#region Convert the author
+    const authorElement = getPostElementByName(elements, "developer") ||
+        getPostElementByName(elements, "developer/publisher") ||
+        getPostElementByName(elements, "artist");
+    const author: AuthorType = {
+        Name: authorElement.Text,
+        Platforms: []
+    };
+
+    // Add the found platforms
+    authorElement?.Content.forEach((el: ILink, idx) => {
+        const platform: ExternalPlatformType = {
+            Name: el.Text,
+            Link: el.Href,
+        };
+
+        author.Platforms.push(platform);
+    });
+    hw.Authors = [author];
+    //#endregion Convert the author
+
+    //#region Get the changelog
+    hw.Changelog = [];
+    const changelogElement = getPostElementByName(elements, "changelog") || getPostElementByName(elements, "change-log");
+    const changelogSpoiler = changelogElement?.Content.find(el => {
+        return el.Type === "Spoiler" && el.Content.length > 0;
+    });
+
+    // Add to the changelog the single spoilers
+    changelogSpoiler.Content.forEach(el => {
+        if (el.Text.trim()) hw.Changelog.push(el.Text);
+    });
+
+    // Add at the ened also the text of the "changelog" element
+    hw.Changelog.push(changelogSpoiler.Text);
+    //#endregion Get the changelog
+}
+
+/**
+ * Gets the tags used to classify the game.
+ * @param {cheerio.Cheerio} body Page `body` selector
+ * @returns {string[]} List of tags
+ */
+function extractTags(body: cheerio.Cheerio): string[] {
+    shared.logger.trace("Extracting tags...");
+
+    // Get the game tags
+    const tagResults = body.find(f95Selector.GT_TAGS);
+    return tagResults.map(function parseGameTags(idx, el) {
+        return cheerio(el).text().trim();
+    }).get();
+}
+
+/**
+ * Parse the post prefixes.
+ * In particular, it elaborates the following prefixes for games:
+ * `Engine`, `Status`, `Mod`.
+ * @param {cheerio.Cheerio} body Page `body` selector
+ */
+function fillWithPrefixes(hw: HandiWork, body: cheerio.Cheerio) {
     shared.logger.trace("Parsing prefixes...");
 
     // Local variables
-    let mod = false,
-        engine = null,
-        status = null;
+    let mod = false;
+    let engine: EngineType = null;
+    let status: StatusType = null;
+
+    // Initialize the array
+    hw.Prefixes = [];
 
     // Obtain the title prefixes
     const prefixeElements = body.find(f95Selector.GT_TITLE_PREFIXES);
-    
+
     prefixeElements.each(function parseGamePrefix(idx, el) {
         // Obtain the prefix text
         let prefix = cheerio(el).text().trim();
@@ -93,325 +305,20 @@ function parseGamePrefixes(body: cheerio.Cheerio): { [s: string]: string | boole
         prefix = prefix.replace("[", "").replace("]", "");
 
         // Check what the prefix indicates
-        if (isEngine(prefix)) engine = prefix;
-        else if (isStatus(prefix)) status = prefix;
+        if (isEngine(prefix)) engine = prefix as EngineType;
+        else if (isStatus(prefix)) status = prefix as StatusType;
         else if (isMod(prefix)) mod = true;
+
+        // Anyway add the prefix to list
+        hw.Prefixes.push(prefix);
     });
 
     // If the status is not set, then the game is in development (Ongoing)
-    status = status ?? "Ongoing";
+    status = (!status && hw.Category === "games") ? status : "Ongoing";
 
-    return {
-        engine,
-        status,
-        mod
-    };
+    hw.Engine = engine;
+    hw.Status = status;
+    hw.Mod = mod;
 }
 
-/**
- * @private
- * Extracts all the possible informations from the title.
- * @param {cheerio.Cheerio} body Page `body` selector
- * @returns {Object.<string, string>} Dictionary of values with keys `name`, `author`, `version`
- */
-function extractInfoFromTitle(body: cheerio.Cheerio): { [s: string]: string; } {
-    shared.logger.trace("Extracting information from title...");
-    const title = body
-        .find(f95Selector.GT_TITLE)
-        .text()
-        .trim();
-
-    // From the title we can extract: Name, author and version
-    // [PREFIXES] TITLE [VERSION] [AUTHOR]
-    const matches = title.match(/\[(.*?)\]/g);
-
-    // Get the title name
-    let name = title;
-    matches.forEach(function replaceElementsInTitle(e) {
-        name = name.replace(e, "");
-    });
-    name = name.trim();
-
-    // The version is the penultimate element. 
-    // If the matches are less than 2, than the title 
-    // is malformes and only the author is fetched
-    // (usually the author is always present)
-    let version = null;
-    if (matches.length >= 2) {
-        // The regex [[\]]+ remove the square brackets
-        version = matches[matches.length - 2].replace(/[[\]]+/g, "").trim();
-
-        // Remove the trailing "v"
-        if (version[0] === "v") version = version.replace("v", "");
-    }
-
-    // Last element (the regex [[\]]+ remove the square brackets)
-    const author = matches[matches.length - 1].replace(/[[\]]+/g, "").trim();
-
-    return {
-        name,
-        version,
-        author,
-    };
-}
-
-/**
- * @private
- * Gets the tags used to classify the game.
- * @param {cheerio.Cheerio} body Page `body` selector
- * @returns {String[]} List of tags
- */
-function extractTags(body: cheerio.Cheerio): string[] {
-    shared.logger.trace("Extracting tags...");
-
-    // Get the game tags
-    const tagResults = body.find(f95Selector.GT_TAGS);
-    
-    return tagResults.map(function parseGameTags(idx, el) {
-        return cheerio(el).text().trim();
-    }).get();
-}
-
-/**
- * @private
- * Gets the URL of the image used as a preview.
- * @param {cheerio.Cheerio} body Page `body` selector
- * @returns {String} URL of the image
- */
-function extractPreviewSource(body: cheerio.Cheerio): string {
-    shared.logger.trace("Extracting image preview source...");
-    const image = body.find(f95Selector.GT_IMAGES);
-    
-    // The "src" attribute is rendered only in a second moment, 
-    // we need the "static" src value saved in the attribute "data-src"
-    const source = image ? image.attr("data-src") : null;
-    return source;
-}
-
-/**
- * @private
- * Gets the changelog of the latest version.
- * @param {cheerio.Cheerio} mainPost main post selector
- * @returns {String} Changelog of the last version or `null` if no changelog is fetched
- */
-function extractChangelog(mainPost: cheerio.Cheerio): string|null {
-    shared.logger.trace("Extracting last changelog...");
-
-    // Obtain the changelog for ALL the versions
-    let changelog = mainPost.find(f95Selector.GT_LAST_CHANGELOG).text().trim();
-
-    // Parse the latest changelog
-    const endChangelog = changelog.indexOf("\nv"); // \n followed by version (v)
-    if (endChangelog !== -1) changelog = changelog.substring(0, endChangelog + 1);
-
-    // Clean changelog
-    changelog = changelog.replace("Spoiler", "");
-    changelog = changelog.replace(/\n+/g, "\n"); // Multiple /n
-    changelog = changelog.trim();
-
-    // Delete the version at the start of the changelog
-    const firstNewLine = changelog.indexOf("\n");
-    const supposedVersion = changelog.substring(0, firstNewLine);
-    if (supposedVersion[0] === "v") changelog = changelog.substring(firstNewLine).trim();
-    
-    // Return changelog
-    return changelog ? changelog : null;
-}
-
-/**
- * @private
- * Process the main post text to get all the useful
- * information in the format *DESCRIPTOR : VALUE*.
- * Gets "standard" values such as: `Language`, `SupportedOS`, `Censored`, and `LastUpdate`.
- * All non-canonical values are instead grouped together as a dictionary with the key `Various`.
- * @param {String} text Structured text of the post
- * @returns {Object.<string, object>} Dictionary of information
- */
-function parseMainPostText(text: string): { [s: string]: object; } {
-    shared.logger.trace("Parsing main post raw text...");
-
-    interface DataFormat {
-        CENSORED: string,
-        UPDATED: string,
-        THREAD_UPDATED: string,
-        OS: string,
-        LANGUAGE: string
-    }
-    const data = {} as DataFormat;
-
-    // The information searched in the game post are one per line
-    const splittedText = text.split("\n");
-    for (const line of splittedText) {
-        if (!line.includes(":")) continue;
-
-        // Create pair key/value
-        const splitted = line.split(":");
-        const key = splitted[0].trim().toUpperCase().replace(/ /g, "_"); // Uppercase to avoid mismatch
-        const value = splitted[1].trim();
-
-        // Add pair to the dict if valid
-        if (value !== "") data[key] = value;
-    }
-
-    // Parse the standard pairs
-    const parsedDict = {};
-
-    // Check if the game is censored
-    if (data.CENSORED) {
-        const censored = data.CENSORED.toUpperCase() === "NO" ? false : true;
-        parsedDict["Censored"] = censored;
-        delete data.CENSORED;
-    }
-
-    // Last update of the main post
-    if (data.UPDATED && DateTime.fromISO(data.UPDATED).isValid) {
-        parsedDict["LastUpdate"] = new Date(data.UPDATED);
-        delete data.UPDATED;
-    }
-    else if (data.THREAD_UPDATED && DateTime.fromISO(data.THREAD_UPDATED).isValid) {
-        parsedDict["LastUpdate"] = new Date(data.THREAD_UPDATED);
-        delete data.THREAD_UPDATED;
-    }
-    else parsedDict["LastUpdate"] = null;
-
-    // Parse the supported OS
-    if (data.OS) {
-        const listOS = [];
-
-        // Usually the string is something like "Windows, Linux, Mac"
-        const splitted = data.OS.split(",");
-        splitted.forEach(function (os: string) {
-            listOS.push(os.trim());
-        });
-
-        parsedDict["SupportedOS"] = listOS;
-        delete data.OS;
-    }
-
-    // Rename the key for the language
-    if (data.LANGUAGE) {
-        parsedDict["Language"] = data.LANGUAGE;
-        delete data.LANGUAGE;
-    }
-
-    // What remains is added to a sub dictionary
-    parsedDict["Various"] = data;
-    
-    return parsedDict;
-}
-
-/**
- * Parse a JSON-LD element.
- */
-function parseJSONLD(element: cheerio.Element) {
-    // Get the element HTML
-    const html = cheerio.load(element).html().trim();
-
-    // Obtain the JSON-LD
-    const data = html
-        .replace("<script type=\"application/ld+json\">", "")
-        .replace("</script>", "");
-
-    // Convert the string to an object
-    return JSON.parse(data);
-}
-
-/**
- * @private
- * Extracts and processes the JSON-LD values found at the bottom of the page.
- * @param {cheerio.Cheerio} body Page `body` selector
- * @returns {Object.<string, string>} JSON-LD or `null` if no valid JSON is found
- */
-function extractStructuredData(body: cheerio.Cheerio): { [s: string]: string; } {
-    shared.logger.trace("Extracting JSON-LD data...");
-
-    // Fetch the JSON-LD data
-    const structuredDataElements = body.find(f95Selector.GT_JSONLD);
-
-    // Parse the data
-    const json = structuredDataElements.map((idx, el) => parseJSONLD(el)).get();
-    return json.length !== 0 ? json[0] : null;
-}
-
-/**
- * @private
- * Get the game description from its web page.
- * Different processing depending on whether the game is a mod or not.
- * @param {String} text Structured text extracted from the game's web page
- * @param {Boolean} mod Specify if it is a game or a mod
- * @returns {String} Game description
- */
-function getOverview(text: string, mod: boolean): string {
-    shared.logger.trace("Extracting game overview...");
-
-    // Get overview (different parsing for game and mod)
-    const overviewEndIndex = mod ? text.indexOf("Updated") : text.indexOf("Thread Updated");
-    return text.substring(0, overviewEndIndex).replace("Overview:\n", "").trim();
-}
-
-/**
- * @private
- * Check if the prefix is a game's engine.
- * @param {String} prefix Prefix to check
- * @return {Boolean}
- */
-function isEngine(prefix: string): boolean {
-    const engines = toUpperCaseArray(Object.values(shared.engines));
-    return engines.includes(prefix.toUpperCase());
-}
-
-/**
- * @private
- * Check if the prefix is a game's status.
- * @param {String} prefix Prefix to check
- * @return {Boolean}
- */
-function isStatus(prefix: string): boolean {
-    const statuses = toUpperCaseArray(Object.values(shared.statuses));
-    return statuses.includes(prefix.toUpperCase());
-}
-
-/**
- * @private
- * Check if the prefix indicates a mod.
- * @param {String} prefix Prefix to check
- * @return {Boolean}
- */
-function isMod(prefix: string): boolean {
-    const modPrefixes = ["MOD", "CHEAT MOD"];
-    return modPrefixes.includes(prefix.toUpperCase());
-}
-
-/**
- * @private
- * Extracts the game's unique ID from the game's URL.
- * @param {String} url Game's URL
- * @return {Number} Game's ID
- */
-function extractIDFromURL(url: string): number {
-    // URL are in the format https://f95zone.to/threads/GAMENAME-VERSION-DEVELOPER.ID/
-    // or https://f95zone.to/threads/ID/
-    const match = url.match(/([0-9]+)(?=\/|\b)(?!-|\.)/);
-    if(!match) return -1;
-
-    // Parse and return number
-    return parseInt(match[0], 10);
-}
-
-/**
- * @private
- * Makes an array of strings uppercase.
- * @param {String[]} a 
- */
-function toUpperCaseArray(a: string[]) {
-    /**
-     * Makes a string uppercase.
-     * @param {String} s 
-     * @returns {String}
-     */
-    function toUpper(s: string): string {
-        return s.toUpperCase();
-    }
-    return a.map(toUpper);
-}
-//#endregion Private methods
+//#endregion
