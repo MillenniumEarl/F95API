@@ -5,6 +5,11 @@ import validator from 'class-validator';
 import { urls } from "../constants/url.js";
 import PrefixParser from './prefix-parser.js';
 
+// Type definitions
+type TCategory = "games" | "comics" | "animations" | "assets";
+type TSort = "date" | "likes" | "views" | "title" | "rating";
+type TDate = 365 | 180 | 90 | 30 | 14 | 7 | 3 | 1;
+
 /**
  * Query used to search for specific threads on the platform.
  */
@@ -13,21 +18,14 @@ export default class HandiworkSearchQuery {
     //#region Private fields
     private static MAX_TAGS = 5;
     private static MIN_PAGE = 1;
-    private static VALID_CATEGORY = ["games", "comics", "animations", "assets"];
-    private static VALID_SORT = ["date", "likes", "views", "title", "rating"];
-    private static VALID_DATE = [365, 180, 90, 30, 14, 7, 3, 1, null];
     //#endregion Private fields
 
     //#region Properties
     /**
-     * Category of items to search among:
-     * `games`, `comics`, `animations`, `assets`.
+     * Category of items to search among.
      * Default: `games`
      */
-    @validator.IsIn(HandiworkSearchQuery.VALID_CATEGORY, {
-        message: "Invalid $property parameter: $value"
-    })
-    public category = 'games';
+    public category: TCategory = 'games';
     /**
      * List of IDs of tags to be included in the search.
      * Max. 5 tags
@@ -47,24 +45,15 @@ export default class HandiworkSearchQuery {
     })
     public prefixes: string[] = [];
     /**
-     * Sorting type between (default: `date`):
-     * `date`, `likes`, `views`, `title`, `rating`
+     * Sorting type. Default: `date`.
      */
-    @validator.IsIn(HandiworkSearchQuery.VALID_SORT, {
-        message: "Invalid $property parameter: $value"
-    })
-    public sort = 'date';
+    public sort: TSort = 'date';
     /**
      * Date limit in days, to be understood as "less than".
-     * Possible values:
-     * `365`, `180`, `90`, `30`, `14`, `7`, `3`, `1`.
      * Use `1` to indicate "today" or `null` to indicate "anytime".
      * Default: `null`
      */
-    @validator.IsIn(HandiworkSearchQuery.VALID_DATE, {
-        message: "Invalid $property parameter: $value"
-    })
-    public date: number = null;
+    public date: TDate = null;
     /**
      * Index of the page to be obtained.
      * Between 1 and infinity.
