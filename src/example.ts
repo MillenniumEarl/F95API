@@ -35,13 +35,13 @@ async function main() {
     // Get user data
     console.log("Fetching user data...");
     const userdata = await getUserData();
-    console.log(`${userdata.username} follows ${userdata.watchedGameThreads.length} threads\n`);
+    console.log(`${userdata.username} follows ${userdata.watched.length} threads\n`);
 
     // Get latest game update
-    const latestUpdates = await getLatestUpdates({
-        tags: ["3d game"]
-    }, 1);
-    console.log(`"${latestUpdates[0].name}" was the last "3d game" tagged game to be updated\n`);
+    // const latestUpdates = await getLatestUpdates({
+    //     tags: ["3d game"]
+    // }, 1);
+    // console.log(`"${latestUpdates[0].name}" was the last "3d game" tagged game to be updated\n`);
 
     // Get game data
     for(const gamename of gameList) {
@@ -56,6 +56,6 @@ async function main() {
 
         // Extract first game
         const gamedata = found[0];
-        console.log(`Found: ${gamedata.name} (${gamedata.version}) by ${gamedata.author}\n`);
+        //console.log(`Found: ${gamedata.name} (${gamedata.version}) by ${gamedata.author}\n`);
     }
 }
