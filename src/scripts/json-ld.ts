@@ -4,8 +4,8 @@
 import cheerio from "cheerio";
 
 // Modules from file
-import shared from "./shared";
-import { selectors as f95Selector } from "./constants/css-selector";
+import shared from "./shared.js";
+import { selectors as f95Selector } from "./constants/css-selector.js";
 
 /**
  * Represents information contained in a JSON+LD tag.
@@ -14,17 +14,18 @@ export type JSONLD = { [s: string]: string | JSONLD }
 
 /**
  * Extracts and processes the JSON-LD values of the page.
+ * @param {cheerio.Root} $ Cheerio root of document.
  * @param {cheerio.Cheerio} body Page `body` selector
  * @returns {JSONLD[]} List of data obtained from the page
  */
-export function getJSONLD(body: cheerio.Cheerio): JSONLD {
+export function getJSONLD($: cheerio.Root, body: cheerio.Cheerio): JSONLD {
     shared.logger.trace("Extracting JSON-LD data...");
 
     // Fetch the JSON-LD data
     const structuredDataElements = body.find(f95Selector.GT_JSONLD);
 
     // Parse the data
-    const values = structuredDataElements.map((idx, el) => parseJSONLD(el)).get();
+    const values = structuredDataElements.map((idx, el) => parseJSONLD($(el))).get();
 
     // Merge the data and return a single value
     return mergeJSONLD(values);
@@ -49,9 +50,9 @@ function mergeJSONLD(data: JSONLD[]): JSONLD {
 /**
  * Parse a JSON-LD element source code.
  */
-function parseJSONLD(element: cheerio.Element): JSONLD {
+function parseJSONLD(element: cheerio.Cheerio): JSONLD {
     // Get the element HTML
-    const html = cheerio.load(element).html().trim();
+    const html = element.html().trim();
 
     // Obtain the JSON-LD
     const data = html
