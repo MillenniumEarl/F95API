@@ -6,7 +6,6 @@ import SearchQuery from "./classes/search-query.js";
 import { urls as f95url } from "./constants/url.js";
 
 /**
- * @public
  * Gets the URLs of the latest updated games that match the passed parameters.
  * You *must* be logged.
  * @param {SearchQuery} query
@@ -31,17 +30,20 @@ export async function fetchLatest(query: SearchQuery, limit = 30): Promise<strin
         const response = await fetchGETResponse(url);
 
         // Save the URLs
-        // for(const result of response.data.msg.data) {
-        //     if(fetchedResults < limit) {
-        //         const gameURL = new URL(result.thread_id, threadURL).href;
-        //         resultURLs.push(gameURL);
-        //         fetchedResults += 1;
-        //     }
-        // }
+        //@ts-ignore
+        for(const result of response.data.msg.data) {
+            if(fetchedResults < limit) {
+                const gameURL = new URL(result.thread_id, threadURL).href;
+                resultURLs.push(gameURL);
+                fetchedResults += 1;
+            }
+        }
         
         // Increment page and check for it's existence
         page += 1;
-        //if (page > response.data.msg.pagination.total) noMorePages = true;
+
+        //@ts-ignore
+        if (page > response.data.msg.pagination.total) noMorePages = true;
     }
     while (fetchedResults < limit && !noMorePages);
 
