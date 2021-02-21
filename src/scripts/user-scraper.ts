@@ -20,8 +20,8 @@ export async function getUserData(): Promise<UserData> {
     // Create object
     const ud = new UserData();
     ud.username = data.username;
-    ud.avatarSrc = data.source;
-    ud.watchedGameThreads = urls;
+    ud.avatar = data.source;
+    ud.watched = urls;
 
     return ud;
 };
