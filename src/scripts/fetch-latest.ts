@@ -2,19 +2,19 @@
 
 // Modules from file
 import { fetchGETResponse } from "./network-helper.js";
-import SearchQuery from "./classes/search-query.js";
+import HandiworkSearchQuery from "./classes/handiwork-search-query.js";
 import { urls as f95url } from "./constants/url.js";
 
 /**
  * Gets the URLs of the latest updated games that match the passed parameters.
  * You *must* be logged.
- * @param {SearchQuery} query
+ * @param {HandiworkSearchQuery} query
  * Query used for the search
  * @param {Number} limit 
  * Maximum number of items to get. Default: 30
  * @returns {Promise<String[]>} URLs of the fetched games
  */
-export async function fetchLatest(query: SearchQuery, limit = 30): Promise<string[]> {
+export async function fetchLatest(query: HandiworkSearchQuery, limit = 30): Promise<string[]> {
     // Local variables
     const threadURL = new URL("threads/", f95url.F95_BASE_URL).href;
     const resultURLs = [];
