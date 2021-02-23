@@ -57,7 +57,7 @@ export type TStatus = "Completed" | "Ongoing" | "Abandoned" | "Onhold";
 /**
  * List of possible categories of a particular work.
  */
-export type TCategory = "games" | "comics" | "animations" | "assets";
+export type TCategory = "games" | "mods" | "comics" | "animations" | "assets";
 
 /**
  * Collection of values defined for each 
@@ -254,3 +254,24 @@ export interface IAsset extends IBasic {
  * F95 platform representing a particular work.
  */
 export interface IHandiwork extends IGame, IComic, IAnimation, IAsset { }
+
+export interface IQuery {
+    /**
+     * Category of items to search among.
+     */
+    category: TCategory,
+    /**
+     * Tags to be include in the search.
+     * Max. 5 tags
+     */
+    includedTags: string[],
+    /**
+     * Prefixes to include in the search.
+     */
+    includedPrefixes: string[],
+    /**
+     * Index of the page to be obtained.
+     * Between 1 and infinity.
+     */
+    page: number,
+}
