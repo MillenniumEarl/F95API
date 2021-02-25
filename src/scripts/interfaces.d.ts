@@ -60,6 +60,11 @@ export type TStatus = "Completed" | "Ongoing" | "Abandoned" | "Onhold";
 export type TCategory = "games" | "mods" | "comics" | "animations" | "assets";
 
 /**
+ * Valid names of classes that implement the IQuery interface.
+ */
+export type TQueryInterface = "LatestSearchQuery" | "ThreadSearchQuery" | "HandiworkSearchQuery";
+
+/**
  * Collection of values defined for each 
  * handiwork on the F95Zone platform.
  */
@@ -257,6 +262,10 @@ export interface IHandiwork extends IGame, IComic, IAnimation, IAsset { }
 
 export interface IQuery {
     /**
+     * Name of the implemented interface.
+     */
+    itype: TQueryInterface,
+    /**
      * Category of items to search among.
      */
     category: TCategory,
@@ -274,4 +283,13 @@ export interface IQuery {
      * Between 1 and infinity.
      */
     page: number,
+    /**
+     * Verify that the query values are valid.
+     */
+    validate(): boolean,
+    /**
+     * From the query values it generates the corresponding URL for the platform.
+     * If the query is invalid it throws an exception.
+     */
+    createURL(): URL,
 }
