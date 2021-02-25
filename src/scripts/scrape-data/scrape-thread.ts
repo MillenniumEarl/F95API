@@ -15,7 +15,7 @@ import { ILink, IPostElement, parseCheerioMainPost } from "./post-parse.js";
 
 //#region Public methods
 /**
- * Gets information from the post of a particular job. 
+ * Gets information from the post of a particular handiwork. 
  * If you don't want to specify the object type, use `HandiWork`.
  * @todo It does not currently support assets.
  */
