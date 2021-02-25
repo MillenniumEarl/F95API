@@ -7,10 +7,10 @@ import { readFileSync, writeFileSync, existsSync } from "fs";
 import cheerio from "cheerio";
 
 // Modules from file
-import shared, { TPrefixDict } from "./shared.js";
-import { urls as f95url } from "./constants/url.js";
-import { selectors as f95selector} from "./constants/css-selector.js";
-import { fetchHTML } from "./network-helper.js";
+import shared, { TPrefixDict } from "../shared.js";
+import { urls as f95url } from "../constants/url.js";
+import { selectors as f95selector} from "../constants/css-selector.js";
+import { fetchHTML } from "../network-helper.js";
 
 //#region Interface definitions
 /**
@@ -46,7 +46,7 @@ interface ILatestResource {
  * Gets the basic data used for game data processing 
  * (such as graphics engines and progress statuses)
  */
-export async function fetchPlatformData(): Promise<void> {
+export default async function fetchPlatformData(): Promise<void> {
     // Check if the data are cached
     if (!readCache(shared.cachePath)) {
         // Load the HTML
