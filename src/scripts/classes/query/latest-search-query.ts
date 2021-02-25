@@ -2,12 +2,12 @@
 import validator from 'class-validator';
 
 // Modules from file
-import { urls } from "../constants/url.js";
-import PrefixParser from './prefix-parser.js';
-import { IQuery, TCategory } from "../interfaces";
+import { urls } from "../../constants/url.js";
+import PrefixParser from '../prefix-parser.js';
+import { IQuery, TCategory, TQueryInterface } from "../../interfaces";
 
 // Type definitions
-type TOrder = "date" | "likes" | "views" | "title" | "rating";
+export type TLatestOrder = "date" | "likes" | "views" | "title" | "rating";
 type TDate = 365 | 180 | 90 | 30 | 14 | 7 | 3 | 1;
 
 /**
@@ -27,7 +27,7 @@ export default class LatestSearchQuery implements IQuery {
      * 
      * Default: `date`.
      */
-    public order: TOrder = 'date';
+    public order: TLatestOrder = 'date';
     /**
      * Date limit in days, to be understood as "less than".
      * Use `1` to indicate "today" or `null` to indicate "anytime".
@@ -40,7 +40,6 @@ export default class LatestSearchQuery implements IQuery {
         message: "Too many tags: $value instead of $constraint1"
     })
     public includedTags: string[] = [];
-
     public includedPrefixes: string[] = [];
 
     @validator.IsInt({
@@ -50,24 +49,19 @@ export default class LatestSearchQuery implements IQuery {
         message: "The minimum $property value must be $constraint1, received $value"
     })
     public page = LatestSearchQuery.MIN_PAGE;
+    itype: TQueryInterface = "LatestSearchQuery";
     //#endregion Properties
 
     //#region Public methods
-    /**
-     * Verify that the query values are valid.
-     */
+
     public validate(): boolean {
         return validator.validateSync(this).length === 0;
     }
 
-    /**
-     * From the query values it generates the corresponding URL for the platform.
-     * If the query is invalid it throws an exception.
-     */
     public createURL(): URL {
         // Check if the query is valid
         if (!this.validate()) {
-            throw new Error("Invalid query")
+            throw new Error(`Invalid query: ${validator.validateSync(this).join("\n")}`);
         }
 
         // Create the URL
@@ -94,5 +88,32 @@ export default class LatestSearchQuery implements IQuery {
 
         return url;
     }
+
+    public findNearestDate(d: Date): TDate {
+        // Find the difference between today and the passed date
+        const diff = this.dateDiffInDays(new Date(), d);
+
+        // Find the closest valid value in the array
+        const closest = [365, 180, 90, 30, 14, 7, 3, 1].reduce(function (prev, curr) {
+            return (Math.abs(curr - diff) < Math.abs(prev - diff) ? curr : prev);
+        });
+
+        return closest as TDate;
+    }
     //#endregion Public methods
+
+    //#region Private methods
+    /**
+     * 
+     */
+    private dateDiffInDays(a: Date, b: Date) {
+        const MS_PER_DAY = 1000 * 60 * 60 * 24;
+
+        // Discard the time and time-zone information.
+        const utc1 = Date.UTC(a.getFullYear(), a.getMonth(), a.getDate());
+        const utc2 = Date.UTC(b.getFullYear(), b.getMonth(), b.getDate());
+
+        return Math.floor((utc2 - utc1) / MS_PER_DAY);
+    }
+    //#endregion Private methodss
 }
