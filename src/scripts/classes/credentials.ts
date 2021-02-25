@@ -10,15 +10,15 @@ export default class Credentials {
     /**
      * Username
      */
-    username: string;
+    public username: string;
     /**
      * Password of the user.
      */
-    password: string;
+    public password: string;
     /**
      * One time token used during login.
      */
-    token: string = null;
+    public token: string = null;
 
     constructor(username: string, password: string) {
         this.username = username;
