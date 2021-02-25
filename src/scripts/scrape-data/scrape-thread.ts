@@ -24,25 +24,26 @@ export async function getPostInformation<T extends IBasic>(url: string): Promise
 
     // Fetch HTML and prepare Cheerio
     const html = await fetchHTML(url);
-    if (!html) return null;
 
-    const $ = cheerio.load(html);
-    const body = $("body");
-    const mainPost = $(f95Selector.GS_POSTS).first();
-    
-    // Extract data
-    const postData = parseCheerioMainPost($, mainPost);
-    const TJsonLD = getJSONLD(body);
+    if (html.isSuccess()) {
+        const $ = cheerio.load(html.value);
+        const body = $("body");
+        const mainPost = $(f95Selector.GS_POSTS).first();
 
-    // Fill in the HandiWork element with the information obtained
-    const hw: HandiWork = {} as HandiWork;
-    fillWithJSONLD(hw, TJsonLD);
-    fillWithPostData(hw, postData);
-    fillWithPrefixes(hw, body);
-    hw.tags = extractTags(body);
+        // Extract data
+        const postData = parseCheerioMainPost($, mainPost);
+        const TJsonLD = getJSONLD(body);
 
-    shared.logger.info(`Founded data for ${hw.name}`);
-    return <T><unknown>hw;
+        // Fill in the HandiWork element with the information obtained
+        const hw: HandiWork = {} as HandiWork;
+        fillWithJSONLD(hw, TJsonLD);
+        fillWithPostData(hw, postData);
+        fillWithPrefixes(hw, body);
+        hw.tags = extractTags(body);
+
+        shared.logger.info(`Founded data for ${hw.name}`);
+        return <T><unknown>hw;
+    } else throw html.value;
 };
 //#endregion Public methods
 

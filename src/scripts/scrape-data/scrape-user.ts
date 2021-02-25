@@ -36,20 +36,22 @@ async function fetchUsernameAndAvatar(): Promise<{ [s: string]: string; }> {
     // Fetch page
     const html = await fetchHTML(f95url.F95_BASE_URL);
 
-    // Load HTML response
-    const $ = cheerio.load(html);
-    const body = $("body");
+    if (html.isSuccess()) {
+        // Load HTML response
+        const $ = cheerio.load(html.value);
+        const body = $("body");
 
-    // Fetch username
-    const username = body.find(f95Selector.UD_USERNAME_ELEMENT).first().text().trim();
+        // Fetch username
+        const username = body.find(f95Selector.UD_USERNAME_ELEMENT).first().text().trim();
 
-    // Fetch user avatar image source
-    const source = body.find(f95Selector.UD_AVATAR_PIC).first().attr("src");
+        // Fetch user avatar image source
+        const source = body.find(f95Selector.UD_AVATAR_PIC).first().attr("src");
 
-    return {
-        username,
-        source
-    };
+        return {
+            username,
+            source
+        };
+    } else throw html.value;
 }
 
 /**
@@ -73,16 +75,18 @@ async function fetchWatchedGameThreadURLs(): Promise<string[]> {
         // Fetch page
         const html = await fetchHTML(currentURL);
 
-        // Load HTML response
-        const $ = cheerio.load(html);
-        const body = $("body");
+        if (html.isSuccess()) {
+            // Load HTML response
+            const $ = cheerio.load(html.value);
+            const body = $("body");
 
-        // Find the URLs
-        const urls = fetchPageURLs(body);
-        watchedGameThreadURLs.push(...urls);
+            // Find the URLs
+            const urls = fetchPageURLs(body);
+            watchedGameThreadURLs.push(...urls);
 
-        // Find the next page (if any)
-        currentURL = fetchNextPageURL(body);
+            // Find the next page (if any)
+            currentURL = fetchNextPageURL(body);
+        } else throw html.value;
     }
     while (currentURL);
 

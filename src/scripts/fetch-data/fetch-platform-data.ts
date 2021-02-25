@@ -51,15 +51,17 @@ export default async function fetchPlatformData(): Promise<void> {
     if (!readCache(shared.cachePath)) {
         // Load the HTML
         const html = await fetchHTML(f95url.F95_LATEST_UPDATES);
-
+        
         // Parse data
-        const data = parseLatestPlatformHTML(html);
+        if (html.isSuccess()) {
+            const data = parseLatestPlatformHTML(html.value);
 
-        // Assign data
-        assignLatestPlatformData(data);
+            // Assign data
+            assignLatestPlatformData(data);
 
-        // Cache data
-        saveCache(shared.cachePath);
+            // Cache data
+            saveCache(shared.cachePath);
+        } else throw html.value;
     }
 }
 //#endregion Public methods

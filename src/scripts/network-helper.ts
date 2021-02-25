@@ -12,6 +12,8 @@ import { urls as f95url } from "./constants/url.js";
 import { selectors as f95selector } from "./constants/css-selector.js";
 import LoginResult from "./classes/login-result.js";
 import credentials from "./classes/credentials.js";
+import { failure, Result, success } from "./classes/result.js";
+import { GenericAxiosError, InvalidF95Token, UnexpectedResponseContentType } from "./classes/errors.js";
 
 // Global variables
 const userAgent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15) " + 
@@ -31,26 +33,23 @@ const commonConfig = {
 /**
  * Gets the HTML code of a page.
  */
-export async function fetchHTML(url: string): Promise<string|null> {
-    // Local variables
-    let returnValue = null;
-
+export async function fetchHTML(url: string): Promise<Result<GenericAxiosError | UnexpectedResponseContentType, string>> {
     // Fetch the response of the platform
     const response = await fetchGETResponse(url);
 
-    // Manage response
-    /* istambul ignore next */
-    if (!response) {
-        shared.logger.warn(`Unable to fetch HTML for ${url}`);
-    }
-    /* istambul ignore next */
-    else if (!response.headers["content-type"].includes("text/html")) {
-        // The response is not a HTML page
-        shared.logger.warn(`The ${url} returned a ${response.headers["content-type"]} response`);
-    }
+    if (response.isSuccess()) {
+        const isHTML = response.value["content-type"].includes("text/html");
 
-    returnValue = response.data;
-    return returnValue;
+        const unexpectedResponseError = new UnexpectedResponseContentType({
+            id: 2,
+            message: `Expected HTML but received ${response.value["content-type"]}`,
+            error: null
+        });
+
+        return isHTML ? 
+            success(response.value.data as string) :
+            failure(unexpectedResponseError);
+    } else return failure(response.value as GenericAxiosError);
 }
 
 /**
@@ -63,7 +62,7 @@ export async function fetchHTML(url: string): Promise<string|null> {
  */
 export async function authenticate(credentials: credentials, force: boolean = false): Promise<LoginResult> {
     shared.logger.info(`Authenticating with user ${credentials.username}`);
-    if (!credentials.token) throw new Error(`Invalid token for auth: ${credentials.token}`);
+    if (!credentials.token) throw new InvalidF95Token(`Invalid token for auth: ${credentials.token}`);
 
     // Secure the URL
     const secureURL = enforceHttpsUrl(f95url.F95_LOGIN_URL);
@@ -104,43 +103,43 @@ export async function authenticate(credentials: credentials, force: boolean = fa
 
 /**
  * Obtain the token used to authenticate the user to the platform.
- * @returns {Promise<String>} Token or `null` if an error arise
  */
-export async function getF95Token(): Promise<string|null> {
+export async function getF95Token() {
     // Fetch the response of the platform
     const response = await fetchGETResponse(f95url.F95_LOGIN_URL);
-    /* istambul ignore next */
-    if (!response) {
-        shared.logger.warn("Unable to get the token for the session");
-        return null;
-    }
 
-    // The response is a HTML page, we need to find the <input> with name "_xfToken"
-    const $ = cheerio.load(response.data as string);
-    return $("body").find(f95selector.GET_REQUEST_TOKEN).attr("value");
+    if (response.isSuccess()) {
+        // The response is a HTML page, we need to find the <input> with name "_xfToken"
+        const $ = cheerio.load(response.value.data as string);
+        return $("body").find(f95selector.GET_REQUEST_TOKEN).attr("value");
+    } else throw response.value;
 }
 
 //#region Utility methods
 /**
  * Performs a GET request to a specific URL and returns the response.
- * If the request generates an error (for example 400) `null` is returned.
  */
-export async function fetchGETResponse(url: string): Promise<AxiosResponse<unknown>> {
+export async function fetchGETResponse(url: string): Promise<Result<GenericAxiosError, AxiosResponse<any>>>{
     // Secure the URL
     const secureURL = enforceHttpsUrl(url);
 
     try {
         // Fetch and return the response
-        return await axios.get(secureURL, commonConfig);
+        const response = await axios.get(secureURL, commonConfig);
+        return success(response);
     } catch (e) {
         shared.logger.error(`Error ${e.message} occurred while trying to fetch ${secureURL}`);
-        return null;
+        const genericError = new GenericAxiosError({
+            id: 1,
+            message:`Error ${e.message} occurred while trying to fetch ${secureURL}`,
+            error: e
+        });
+        return failure(genericError);
     }
 }
 
 /**
  * Enforces the scheme of the URL is https and returns the new URL.
- * @param {String} url 
  * @returns {String} Secure URL or `null` if the argument is not a string
  */
 export function enforceHttpsUrl(url: string): string {
@@ -149,12 +148,9 @@ export function enforceHttpsUrl(url: string): string {
 
 /**
  * Check if the url belongs to the domain of the F95 platform.
- * @param {String} url URL to check
- * @returns {Boolean} true if the url belongs to the domain, false otherwise
  */
 export function isF95URL(url: string): boolean {
-    if (url.toString().startsWith(f95url.F95_BASE_URL)) return true;
-    else return false;
+    return url.toString().startsWith(f95url.F95_BASE_URL);
 };
 
 /**
@@ -167,8 +163,7 @@ export function isStringAValidURL(url: string): boolean {
     // Many thanks to Daveo at StackOverflow (https://preview.tinyurl.com/y2f2e2pc)
     const expression = /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_+.~#?&//=]*)/;
     const regex = new RegExp(expression);
-    if (url.match(regex)) return true;
-    else return false;
+    return url.match(regex).length > 0;
 };
 
 /**

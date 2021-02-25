@@ -42,18 +42,21 @@ async function fetchResultURLs(url: string, limit: number = 30): Promise<string[
 
     // Fetch HTML and prepare Cheerio
     const html = await fetchHTML(url);
-    const $ = cheerio.load(html);
 
-    // Here we get all the DIV that are the body of the various query results
-    const results = $("body").find(f95Selector.GS_RESULT_BODY);
+    if (html.isSuccess()) {
+        const $ = cheerio.load(html.value);
 
-    // Than we extract the URLs
-    const urls = results.slice(0, limit).map((idx, el) => {
-        const elementSelector = $(el);
-        return extractLinkFromResult(elementSelector);
-    }).get();
+        // Here we get all the DIV that are the body of the various query results
+        const results = $("body").find(f95Selector.GS_RESULT_BODY);
 
-    return urls;
+        // Than we extract the URLs
+        const urls = results.slice(0, limit).map((idx, el) => {
+            const elementSelector = $(el);
+            return extractLinkFromResult(elementSelector);
+        }).get();
+
+        return urls;
+    } else throw html.value;
 }
 
 /**
