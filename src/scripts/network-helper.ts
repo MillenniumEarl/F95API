@@ -30,7 +30,6 @@ const commonConfig = {
 
 /**
  * Gets the HTML code of a page.
- * @returns {Promise<String>} HTML code or `null` if an error arise
  */
 export async function fetchHTML(url: string): Promise<string|null> {
     // Local variables
@@ -209,21 +208,23 @@ export async function getUrlRedirect(url: string): Promise<string> {
 
 //#region Private methods
 /**
- * @private
  * Check with Axios if a URL exists.
- * @param {String} url 
  */
 async function axiosUrlExists(url: string): Promise<boolean> {
     // Local variables
+    const ERROR_CODES = ["ENOTFOUND", "ETIMEDOUT"];
     let valid = false;
+
     try {
-        const response = await axios.head(url, {timeout: 3000});
+        const response = await axios.head(url, {
+            timeout: 3000
+        });
         valid = response && !/4\d\d/.test(response.status.toString());
     } catch (error) {
-        if (error.code === "ENOTFOUND") valid = false;
-        else if (error.code === "ETIMEDOUT") valid = false;
-        else throw error;
+        // Throw error only if the error is unknown
+        if (!ERROR_CODES.includes(error.code)) throw error;
     }
+
     return valid;
 }
 //#endregion

@@ -275,7 +275,6 @@ function fillWithPostData(hw: HandiWork, elements: IPostElement[]) {
 /**
  * Gets the tags used to classify the game.
  * @param {cheerio.Cheerio} body Page `body` selector
- * @returns {string[]} List of tags
  */
 function extractTags(body: cheerio.Cheerio): string[] {
     shared.logger.trace("Extracting tags...");
