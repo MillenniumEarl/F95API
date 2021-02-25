@@ -4,10 +4,10 @@
 import cheerio from "cheerio";
 
 // Modules from file
-import { fetchHTML } from "./network-helper.js";
-import { selectors as f95Selector } from "./constants/css-selector.js";
-import { urls as f95url } from "./constants/url.js";
-import UserData from "./classes/user-data.js";
+import { fetchHTML } from "../network-helper.js";
+import { selectors as f95Selector } from "../constants/css-selector.js";
+import { urls as f95url } from "../constants/url.js";
+import UserData from "../classes/user-data.js";
 
 /**
  * Gets user data, such as username, url of watched threads, and profile picture url.

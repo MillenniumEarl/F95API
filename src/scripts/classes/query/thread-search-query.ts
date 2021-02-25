@@ -4,9 +4,9 @@
 import validator from 'class-validator';
 
 // Module from files
-import { IQuery, TCategory, TQueryInterface } from "../interfaces";
-import { urls } from "../constants/url";
-import PrefixParser from "./prefix-parser";
+import { IQuery, TCategory, TQueryInterface } from "../../interfaces";
+import { urls } from "../../constants/url";
+import PrefixParser from "./../prefix-parser";
 
 // Type definitions
 export type TThreadOrder = "relevance" | "date" | "last_update" | "replies";
