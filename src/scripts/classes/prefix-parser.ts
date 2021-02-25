@@ -15,14 +15,14 @@ export default class PrefixParser {
      * @param {Any} value Value associated with the key
      * @returns {String|undefined} Key found or undefined
      */
-    getKeyByValue(object: TPrefixDict, value: string): string | undefined {
+    private getKeyByValue(object: TPrefixDict, value: string): string | undefined {
         return Object.keys(object).find(key => object[key] === value);
     }
 
     /**
      * Makes an array of strings uppercase.
      */
-    toUpperCaseArray(a: string[]): string[] {
+    private toUpperCaseArray(a: string[]): string[] {
         /**
          * Makes a string uppercase.
          */
@@ -35,7 +35,7 @@ export default class PrefixParser {
     /**
      * Check if `dict` contains `value` as a value.
      */
-    valueInDict(dict: TPrefixDict, value: string): boolean {
+    private valueInDict(dict: TPrefixDict, value: string): boolean {
         const array = Object.values(dict);
         const upperArr = this.toUpperCaseArray(array);
         const element = value.toUpperCase();
@@ -47,7 +47,7 @@ export default class PrefixParser {
      * desired element and return the dictionary that contains it.
      * @param element Element to search in the prefixes as a key or as a value
      */
-    searchElementInPrefixes(element: string | number): TPrefixDict | null {
+    private searchElementInPrefixes(element: string | number): TPrefixDict | null {
         // Local variables
         let dictName = null;
 
