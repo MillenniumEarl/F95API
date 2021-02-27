@@ -42,3 +42,5 @@ export class UnexpectedResponseContentType extends Error implements IBaseError {
 }
 
 export class InvalidF95Token extends Error {}
+
+export class UserNotLogged extends Error {}
