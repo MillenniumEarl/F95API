@@ -28,7 +28,8 @@
     "test": "nyc --reporter=text mocha './test/index-test.ts'",
     "report-coverage": "nyc report --reporter=text-lcov > coverage.lcov && codecov -t 38ad72bf-a29d-4c2e-9827-96cbe037afd2",
     "run-example": "npm run compile && node ./dist/example.ts",
-    "run-devtest": "npm run compile && node ./dist/test.js"
+    "run-devtest": "npm run compile && node ./dist/test.js",
+    "test-ts": "set TS_NODE_COMPILER_OPTIONS='{\"module\": \"commonjs\" }' mocha -r ts-node/register 'tests/**/*.ts'"
   },
   "engines": {
     "node": ">=10.0"
@@ -47,6 +48,7 @@
     "@types/chai": "^4.2.15",
     "@types/cheerio": "^0.22.24",
     "@types/expect": "^24.3.0",
+    "@types/lodash": "^4.14.168",
     "@types/luxon": "^1.25.2",
     "@types/md5": "^2.3.0",
     "@types/mocha": "^8.2.0",
