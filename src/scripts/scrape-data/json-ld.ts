@@ -4,8 +4,8 @@
 import cheerio from "cheerio";
 
 // Modules from file
-import shared from "./shared.js";
-import { selectors as f95Selector } from "./constants/css-selector.js";
+import shared from "../shared.js";
+import { selectors as f95Selector } from "../constants/css-selector.js";
 
 /**
  * Represents information contained in a JSON+LD tag.
