@@ -5,7 +5,7 @@ import { IBasic } from "./interfaces.js";
 import HandiworkSearchQuery from "./classes/query/handiwork-search-query.js";
 import LatestSearchQuery from "./classes/query/latest-search-query.js";
 import ThreadSearchQuery from "./classes/query/thread-search-query.js";
-import { getPostInformation } from "./scrape-data/scrape-thread.js";
+import { getHandiworkInformation } from "./scrape-data/scrape-thread.js";
 import executeQuery from "./fetch-data/fetch-query.js";
 
 export async function search<T extends IBasic>(query: LatestSearchQuery, limit: number): Promise<T[]>
@@ -26,7 +26,7 @@ export default async function search<T extends IBasic>(query: any, limit: number
 
     // Fetch the data
     const results = urls.map((url, idx) => {
-        return getPostInformation<T>(url);
+        return getHandiworkInformation<T>(url);
     });
 
     return Promise.all(results);

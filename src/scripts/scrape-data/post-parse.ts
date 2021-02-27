@@ -18,9 +18,9 @@ export interface ILink extends IPostElement {
 
 //#region Public methods
 /**
- * Given the main post of the page (#1) it extracts the information contained.
+ * Given a post of a thread page it extracts the information contained in the body.
  */
-export function parseCheerioMainPost($: cheerio.Root, post: cheerio.Cheerio): IPostElement[] {
+export function parseF95ThreadPost($: cheerio.Root, post: cheerio.Cheerio): IPostElement[] {
     // The data is divided between "tag" and "text" elements. 
     // Simple data is composed of a "tag" element followed 
     // by a "text" element, while more complex data (contained 

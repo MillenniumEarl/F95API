@@ -7,11 +7,11 @@ import luxon from "luxon";
 // Modules from file
 import shared from "../shared.js";
 import { fetchHTML } from "../network-helper.js";
-import { getJSONLD, TJsonLD } from "../json-ld.js";
+import { getJSONLD, TJsonLD } from "./json-ld.js";
 import { selectors as f95Selector } from "../constants/css-selector.js";
 import HandiWork from "../classes/handiwork/handiwork.js";
 import { TRating, IBasic, TAuthor, TExternalPlatform, TEngine, TStatus, TCategory } from "../interfaces.js";
-import { ILink, IPostElement, parseCheerioMainPost } from "./post-parse.js";
+import { ILink, IPostElement, parseF95ThreadPost } from "./post-parse.js";
 
 //#region Public methods
 /**
@@ -19,7 +19,7 @@ import { ILink, IPostElement, parseCheerioMainPost } from "./post-parse.js";
  * If you don't want to specify the object type, use `HandiWork`.
  * @todo It does not currently support assets.
  */
-export async function getPostInformation<T extends IBasic>(url: string): Promise<T | null> {
+export async function getHandiworkInformation<T extends IBasic>(url: string): Promise<T> {
     shared.logger.info(`Obtaining post info from ${url}`);
 
     // Fetch HTML and prepare Cheerio
@@ -31,7 +31,7 @@ export async function getPostInformation<T extends IBasic>(url: string): Promise
         const mainPost = $(f95Selector.GS_POSTS).first();
 
         // Extract data
-        const postData = parseCheerioMainPost($, mainPost);
+        const postData = parseF95ThreadPost($, mainPost);
         const TJsonLD = getJSONLD(body);
 
         // Fill in the HandiWork element with the information obtained
@@ -169,7 +169,6 @@ function isMod(prefix: string): boolean {
     return modPrefixes.includes(prefix.toUpperCase());
 }
 //#endregion Prefix Utility
-
 
 /**
  * Compiles a HandiWork object with the data extracted 
