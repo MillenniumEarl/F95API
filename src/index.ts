@@ -2,39 +2,40 @@
 
 // Modules from file
 import shared from "./scripts/shared.js";
+import search from "./scripts/search.js";
 import { authenticate, urlExists, isF95URL } from "./scripts/network-helper.js";
-import { getGameInfo } from "./scripts/scraper.js";
-import { searchGame, searchMod } from "./scripts/searcher.js";
-import { getUserData as retrieveUserData } from "./scripts/user-scraper.js";
-import { fetchLatest } from "./scripts/latest-fetch.js";
-const fetchPlatformData = require("./scripts/platform-data.js").fetchPlatformData;
+import { getUserData as retrieveUserData } from "./scripts/scrape-data/scrape-user.js";
+import fetchLatestHandiworkURLs from "./scripts/fetch-data/fetch-latest.js";
+import fetchPlatformData from "./scripts/fetch-data/fetch-platform-data.js";
+import { getHandiworkInformation } from "./scripts/scrape-data/scrape-thread.js";
+import { IBasic } from "./scripts/interfaces.js";
 
 // Classes from file
 import Credentials from "./scripts/classes/credentials.js";
-import GameInfo from "./scripts/classes/game-info.js";
 import LoginResult from "./scripts/classes/login-result.js";
 import UserData from "./scripts/classes/user-data.js";
-import PrefixParser from "./scripts/classes/prefix-parser.js";
+import LatestSearchQuery from "./scripts/classes/query/latest-search-query.js";
+import HandiworkSearchQuery from "./scripts/classes/query/handiwork-search-query.js";
+import HandiWork from "./scripts/classes/handiwork/handiwork.js";
 
 //#region Global variables
 const USER_NOT_LOGGED = "User not authenticated, unable to continue";
 //#endregion
 
 //#region Export classes
-module.exports.GameInfo = GameInfo;
-module.exports.LoginResult = LoginResult;
-module.exports.UserData = UserData;
-module.exports.PrefixParser = PrefixParser;
+// module.exports.GameInfo = GameInfo;
+// module.exports.LoginResult = LoginResult;
+// module.exports.UserData = UserData;
+// module.exports.PrefixParser = PrefixParser;
 //#endregion Export classes
 
 //#region Export properties
 /**
- * @public
  * Set the logger level for module debugging.
  */
 /* istambul ignore next */
-module.exports.loggerLevel = shared.logger.level;
-exports.loggerLevel = "warn"; // By default log only the warn messages
+export var loggerLevel = shared.logger.level;
+shared.logger.level = "warn"; // By default log only the warn messages
 
 /**
  * Indicates whether a user is logged in to the F95Zone platform or not.
@@ -76,12 +77,14 @@ export async function login(username: string, password: string): Promise<LoginRe
 };
 
 /**
- * Chek if exists a new version of the game.
+ * Chek if exists a new version of the handiwork.
+ * 
  * You **must** be logged in to the portal before calling this method.
- * @param {GameInfo} info Information about the game to get the version for
- * @returns {Promise<Boolean>} true if an update is available, false otherwise
  */
-export async function checkIfGameHasUpdate(info: GameInfo): Promise<boolean> {
+export async function checkIfHandiworkHasUpdate(hw: HandiWork): Promise<boolean> {
+    // Local variables
+    let hasUpdate = false;
+
     /* istanbul ignore next */
     if (!shared.isLogged) {
         shared.logger.warn(USER_NOT_LOGGED);
@@ -90,15 +93,15 @@ export async function checkIfGameHasUpdate(info: GameInfo): Promise<boolean> {
 
     // F95 change URL at every game update,
     // so if the URL is different an update is available
-    const exists = await urlExists(info.url, true);
-    if (!exists) return true;
+    if (await urlExists(hw.url, true)) {
+        // Fetch the online handiwork
+        const onlineHw = await getHandiworkFromURL<HandiWork>(hw.url);
 
-    // Parse version from title
-    const onlineInfo = await getGameInfo(info.url);
-    const onlineVersion = onlineInfo.version;
-    
-    // Compare the versions
-    return onlineVersion.toUpperCase() !== info.version.toUpperCase();
+        // Compare the versions
+        hasUpdate = onlineHw.version?.toUpperCase() !== hw.version?.toUpperCase();
+    }
+
+    return hasUpdate;
 };
 
 /**
@@ -109,35 +112,23 @@ export async function checkIfGameHasUpdate(info: GameInfo): Promise<boolean> {
  * @returns {Promise<GameInfo[]>} List of information obtained where each item corresponds to
  * an identified game (in the case of homonymy of titles)
  */
-export async function getGameData (name: string, mod: boolean): Promise<GameInfo[]> {
+export async function getHandiwork<T extends IBasic>(query: HandiworkSearchQuery, limit: number = 30): Promise<T[]> {
     /* istanbul ignore next */
     if (!shared.isLogged) {
         shared.logger.warn(USER_NOT_LOGGED);
         return null;
     }
 
-    // Gets the search results of the game/mod being searched for
-    const urls = mod ? 
-        await searchMod(name) : 
-        await searchGame(name);
-
-    // Process previous partial results
-    const results = [];
-    for (const url of urls) {
-        // Start looking for information
-        const info = await getGameInfo(url);
-        if (info) results.push(info);
-    }
-    return results;
+    return await search<T>(query, limit);
 };
 
 /**
- * Starting from the url, it gets all the information about the game you are looking for.
+ * Starting from the url, it gets all the information 
+ * about the handiwork requested.
+ * 
  * You **must** be logged in to the portal before calling this method.
- * @param {String} url URL of the game to obtain information of
- * @returns {Promise<GameInfo>} Information about the game. If no game was found, null is returned
  */
-export async function getGameDataFromURL(url: string): Promise<GameInfo> {
+export async function getHandiworkFromURL<T extends IBasic>(url: string): Promise<T> {
     /* istanbul ignore next */
     if (!shared.isLogged) {
         shared.logger.warn(USER_NOT_LOGGED);
@@ -150,7 +141,7 @@ export async function getGameDataFromURL(url: string): Promise<GameInfo> {
     if (!isF95URL(url)) throw new Error(`${url} is not a valid F95Zone URL`);
     
     // Get game data
-    return await getGameInfo(url);
+    return await getHandiworkInformation<T>(url);
 };
 
 /**
@@ -171,62 +162,19 @@ export async function getUserData(): Promise<UserData> {
 /**
  * Gets the latest updated games that match the specified parameters.
  * You **must** be logged in to the portal before calling this method.
- * @param {Object} args
+ * @param {LatestSearchQuery} query
  * Parameters used for the search.
- * @param {String[]} [args.tags]
- * List of tags to be included in the search (max 5).
- * @param {Number} [args.datelimit]
- * Number of days since the game was last updated.
- * The entered value will be approximated to the nearest valid one.
- * Use `0` to select no time limit.
- * @param {String[]} [args.prefixes]
- * Prefixes to be included in the search.
- * @param {String} [args.sorting]
- * Method of sorting the results between (default: `date`):
- * `date`, `likes`, `views`, `name`, `rating`
  * @param {Number} limit Maximum number of results
- * @returns {Promise<GameInfo[]>} List of games
  */
-export async function getLatestUpdates(args, limit: number): Promise<GameInfo[]> {
+export async function getLatestUpdates<T extends IBasic>(query: LatestSearchQuery, limit: number): Promise<T[]> {
     // Check limit value
-    if(limit <= 0) throw new Error("limit must be greater than 0");
+    if (limit <= 0) throw new Error("limit must be greater than 0");
 
-    // Prepare the parser
-    const parser = new PrefixParser();
+    // Fetch the results
+    const urls = await fetchLatestHandiworkURLs(query, limit);
 
-    // Get the closest date limit
-    let filterDate = 0;
-    if(args.datelimit) {
-        const validDate = [365, 180, 90, 30, 14, 7, 3, 1, 0];
-        filterDate = getNearestValueFromArray(validDate, args.datelimit);
-    }
-
-    // Fetch the games
-    const query = {
-        tags: args.tags ? parser.prefixesToIDs(args.tags) : [],
-        prefixes: args.prefixes ? parser.prefixesToIDs(args.prefixes) : [],
-        sort: args.sorting ? args.sorting : "date",
-        date: filterDate,
-    };
-    const urls = await fetchLatest(query, limit);
-    // Get the gamedata from urls
-    const promiseList = urls.map((u: string) => exports.getGameDataFromURL(u));
+    // Get the data from urls
+    const promiseList = urls.map((u: string) => getHandiworkInformation<T>(u));
     return await Promise.all(promiseList);
 };
-//#endregion
-
-//#region Private Methods
-/**
- * Given an array of numbers, get the nearest value for a given `value`.
- * @param {Number[]} array List of default values
- * @param {Number} value Value to search
- */
-function getNearestValueFromArray(array: number[], value: number) {
-    // Script taken from:
-    // https://www.gavsblog.com/blog/find-closest-number-in-array-javascript
-    array.sort((a, b) => {
-        return Math.abs(value - a) - Math.abs(value - b);
-    });
-    return array[0];
-}
 //#endregion
