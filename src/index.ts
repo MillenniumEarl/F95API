@@ -7,7 +7,7 @@ import { authenticate, urlExists, isF95URL } from "./scripts/network-helper.js";
 import { getUserData as retrieveUserData } from "./scripts/scrape-data/scrape-user.js";
 import fetchLatestHandiworkURLs from "./scripts/fetch-data/fetch-latest.js";
 import fetchPlatformData from "./scripts/fetch-data/fetch-platform-data.js";
-import { getHandiworkInformation } from "./scripts/scrape-data/scrape-thread.js";
+import { getHandiworkInformation } from "./scripts/scrape-data/handiwork-parse.js";
 import { IBasic } from "./scripts/interfaces.js";
 
 // Classes from file
@@ -67,7 +67,10 @@ export async function login(username: string, password: string): Promise<LoginRe
     shared.setIsLogged(result.success);
 
     // Load platform data
-    if (result.success) await fetchPlatformData();
+    if (result.success) {
+        await fetchPlatformData();
+        shared.session.create(username, password, creds.token);
+    }
 
     /* istambul ignore next */
     if (result.success) shared.logger.info("User logged in through the platform");
