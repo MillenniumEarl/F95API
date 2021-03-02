@@ -161,7 +161,7 @@ function reducePostElement(element: IPostElement): IPostElement {
         if (nullValues || sameValues) {
             element.name = element.name || content.name;
             element.text = element.text || content.text;
-            element.content = content.content;
+            element.content.push(...content.content);
             element.type = content.type;
 
             // If the content is a link, add the HREF to the element
@@ -246,10 +246,6 @@ function parsePostElements(elements: IPostElement[]): IPostElement[] {
     for (let i = 0; i < elements.length; i++) {
         // If the text starts with a special char, clean it
         const startWithSpecial = specialRegex.test(elements[i].text);
-
-        // /^[-!$%^&*()_+|~=`{}\[\]:";'<>?,.\/]/
-        // Get the uppercase text
-        const upperText = elements[i].text.toUpperCase();
 
         // Get the latest IPostElement in "pairs"
         const lastIndex = pairs.length - 1;
