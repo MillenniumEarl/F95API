@@ -38,7 +38,7 @@ export async function fetchHTML(url: string): Promise<Result<GenericAxiosError |
     const response = await fetchGETResponse(url);
 
     if (response.isSuccess()) {
-        const isHTML = response.value["content-type"].includes("text/html");
+        const isHTML = response.value.headers["content-type"].includes("text/html");
 
         const unexpectedResponseError = new UnexpectedResponseContentType({
             id: 2,
