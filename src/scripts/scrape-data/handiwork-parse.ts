@@ -38,7 +38,7 @@ export default async function getHandiworkInformation<T extends IBasic>(url: str
     fillWithPrefixes(hw, thread.prefixes);
 
     // Fetch info from first post
-    const post = thread.posts.find(p => p.id === 1);
+    const post = await thread.getPost(1);
     fillWithPostData(hw, post.body);
     
     return <T><unknown>hw;
