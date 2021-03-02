@@ -68,33 +68,35 @@ export async function authenticate(credentials: credentials, force: boolean = fa
     const secureURL = enforceHttpsUrl(f95url.F95_LOGIN_URL);
 
     // Prepare the parameters to send to the platform to authenticate
-    const params = new URLSearchParams();
-    params.append("login", credentials.username);
-    params.append("url", "");
-    params.append("password", credentials.password);
-    params.append("password_confirm", "");
-    params.append("additional_security", "");
-    params.append("remember", "1");
-    params.append("_xfRedirect", "https://f95zone.to/");
-    params.append("website_code", "");
-    params.append("_xfToken", credentials.token);
+    const params = {
+        "login": credentials.username,
+        "url": "",
+        "password": credentials.password,
+        "password_confirm": "",
+        "additional_security": "",
+        "remember": "1",
+        "_xfRedirect": "https://f95zone.to/",
+        "website_code": "",
+        "_xfToken": credentials.token,
+    };
 
     try {
         // Try to log-in
-        let config = Object.assign({}, commonConfig);
-        if (force) delete config.jar;
-        const response = await axios.post(secureURL, params, config);
+        const response = await fetchPOSTResponse(f95url.F95_LOGIN_URL, params, force);
 
-        // Parse the response HTML
-        const $ = cheerio.load(response.data);
+        if (response.isSuccess()) {
+            // Parse the response HTML
+            const $ = cheerio.load(response.value.data as string);
 
-        // Get the error message (if any) and remove the new line chars
-        const errorMessage = $("body").find(f95selector.LOGIN_MESSAGE_ERROR).text().replace(/\n/g, "");
+            // Get the error message (if any) and remove the new line chars
+            const errorMessage = $("body").find(f95selector.LOGIN_MESSAGE_ERROR).text().replace(/\n/g, "");
 
-        // Return the result of the authentication
-        const result = errorMessage.trim() === "";
-        const message = errorMessage.trim() === "" ? "Authentication successful" : errorMessage;
-        return new LoginResult(result, message);
+            // Return the result of the authentication
+            const result = errorMessage.trim() === "";
+            const message = errorMessage.trim() === "" ? "Authentication successful" : errorMessage;
+            return new LoginResult(result, message);
+        }
+        else throw response.value;
     } catch (e) {
         shared.logger.error(`Error ${e.message} occurred while authenticating to ${secureURL}`);
         return new LoginResult(false, `Error ${e.message} while authenticating`);
@@ -119,7 +121,7 @@ export async function getF95Token() {
 /**
  * Performs a GET request to a specific URL and returns the response.
  */
-export async function fetchGETResponse(url: string): Promise<Result<GenericAxiosError, AxiosResponse<any>>>{
+export async function fetchGETResponse(url: string): Promise<Result<GenericAxiosError, AxiosResponse<any>>> {
     // Secure the URL
     const secureURL = enforceHttpsUrl(url);
 
@@ -128,10 +130,10 @@ export async function fetchGETResponse(url: string): Promise<Result<GenericAxios
         const response = await axios.get(secureURL, commonConfig);
         return success(response);
     } catch (e) {
-        shared.logger.error(`Error ${e.message} occurred while trying to fetch ${secureURL}`);
+        shared.logger.error(`(GET) Error ${e.message} occurred while trying to fetch ${secureURL}`);
         const genericError = new GenericAxiosError({
             id: 1,
-            message:`Error ${e.message} occurred while trying to fetch ${secureURL}`,
+            message:`(GET) Error ${e.message} occurred while trying to fetch ${secureURL}`,
             error: e
         });
         return failure(genericError);
@@ -199,6 +201,42 @@ export async function getUrlRedirect(url: string): Promise<string> {
     const response = await axios.head(url);
     return response.config.url;
 }
+
+/**
+ * Performs a POST request through axios.
+ * @param url URL to request
+ * @param params List of value pairs to send with the request
+ * @param force If `true`, the request ignores the sending of cookies already present on the device.
+ */
+export async function fetchPOSTResponse(url: string, params: { [s: string]: string }, force: boolean = false): Promise<Result<GenericAxiosError, AxiosResponse<any>>> {
+    // Secure the URL
+    const secureURL = enforceHttpsUrl(url);
+    
+    // Prepare the parameters for the POST request
+    const urlParams = new URLSearchParams();
+    for (const [key, value] of Object.entries(params)) urlParams.append(key, value);
+
+    // Shallow copy of the common configuration object
+    const config = Object.assign({}, commonConfig);
+
+    // Remove the cookies if forced
+    if (force) delete config.jar;
+
+    // Send the POST request and await the response
+    try {
+        const response = await axios.post(secureURL, urlParams, config);
+        return success(response);
+    } catch (e) {
+        shared.logger.error(`(POST) Error ${e.message} occurred while trying to fetch ${secureURL}`);
+        const genericError = new GenericAxiosError({
+            id: 3,
+            message: `(POST) Error ${e.message} occurred while trying to fetch ${secureURL}`,
+            error: e
+        });
+        return failure(genericError);
+    }
+}
+
 //#endregion Utility methods
 
 //#region Private methods
