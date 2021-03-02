@@ -111,7 +111,7 @@ export const MEMBER = {
      * 
      * It also contains the unique ID of the user in the `data-user-id` attribute.
      */
-    NAME: "span.username",
+    NAME: "span[class^=\"username\"]",
     /**
      * Title of the user in the platform.
      * 
@@ -146,6 +146,7 @@ export const MEMBER = {
     REACTION_SCORE: "div.pairJustifier > dl:nth-child(2) > dd",
     POINTS: "div.pairJustifier > dl:nth-child(3) > * a",
     RATINGS_RECEIVED: "div.pairJustifier > dl:nth-child(4) > dd",
+    AMOUNT_DONATED: "div.pairJustifier > dl:nth-child(5) > dd",
     /**
      * Button used to follow/unfollow the user.
      * 
