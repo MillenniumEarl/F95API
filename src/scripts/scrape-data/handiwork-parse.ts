@@ -17,13 +17,22 @@ import { ILink, IPostElement } from "./post-parse.js";
  * 
  * @todo It does not currently support assets.
  */
-export default async function getHandiworkInformation<T extends IBasic>(url: string): Promise<T> {
-    shared.logger.info(`Obtaining handiwork from ${url}`);
+export async function getHandiworkInformation<T extends IBasic>(url: string): Promise<T>
 
-    // Fetch thread data
-    const id = extractIDFromURL(url);
-    const thread: Thread = new Thread(id);
-    await thread.fetch();
+export async function getHandiworkInformation<T extends IBasic>(url: string): Promise<T>
+
+export default async function getHandiworkInformation<T extends IBasic>(arg: string | Thread): Promise<T> {
+    // Local variables
+    let thread: Thread = null;
+
+    if (typeof arg === "string") {
+        // Fetch thread data
+        const id = extractIDFromURL(arg);
+        thread = new Thread(id);
+        await thread.fetch();
+    } else thread = arg;
+
+    shared.logger.info(`Obtaining handiwork from ${thread.url}`);
 
     // Convert the info from thread to handiwork
     const hw: HandiWork = {} as HandiWork;
@@ -40,9 +49,9 @@ export default async function getHandiworkInformation<T extends IBasic>(url: str
     // Fetch info from first post
     const post = await thread.getPost(1);
     fillWithPostData(hw, post.body);
-    
+
     return <T><unknown>hw;
-};
+}
 
 //#region Private methods
 
