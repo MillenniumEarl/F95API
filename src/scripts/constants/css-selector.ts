@@ -104,3 +104,60 @@ export const POST = {
      */
     BOOKMARKED: "* ul.message-attribution-opposite >li > a[title=\"Bookmark\"].is-bookmarked",
 };
+
+export const MEMBER = {
+    /**
+     * Name of the user.
+     * 
+     * It also contains the unique ID of the user in the `data-user-id` attribute.
+     */
+    NAME: "span.username",
+    /**
+     * Title of the user in the platform.
+     * 
+     * i.e.: Member
+     */
+    TITLE: "span.userTitle",
+    /**
+     * Avatar used by the user.
+     * 
+     * Source in the attribute `src`.
+     */
+    AVATAR: "span.avatarWrapper > a.avatar > img",
+    /**
+     * User assigned banners.
+     * 
+     * The last element is always empty and can be ignored.
+     */
+    BANNERS: "em.userBanner > strong",
+    /**
+     * Date the user joined the platform.
+     * 
+     * The date is contained in the `datetime` attribute as an ISO string.
+     */
+    JOINED: "div.uix_memberHeader__extra > div.memberHeader-blurb:nth-child(1) > * time",
+    /**
+     * Last time the user connected to the platform.
+     * 
+     * The date is contained in the `datetime` attribute as an ISO string.
+     */
+    LAST_SEEN: "div.uix_memberHeader__extra > div.memberHeader-blurb:nth-child(2) > * time",
+    MESSAGES: "div.pairJustifier > dl:nth-child(1) > * a",
+    REACTION_SCORE: "div.pairJustifier > dl:nth-child(2) > dd",
+    POINTS: "div.pairJustifier > dl:nth-child(3) > * a",
+    RATINGS_RECEIVED: "div.pairJustifier > dl:nth-child(4) > dd",
+    /**
+     * Button used to follow/unfollow the user.
+     * 
+     * If the text is `Unfollow` then the user is followed.
+     * If the text is `Follow` then the user is not followed.
+     */
+    FOLLOWED: "div.memberHeader-buttons > div.buttonGroup:first-child > a[data-sk-follow] > span",
+    /**
+     * Button used to ignore/unignore the user.
+     * 
+     * If the text is `Unignore` then the user is ignored.
+     * If the text is `Ignore` then the user is not ignored.
+     */
+    IGNORED: "div.memberHeader-buttons > div.buttonGroup:first-child > a[data-sk-ignore]",
+}
