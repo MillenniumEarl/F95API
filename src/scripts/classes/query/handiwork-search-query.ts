@@ -4,9 +4,9 @@
 import validator from 'class-validator';
 
 // Module from files
-import { IQuery, TCategory, TQueryInterface } from "../../interfaces";
-import LatestSearchQuery, { TLatestOrder } from './latest-search-query';
-import ThreadSearchQuery, { TThreadOrder } from './thread-search-query';
+import { IQuery, TCategory, TQueryInterface } from "../../interfaces.js";
+import LatestSearchQuery, { TLatestOrder } from './latest-search-query.js';
+import ThreadSearchQuery, { TThreadOrder } from './thread-search-query.js';
 
 // Type definitions
 /**

@@ -4,11 +4,11 @@
 import luxon from "luxon";
 
 // Modules from files
-import HandiWork from "../classes/handiwork/handiwork";
-import Thread from "../classes/thread";
-import { IBasic, TAuthor, TEngine, TExternalPlatform, TStatus } from "../interfaces";
-import shared, { TPrefixDict } from "../shared";
-import { ILink, IPostElement } from "./post-parse";
+import HandiWork from "../classes/handiwork/handiwork.js";
+import Thread from "../classes/thread.js";
+import { IBasic, TAuthor, TEngine, TExternalPlatform, TStatus } from "../interfaces.js";
+import shared, { TPrefixDict } from "../shared.js";
+import { ILink, IPostElement } from "./post-parse.js";
 
 /**
  * Gets information of a particular handiwork from its thread.

@@ -1,10 +1,12 @@
+"use strict";
+
 // Public modules from npm
 import validator from 'class-validator';
 
 // Modules from file
 import { urls } from "../../constants/url.js";
 import PrefixParser from '../prefix-parser.js';
-import { IQuery, TCategory, TQueryInterface } from "../../interfaces";
+import { IQuery, TCategory, TQueryInterface } from "../../interfaces.js";
 
 // Type definitions
 export type TLatestOrder = "date" | "likes" | "views" | "title" | "rating";

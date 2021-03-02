@@ -5,16 +5,16 @@ import cheerio from "cheerio";
 import luxon from "luxon";
 
 // Modules from files
-import Post from "./post";
-import PlatformUser from "./platform-user";
-import { TCategory, TRating } from "../interfaces";
-import { urls } from "../constants/url";
-import { THREAD } from "../constants/css-selector";
-import { fetchHTML, fetchPOSTResponse } from "../network-helper";
-import Shared from "../shared";
-import { GenericAxiosError, UnexpectedResponseContentType } from "./errors";
-import { Result } from "./result";
-import { getJSONLD, TJsonLD } from "../scrape-data/json-ld";
+import Post from "./post.js";
+import PlatformUser from "./platform-user.js";
+import { TCategory, TRating } from "../interfaces.js";
+import { urls } from "../constants/url.js";
+import { THREAD } from "../constants/css-selector.js";
+import { fetchHTML, fetchPOSTResponse } from "../network-helper.js";
+import Shared from "../shared.js";
+import { GenericAxiosError, UnexpectedResponseContentType } from "./errors.js";
+import { Result } from "./result.js";
+import { getJSONLD, TJsonLD } from "../scrape-data/json-ld.js";
 
 /**
  * Represents a generic F95Zone platform thread.
