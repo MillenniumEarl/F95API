@@ -1,5 +1,8 @@
 "use strict";
 
+// Modules from files
+import Post from "./post";
+
 /**
  * Class containing the data of the user currently connected to the F95Zone platform.
  */
@@ -17,15 +20,17 @@ export default class UserData {
      */
     watched: string[] = [];
     /**
-     * List of bookmarked thread URLs.
+     * List of bookmarked posts.
      */
-    bookmarks: string[] = [];
+    bookmarks: Post[] = [];
     /**
      * List of alerts.
+     * @todo
      */
     alerts: string[] = [];
     /**
      * List of conversations.
+     * @todo
      */
     conversations: string[];
 }
