@@ -2,11 +2,12 @@
 
 // Public modules from npm
 import cheerio from "cheerio";
+import luxon from "luxon";
 
 // Modules from files
 import Post from "./post";
 import PlatformUser from "./platform-user";
-import { TRating } from "../interfaces";
+import { TCategory, TRating } from "../interfaces";
 import { urls } from "../constants/url";
 import { THREAD } from "../constants/css-selector";
 import { fetchHTML, fetchPOSTResponse } from "../network-helper";
@@ -30,7 +31,9 @@ export default class Thread {
     private _posts: Post[];
     private _rating: TRating;
     private _owner: PlatformUser;
-    private _creation: Date;
+    private _publication: Date;
+    private _modified: Date;
+    private _category: TCategory;
 
     //#endregion Fields
 
@@ -49,7 +52,7 @@ export default class Thread {
     /**
      * Thread title.
      */
-    public get title() { return this._title; };
+    public get title() { return this._title; }
     /**
      * Tags associated with the thread.
      */
@@ -71,9 +74,17 @@ export default class Thread {
      */
     public get owner() { return this._owner; }
     /**
-     * Creation date of the thread.
+     * Date the thread was first published.
      */
-    public get creation() { return this._creation; }
+    public get publication() { return this._publication; }
+    /**
+     * Date the thread was last modified.
+     */
+    public get modified() { return this._modified; }
+    /**
+     * Category to which the content of the thread belongs.
+     */
+    public get category() { return this._category; }
 
     //#endregion Getters
 
@@ -182,6 +193,22 @@ export default class Thread {
         return rating;
     }
 
+    /**
+     * Clean the title of a thread, removing prefixes
+     * and generic elements between square brackets, and
+     * returns the clean title of the work.
+     */
+    private cleanHeadline(headline: string): string {
+        // From the title we can extract: Name, author and version
+        // [PREFIXES] TITLE [VERSION] [AUTHOR]
+        const matches = headline.match(/\[(.*?)\]/g);
+
+        // Get the title name
+        let name = headline;
+        matches.forEach(e => name = name.replace(e, ""));
+        return name.trim();
+    }
+
     //#endregion Private methods
 
     //#region Public methods
@@ -201,19 +228,24 @@ export default class Thread {
             const $ = cheerio.load(htmlResponse.value);
 
             // Fetch data from selectors
-            const creationDatetime = $(THREAD.CREATION).attr("datetime");
             const ownerID = $(THREAD.OWNER_ID).attr("data-user-id");
             const tagArray = $(THREAD.TAGS).toArray();
             const prefixArray = $(THREAD.PREFIXES).toArray();
             const JSONLD = getJSONLD($("body"));
+            const published = JSONLD["datePublished"] as string;
+            const modified = JSONLD["dateModified"] as string;
 
             // Parse the thread's data
-            this._title = $(THREAD.TITLE).text();
-            this._creation = new Date(creationDatetime);
+            this._title = this.cleanHeadline(JSONLD["headline"] as string);
             this._tags = tagArray.map(el => $(el).text().trim());
             this._prefixes = prefixArray.map(el => $(el).text().trim());
             this._owner = new PlatformUser(parseInt(ownerID));
             this._rating = this.parseRating(JSONLD);
+            this._category = JSONLD["articleSection"] as TCategory;
+
+            // Validate the dates
+            if (luxon.DateTime.fromISO(modified).isValid) this._modified = new Date(modified);
+            if (luxon.DateTime.fromISO(published).isValid) this._publication = new Date(published);
 
             // Parse all the posts
             const pages = parseInt($(THREAD.LAST_PAGE).first().text());
