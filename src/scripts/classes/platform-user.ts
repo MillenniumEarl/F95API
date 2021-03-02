@@ -108,11 +108,11 @@ export default class PlatformUser {
         if (htmlResponse.isSuccess()) {
             // Prepare cheerio
             const $ = cheerio.load(htmlResponse.value);
-
+            
             // Parse the elements
             this._name = $(MEMBER.NAME).text();
             this._title = $(MEMBER.TITLE).text();
-            this._banners = $(MEMBER.BANNERS).toArray().map((idx, el) => $(el).text().trim()).filter(el => !el);
+            this._banners = $(MEMBER.BANNERS).toArray().map((el, idx) => $(el).text().trim()).filter(el => el);
             this._avatar = $(MEMBER.AVATAR).attr("src");
             this._followed = $(MEMBER.FOLLOWED).text() === "Unfollow";
             this._ignored = $(MEMBER.IGNORED).text() === "Unignore";
@@ -136,4 +136,5 @@ export default class PlatformUser {
     }
 
     //#endregion Public method
+
 }
