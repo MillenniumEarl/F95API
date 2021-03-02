@@ -10,17 +10,17 @@ import { IBasic, TAuthor, TEngine, TExternalPlatform, TStatus } from "../interfa
 import shared, { TPrefixDict } from "../shared.js";
 import { ILink, IPostElement } from "./post-parse.js";
 
+export async function getHandiworkInformation<T extends IBasic>(url: string): Promise<T>
+
+export async function getHandiworkInformation<T extends IBasic>(url: string): Promise<T>
+
 /**
  * Gets information of a particular handiwork from its thread.
- * 
+ *
  * If you don't want to specify the object type, use `HandiWork`.
- * 
+ *
  * @todo It does not currently support assets.
  */
-export async function getHandiworkInformation<T extends IBasic>(url: string): Promise<T>
-
-export async function getHandiworkInformation<T extends IBasic>(url: string): Promise<T>
-
 export default async function getHandiworkInformation<T extends IBasic>(arg: string | Thread): Promise<T> {
     // Local variables
     let thread: Thread = null;
