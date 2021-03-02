@@ -9,7 +9,7 @@ import Post from "./post.js";
 import PlatformUser from "./platform-user.js";
 import { TCategory, TRating } from "../interfaces.js";
 import { urls } from "../constants/url.js";
-import { THREAD } from "../constants/css-selector.js";
+import { POST, THREAD } from "../constants/css-selector.js";
 import { fetchHTML, fetchPOSTResponse } from "../network-helper.js";
 import Shared from "../shared.js";
 import { GenericAxiosError, UnexpectedResponseContentType } from "./errors.js";
@@ -63,6 +63,8 @@ export default class Thread {
     public get prefixes() { return this._prefixes; }
     /**
      * List of posts belonging to the thread.
+     * 
+     * Each element must be loaded with the `fetch` method before it can be used.
      */
     public get posts() { return this._posts; }
     /**
@@ -120,23 +122,20 @@ export default class Thread {
     /**
      * Gets all posts on a page.
      */
-    private async parsePostsInPage(html: string): Promise<Post[]> {
+    private parsePostsInPage(html: string): Post[] {
         // Load the HTML
         const $ = cheerio.load(html);
 
         // Start parsing the posts
-        const postPromises = $(THREAD.POSTS_IN_PAGE)
+        const posts = $(THREAD.POSTS_IN_PAGE)
             .toArray()
-            .map(async (idx, el) => {
-                // Parse post data
-                const p = new Post();
-                await p.fetchData($(el));
-
-                return p;
+            .map((el, idx) => {
+                const id = $(el).find(POST.ID).attr("id").replace("post-", "");
+                return new Post(parseInt(id));
             });
 
         // Wait for the post to be fetched
-        return await Promise.all(postPromises);
+        return posts;
     }
 
     /**
@@ -148,13 +147,10 @@ export default class Thread {
         const htmlPromiseList: TFetchResult[] = [];
         const fetchedPosts: Post[] = [];
 
-        // Set the maximum number of post to 100
-        await this.setMaximumPostsForPage(100);
-
         // Fetch posts for every page in the thread
         for (let i = 1; i <= pages; i++) {
             // Prepare the URL
-            const url = new URL(`page-${i}`, urls.F95_BASE_URL).toString();
+            const url = new URL(`page-${i}`, `${this.url}/`).toString();
 
             // Fetch the HTML source
             const htmlResponse = fetchHTML(url);
@@ -167,9 +163,7 @@ export default class Thread {
         // Scrape the pages
         for (const response of responses) {
             if (response.isSuccess()) {
-                // Parse the posts
-                const posts = await this.parsePostsInPage(response.value);
-
+                const posts = this.parsePostsInPage(response.value);
                 fetchedPosts.push(...posts);
             } else throw response.value;
         }
@@ -219,6 +213,9 @@ export default class Thread {
     public async fetch() {
         // Prepare the url
         this._url = new URL(this.id.toString(), urls.F95_THREADS).toString();
+
+        // Set the maximum number of post to 100
+        await this.setMaximumPostsForPage(100);
 
         // Fetch the HTML source
         const htmlResponse = await fetchHTML(this.url);
