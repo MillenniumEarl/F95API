@@ -1,0 +1,7 @@
+{
+    "files.exclude": {
+        "**/.nyc_output": true,
+        "**/dist": true,
+        "**/node_modules": true
+    }
+}
