@@ -13,37 +13,59 @@ const awritefile = promisify(fs.writeFile);
 const aunlinkfile = promisify(fs.unlink);
 
 export default class Session {
-    //#region Properties
+
+    //#region Fields
+
     /**
     * Max number of days the session is valid.
     */
     private readonly SESSION_TIME: number = 1;
+    private _path: string;
+    private _isMapped: boolean;
+    private _created: Date;
+    private _hash: string;
+    private _token: string;
+
+    //#endregion Fields
+
+    //#region Getters
+
     /**
      * Path of the session map file on disk.
      */
-    private path: string  = null;
+    public get path() { return this._path; };
     /**
      * Indicates if the session is mapped on disk.
      */
-    private isMapped = null;
+    public get isMapped() { return this._isMapped; };
     /**
      * Date of creation of the session.
      */
-    private created = null;
+    public get created() { return this._created; };
     /**
      * MD5 hash of the username and the password.
      */
-    private hash = null;
-    //#endregion Properties
+    public get hash() { return this._hash; };
+    /**
+     * Token used to login to F95Zone.
+     */
+    public get token() { return this._token; };
 
+    //#endregion Getters
+
+    /**
+     * Initializes the session by setting the path for saving information to disk.
+     */
     constructor(path: string) {
-        this.path = path;
-        this.isMapped = fs.existsSync(this.path);
-        this.created = new Date(Date.now());
-        this.hash = null;
+        this._path = path;
+        this._isMapped = fs.existsSync(this.path);
+        this._created = new Date(Date.now());
+        this._hash = null;
+        this._token = null;
     }
 
     //#region Private Methods
+
     /**
      * Get the difference in days between two dates.
      */
@@ -62,31 +84,36 @@ export default class Session {
      */
     private toJSON(): Record<string, unknown> {
         return {
-            created: this.created,
-            hash: this.hash,
+            _created: this._created,
+            _hash: this._hash,
         };
     }
+
     //#endregion Private Methods
 
     //#region Public Methods
+
     /**
      * Create a new session
      */
-    create(username: string, password: string):void {
-        // First, create the hash of the credentials
+    create(username: string, password: string, token: string): void {
+        // First, create the _hash of the credentials
         const value = `${username}%%%${password}`;
-        this.hash = md5(value);
+        this._hash = md5(value);
+
+        // Set the token
+        this._token = token;
 
         // Update the creation date
-        this.created = new Date(Date.now());
+        this._created = new Date(Date.now());
     }
 
     /**
      * Save the session to disk.
      */
-    async save() : Promise<void> {
+    async save(): Promise<void> {
         // Update the creation date
-        this.created = new Date(Date.now());
+        this._created = new Date(Date.now());
 
         // Convert data
         const json = this.toJSON();
@@ -100,38 +127,45 @@ export default class Session {
      * Load the session from disk.
      */
     async load(): Promise<void> {
-        // Read data
-        const data = await areadfile(this.path, { encoding: 'utf-8', flag: 'r' });
-        const json = JSON.parse(data);
+        if (this.isMapped) {
+            // Read data
+            const data = await areadfile(this.path, { encoding: 'utf-8', flag: 'r' });
+            const json = JSON.parse(data);
 
-        // Assign values
-        this.created = json.created;
-        this.hash = json.hash;
+            // Assign values
+            this._created = json._created;
+            this._hash = json._hash;
+        }
     }
 
     /**
      * Delete the session from disk.
      */
     async delete(): Promise<void> {
-        await aunlinkfile(this.path);
+        if (this.isMapped) {
+            await aunlinkfile(this.path);
+        }
     }
 
     /**
      * Check if the session is valid.
      */
-    isValid(username:string, password:string) : boolean {
+    isValid(username: string, password: string): boolean {
         // Get the number of days from the file creation
-        const diff = this.dateDiffInDays(new Date(Date.now()), this.created);
+        const diff = this.dateDiffInDays(new Date(Date.now()), this._created);
 
         // The session is valid if the number of days is minor than SESSION_TIME
         let valid = diff < this.SESSION_TIME;
         
         if(valid) {
-            // Check the hash
+            // Check the _hash
             const value = `${username}%%%${password}`;
-            valid = md5(value) === this.hash;
+            valid = md5(value) === this._hash;
         }
+
         return valid;
     }
+
     //#endregion Public Methods
+
 }
