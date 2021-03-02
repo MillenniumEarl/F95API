@@ -90,7 +90,7 @@ export default class Post {
             });
 
             // Finally parse the post
-            this.parsePost($(post));
+            this.parsePost($, $(post));
         } else throw htmlResponse.value;
     }
 
@@ -98,7 +98,7 @@ export default class Post {
 
     //#region Private methods
 
-    private parsePost(post: cheerio.Cheerio): void {
+    private parsePost($: cheerio.Root, post: cheerio.Cheerio): void {
         // Find post's ID
         const sid: string = post.find(POST.ID).attr("id").replace("post-", "");
         this._id = parseInt(sid);
@@ -125,8 +125,8 @@ export default class Post {
         this._message = post.find(POST.BODY).text();
         
         // Parse post's body
-        const $ = cheerio.load(post.html());
-        this._body = parseF95ThreadPost($, post);
+        const body = post.find(POST.BODY);
+        this._body = parseF95ThreadPost($, body);
     }
 
     //#endregion
