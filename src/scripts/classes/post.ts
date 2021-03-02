@@ -65,38 +65,33 @@ export default class Post {
 
     //#endregion Getters
 
+    constructor(id: number) { this._id = id; }
+
     //#region Public methods
-
-    public async fetchData(id: number): Promise<void>;
-
-    public async fetchData(article: cheerio.Cheerio): Promise<void>;
 
     /**
      * Gets the post data starting from its unique ID for the entire platform.
      */
-    public async fetchData(arg: number | cheerio.Cheerio): Promise<void> {
-        if (typeof arg === "number") {
-            // Fetch HTML page containing the post
-            const url = new URL(arg.toString(), urls.F95_POSTS).toString();
-            const htmlResponse = await fetchHTML(url);
+    public async fetch() {
+        // Fetch HTML page containing the post
+        const url = new URL(this.id.toString(), urls.F95_POSTS).toString();
+        const htmlResponse = await fetchHTML(url);
 
-            if (htmlResponse.isSuccess()) {
-                // Load cheerio and find post
-                const $ = cheerio.load(htmlResponse.value);
+        if (htmlResponse.isSuccess()) {
+            // Load cheerio and find post
+            const $ = cheerio.load(htmlResponse.value);
 
-                const post = $(THREAD.POSTS_IN_PAGE).toArray().find((el, idx) => {
-                    // Fetch the ID and check if it is what we are searching
-                    const sid: string = $(el).find(POST.ID).attr("id").replace("post-", "");
-                    const id = parseInt(sid);
+            const post = $(THREAD.POSTS_IN_PAGE).toArray().find((el, idx) => {
+                // Fetch the ID and check if it is what we are searching
+                const sid: string = $(el).find(POST.ID).attr("id").replace("post-", "");
+                const id = parseInt(sid);
 
-                    if (id === arg) return el;
-                });
+                if (id === this.id) return el;
+            });
 
-                // Finally parse the post
-                this.parsePost($(post));
-            } else throw htmlResponse.value;
-            
-        } else this.parsePost(arg);
+            // Finally parse the post
+            this.parsePost($(post));
+        } else throw htmlResponse.value;
     }
 
     //#endregion Public methods
