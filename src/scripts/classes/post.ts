@@ -67,13 +67,13 @@ export default class Post {
 
     //#region Public methods
 
-    /**
-     * Gets the post data starting from its unique ID for the entire platform.
-     */
     public async fetchData(id: number): Promise<void>;
 
     public async fetchData(article: cheerio.Cheerio): Promise<void>;
 
+    /**
+     * Gets the post data starting from its unique ID for the entire platform.
+     */
     public async fetchData(arg: number | cheerio.Cheerio): Promise<void> {
         if (typeof arg === "number") {
             // Fetch HTML page containing the post
