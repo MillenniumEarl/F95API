@@ -218,7 +218,7 @@ export default class Thread {
      */
     public async fetch() {
         // Prepare the url
-        this._url = new URL(this.id.toString(), urls.F95_BASE_URL).toString();
+        this._url = new URL(this.id.toString(), urls.F95_THREADS).toString();
 
         // Fetch the HTML source
         const htmlResponse = await fetchHTML(this.url);
