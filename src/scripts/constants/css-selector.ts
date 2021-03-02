@@ -74,7 +74,7 @@ export const POST = {
      */
     NUMBER: "* ul.message-attribution-opposite > li > a:not([id])[rel=\"nofollow\"]",
     /**
-     * Unique ID of the post in the F95Zone platform.
+     * Unique ID of the post in the F95Zone platform in the `id` attribute.
      * 
      * For use within a `threads.POSTS_IN_PAGE` selector.
      */
