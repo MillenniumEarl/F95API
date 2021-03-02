@@ -7,7 +7,7 @@ import { authenticate, urlExists, isF95URL } from "./scripts/network-helper.js";
 import { getUserData as retrieveUserData } from "./scripts/scrape-data/scrape-user.js";
 import fetchLatestHandiworkURLs from "./scripts/fetch-data/fetch-latest.js";
 import fetchPlatformData from "./scripts/fetch-data/fetch-platform-data.js";
-import { getHandiworkInformation } from "./scripts/scrape-data/handiwork-parse.js";
+import getHandiworkInformation from "./scripts/scrape-data/handiwork-parse.js";
 import { IBasic } from "./scripts/interfaces.js";
 
 // Classes from file
