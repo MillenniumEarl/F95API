@@ -228,6 +228,7 @@ export default class Thread {
             this._tags = tagArray.map(el => $(el).text().trim());
             this._prefixes = prefixArray.map(el => $(el).text().trim());
             this._owner = new PlatformUser(parseInt(ownerID));
+            await this._owner.fetch();
             this._rating = this.parseRating(JSONLD);
             this._category = JSONLD["articleSection"] as TCategory;
 

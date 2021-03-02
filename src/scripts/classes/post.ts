@@ -90,7 +90,7 @@ export default class Post {
             });
 
             // Finally parse the post
-            this.parsePost($, $(post));
+            await this.parsePost($, $(post));
         } else throw htmlResponse.value;
     }
 
@@ -98,7 +98,7 @@ export default class Post {
 
     //#region Private methods
 
-    private parsePost($: cheerio.Root, post: cheerio.Cheerio): void {
+    private async parsePost($: cheerio.Root, post: cheerio.Cheerio): Promise<void> {
         // Find post's ID
         const sid: string = post.find(POST.ID).attr("id").replace("post-", "");
         this._id = parseInt(sid);
@@ -117,6 +117,7 @@ export default class Post {
 
         // Find post's owner
         this._owner = new PlatformUser(0);
+        await this._owner.fetch();
 
         // Find if the post is bookmarked
         this._bookmarked = post.find(POST.BOOKMARKED).length !== 0;
