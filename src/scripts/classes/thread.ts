@@ -12,7 +12,7 @@ import { urls } from "../constants/url.js";
 import { POST, THREAD } from "../constants/css-selector.js";
 import { fetchHTML, fetchPOSTResponse } from "../network-helper.js";
 import Shared from "../shared.js";
-import { GenericAxiosError, UnexpectedResponseContentType } from "./errors.js";
+import { GenericAxiosError, ParameterError, UnexpectedResponseContentType } from "./errors.js";
 import { Result } from "./result.js";
 import { getJSONLD, TJsonLD } from "../scrape-data/json-ld.js";
 
@@ -23,12 +23,12 @@ export default class Thread {
 
     //#region Fields
 
+    private POST_FOR_PAGE: number = 20;
     private _id: number;
     private _url: string;
     private _title: string;
     private _tags: string[];
     private _prefixes: string[];
-    private _posts: Post[];
     private _rating: TRating;
     private _owner: PlatformUser;
     private _publication: Date;
@@ -61,12 +61,6 @@ export default class Thread {
      * Prefixes associated with the thread
      */
     public get prefixes() { return this._prefixes; }
-    /**
-     * List of posts belonging to the thread.
-     * 
-     * Each element must be loaded with the `fetch` method before it can be used.
-     */
-    public get posts() { return this._posts; }
     /**
      * Rating assigned to the thread.
      */
@@ -214,9 +208,6 @@ export default class Thread {
         // Prepare the url
         this._url = new URL(this.id.toString(), urls.F95_THREADS).toString();
 
-        // Set the maximum number of post to 100
-        await this.setMaximumPostsForPage(100);
-
         // Fetch the HTML source
         const htmlResponse = await fetchHTML(this.url);
 
@@ -244,10 +235,44 @@ export default class Thread {
             if (luxon.DateTime.fromISO(modified).isValid) this._modified = new Date(modified);
             if (luxon.DateTime.fromISO(published).isValid) this._publication = new Date(published);
 
-            // Parse all the posts
-            const pages = parseInt($(THREAD.LAST_PAGE).first().text());
-            this._posts = await this.fetchPosts(pages);
+        } else throw htmlResponse.value;
+    }
 
+    /**
+     * Gets the post in the `index` position with respect to the posts in the thread.
+     * 
+     * `index` must be greater or equal to 1.
+     * If the post is not found, `null` is returned.
+     */
+    public async getPost(index: number): Promise<Post|null> {
+        // Validate parameters
+        if (index < 1) throw new ParameterError("Index must be greater or equal than 1");
+
+        // Local variables
+        let returnValue = null;
+
+        // Get the page number of the post
+        const page = Math.ceil(index / this.POST_FOR_PAGE);
+        
+        // Fetch the page
+        const url = new URL(`page-${page}`, `${this.url}/`).toString();
+        const htmlResponse = await fetchHTML(url);
+
+        if (htmlResponse.isSuccess()) {
+            // Parse the post
+            const posts = this.parsePostsInPage(htmlResponse.value);
+
+            // Find the searched post
+            for (const p of posts) {
+                await p.fetch();
+
+                if (p.number === index) {
+                    returnValue = p;
+                    break;
+                }
+            }
+            
+            return returnValue;
         } else throw htmlResponse.value;
     }
 
