@@ -35,7 +35,7 @@ interface ICategoryResource {
  * Represents the set of tags present on the platform-
  */
 interface ILatestResource {
-    prefixes: ICategoryResource[],
+    prefixes: { [s: string]: ICategoryResource[] },
     tags: TPrefixDict,
     options: string
 }
@@ -129,13 +129,18 @@ function assignLatestPlatformData(data: ILatestResource): void {
     const scrapedData = {};
 
     // Parse and assign the values that are NOT tags
-    for (const p of data.prefixes) {
-        // Prepare the dict
-        const dict: TPrefixDict = {};
-        for (const e of p.prefixes) dict[e.id] = e.name.replace("&#039;", "'");
+    for (const [key, value] of Object.entries(data.prefixes)) {
+        for (const res of value) {
+            // Prepare the dict
+            const dict: TPrefixDict = {};
 
-        // Save the property
-        scrapedData[p.name] = dict;
+            for (const e of res.prefixes) {
+                dict[e.id] = e.name.replace("&#039;", "'");
+            }
+
+            // Save the property
+            scrapedData[res.name] = dict;
+        }
     }
 
     // Save the values
