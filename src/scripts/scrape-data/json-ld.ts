@@ -5,7 +5,7 @@ import cheerio from "cheerio";
 
 // Modules from file
 import shared from "../shared.js";
-import { selectors as f95Selector } from "../constants/css-selector.js";
+import { THREAD } from "../constants/css-selector.js";
 
 /**
  * Represents information contained in a JSON+LD tag.
@@ -21,7 +21,7 @@ export function getJSONLD(body: cheerio.Cheerio): TJsonLD {
     shared.logger.trace("Extracting JSON-LD data...");
 
     // Fetch the JSON-LD data
-    const structuredDataElements = body.find(f95Selector.GT_JSONLD);
+    const structuredDataElements = body.find(THREAD.JSONLD);
 
     // Parse the data
     const values = structuredDataElements.map((idx, el) => parseJSONLD(el)).get();

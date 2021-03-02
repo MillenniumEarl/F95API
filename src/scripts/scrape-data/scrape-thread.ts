@@ -8,7 +8,7 @@ import luxon from "luxon";
 import shared from "../shared.js";
 import { fetchHTML } from "../network-helper.js";
 import { getJSONLD, TJsonLD } from "./json-ld.js";
-import { selectors as f95Selector } from "../constants/css-selector.js";
+import { selectors as f95Selector, THREAD } from "../constants/css-selector.js";
 import HandiWork from "../classes/handiwork/handiwork.js";
 import { TRating, IBasic, TAuthor, TExternalPlatform, TEngine, TStatus, TCategory } from "../interfaces.js";
 import { ILink, IPostElement, parseF95ThreadPost } from "./post-parse.js";
@@ -32,11 +32,11 @@ export async function getHandiworkInformation<T extends IBasic>(url: string): Pr
 
         // Extract data
         const postData = parseF95ThreadPost($, mainPost);
-        const TJsonLD = getJSONLD(body);
+        const JSONLD = getJSONLD(body);
 
         // Fill in the HandiWork element with the information obtained
         const hw: HandiWork = {} as HandiWork;
-        fillWithJSONLD(hw, TJsonLD);
+        fillWithJSONLD(hw, JSONLD);
         fillWithPostData(hw, postData);
         fillWithPrefixes(hw, body);
         hw.tags = extractTags(body);
@@ -141,7 +141,6 @@ function toUpperCaseArray(a: string[]): string[] {
 }
 
 //#endregion Generic Utility
-
 
 //#region Prefix Utility
 
@@ -280,7 +279,7 @@ function extractTags(body: cheerio.Cheerio): string[] {
     shared.logger.trace("Extracting tags...");
 
     // Get the game tags
-    const tagResults = body.find(f95Selector.GT_TAGS);
+    const tagResults = body.find(THREAD.TAGS);
     return tagResults.map(function parseGameTags(idx, el) {
         return cheerio(el).text().trim();
     }).get();
@@ -304,7 +303,7 @@ function fillWithPrefixes(hw: HandiWork, body: cheerio.Cheerio) {
     hw.prefixes = [];
 
     // Obtain the title prefixes
-    const prefixeElements = body.find(f95Selector.GT_TITLE_PREFIXES);
+    const prefixeElements = body.find(THREAD.PREFIXES);
 
     prefixeElements.each(function parseGamePrefix(idx, el) {
         // Obtain the prefix text
