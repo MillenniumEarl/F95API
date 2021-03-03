@@ -114,6 +114,12 @@ export const POST = {
      */
     ID: "span[id^=\"post\"]",
     /**
+     * Unique ID of the post author in the `data-user-id` attribute.
+     * 
+     * For use within a `THREAD.POSTS_IN_PAGE` selector.
+     */
+    OWNER_ID: "* div.message-cell--user > * a[data-user-id]",
+    /**
      * Main body of the post where the message written by the user is contained.
      * 
      * For use within a `THREAD.POSTS_IN_PAGE` selector.
