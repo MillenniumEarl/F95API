@@ -23,6 +23,14 @@ export const selectors = {
     BK_TIME: "div.contentRow-minor > * time",
 };
 
+export const GENERIC = {
+    /**
+     * The ID of the user currently logged into 
+     * the platform in the attribute `data-user-id`.
+     */
+    CURRENT_USER_ID: "span.avatar[data-user-id]",
+}
+
 export const WATCHED_THREAD = {
     /**
      * List of elements containing the data of the watched threads.
