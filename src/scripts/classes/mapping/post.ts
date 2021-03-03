@@ -116,7 +116,8 @@ export default class Post {
         this._lastEdit = new Date(sLastEdit);
 
         // Find post's owner
-        this._owner = new PlatformUser(0);
+        const sOwnerID: string = post.find(POST.OWNER_ID).attr("data-user-id").trim();
+        this._owner = new PlatformUser(parseInt(sOwnerID));
         await this._owner.fetch();
 
         // Find if the post is bookmarked
