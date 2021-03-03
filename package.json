@@ -27,8 +27,7 @@
     "publish": "npm publish",
     "test": "nyc --reporter=text mocha './test/index-test.ts'",
     "report-coverage": "nyc report --reporter=text-lcov > coverage.lcov && codecov -t 38ad72bf-a29d-4c2e-9827-96cbe037afd2",
-    "run-example": "npm run compile && node ./dist/example.ts",
-    "run-devtest": "npm run compile && node ./dist/test.js",
+    "run-example": "npm run compile && node ./dist/example.js",
     "test-ts": "set TS_NODE_COMPILER_OPTIONS='{\"module\": \"commonjs\" }' mocha -r ts-node/register 'tests/**/*.ts'"
   },
   "engines": {
@@ -53,6 +52,7 @@
     "@types/md5": "^2.3.0",
     "@types/mocha": "^8.2.0",
     "@types/node": "^14.14.27",
+    "@types/source-map-support": "^0.5.3",
     "@types/tough-cookie": "^4.0.0",
     "@typescript-eslint/eslint-plugin": "^4.15.0",
     "@typescript-eslint/parser": "^4.15.0",
@@ -62,8 +62,7 @@
     "lodash": "^4.17.20",
     "mocha": "^8.3.0",
     "nyc": "^15.1.0",
-    "source-map-loader": "^2.0.1",
-    "ts-loader": "^8.0.17",
+    "source-map-support": "^0.5.19",
     "ts-mocha": "^8.0.0",
     "ts-node": "^9.1.1",
     "typescript": "^4.2.0-insiders.20210210"
