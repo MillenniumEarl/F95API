@@ -173,9 +173,9 @@ export default class Thread {
     private parseRating(data: TJsonLD): TRating {
         const ratingTree = data["aggregateRating"] as TJsonLD;
         const rating: TRating = {
-            average: parseFloat(ratingTree["ratingValue"] as string),
-            best: parseInt(ratingTree["bestRating"] as string),
-            count: parseInt(ratingTree["ratingCount"] as string),
+            average: ratingTree ? parseFloat(ratingTree["ratingValue"] as string) : 0,
+            best: ratingTree ? parseInt(ratingTree["bestRating"] as string) : 0,
+            count: ratingTree ? parseInt(ratingTree["ratingCount"] as string) : 0,
         };
 
         return rating;
