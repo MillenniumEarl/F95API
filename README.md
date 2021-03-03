@@ -59,7 +59,7 @@ changelog: Latest changelog available
 The serialization in JSON format of this object is possible through `JSON.stringify()` while the deserialization must happen through the static method `GameInfo.fromJSON()`.
 
 ## User data
-User data (after authentication) can be stored in a UserData object, consisting of the following fields:
+User data (after authentication) can be stored in a UserProfile object, consisting of the following fields:
 
 ```
 username: Name of the logged in user
