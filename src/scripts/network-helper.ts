@@ -39,6 +39,9 @@ const commonConfig = {
      * Jar of cookies to send along the request.
      */
     jar: shared.session.cookieJar,
+    validateStatus: function (status: number) {
+        return status < 500; // Resolve only if the status code is less than 500
+    }
 };
 
 /**
@@ -143,6 +146,7 @@ export async function fetchGETResponse(url: string): Promise<Result<GenericAxios
         const response = await axios.get(secureURL, commonConfig);
         return success(response);
     } catch (e) {
+        console.log(e.response);
         shared.logger.error(`(GET) Error ${e.message} occurred while trying to fetch ${secureURL}`);
         const genericError = new GenericAxiosError({
             id: 1,
