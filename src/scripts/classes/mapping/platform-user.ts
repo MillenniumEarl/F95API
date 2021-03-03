@@ -7,7 +7,7 @@ import luxon from "luxon";
 // Modules from files
 import { urls } from "../../constants/url.js";
 import { fetchHTML } from "../../network-helper.js";
-import { MEMBER } from "../../constants/css-selector.js";
+import { GENERIC, MEMBER } from "../../constants/css-selector.js";
 
 /**
  * Represents a generic user registered on the platform.
@@ -28,6 +28,7 @@ export default class PlatformUser {
     private _lastSeen: Date;
     private _followed: boolean;
     private _ignored: boolean;
+    private _private: boolean;
     private _avatar: string;
     private _amountDonated: number;
 
@@ -84,6 +85,10 @@ export default class PlatformUser {
      */
     public get ignored() { return this._ignored; }
     /**
+     * Indicates that the profile is private and not viewable by the user.
+     */
+    public get private() { return this._private; }
+    /**
      * URL of the image used as the user's avatar.
      */
     public get avatar() { return this._avatar; }
@@ -116,29 +121,35 @@ export default class PlatformUser {
             // Prepare cheerio
             const $ = cheerio.load(htmlResponse.value);
             
-            // Parse the elements
-            this._name = $(MEMBER.NAME).text();
-            this._title = $(MEMBER.TITLE).text();
-            this._banners = $(MEMBER.BANNERS).toArray().map((el, idx) => $(el).text().trim()).filter(el => el);
-            this._avatar = $(MEMBER.AVATAR).attr("src");
-            this._followed = $(MEMBER.FOLLOWED).text() === "Unfollow";
-            this._ignored = $(MEMBER.IGNORED).text() === "Unignore";
-            this._messages = parseInt($(MEMBER.MESSAGES).text());
-            this._reactionScore = parseInt($(MEMBER.REACTION_SCORE).text());
-            this._points = parseInt($(MEMBER.POINTS).text());
-            this._ratingsReceived = parseInt($(MEMBER.RATINGS_RECEIVED).text());
-            
-            // Parse date
-            const joined = $(MEMBER.JOINED)?.attr("datetime");
-            if (luxon.DateTime.fromISO(joined).isValid) this._joined = new Date(joined);
+            // Check if the profile is private
+            this._private = $(GENERIC.ERROR_BANNER)
+                ?.text()
+                .trim() === "This member limits who may view their full profile.";
 
-            const lastSeen = $(MEMBER.LAST_SEEN)?.attr("datetime");
-            if (luxon.DateTime.fromISO(lastSeen).isValid) this._joined = new Date(lastSeen);
+            if (!this._private) {
+                // Parse the elements
+                this._name = $(MEMBER.NAME).text();
+                this._title = $(MEMBER.TITLE).text();
+                this._banners = $(MEMBER.BANNERS).toArray().map((el, idx) => $(el).text().trim()).filter(el => el);
+                this._avatar = $(MEMBER.AVATAR).attr("src");
+                this._followed = $(MEMBER.FOLLOWED).text() === "Unfollow";
+                this._ignored = $(MEMBER.IGNORED).text() === "Unignore";
+                this._messages = parseInt($(MEMBER.MESSAGES).text());
+                this._reactionScore = parseInt($(MEMBER.REACTION_SCORE).text());
+                this._points = parseInt($(MEMBER.POINTS).text());
+                this._ratingsReceived = parseInt($(MEMBER.RATINGS_RECEIVED).text());
 
-            // Parse donation
-            const donation = $(MEMBER.AMOUNT_DONATED)?.text().replace("$", "");
-            this._amountDonated = donation ? parseInt(donation) : 0;
+                // Parse date
+                const joined = $(MEMBER.JOINED)?.attr("datetime");
+                if (luxon.DateTime.fromISO(joined).isValid) this._joined = new Date(joined);
 
+                const lastSeen = $(MEMBER.LAST_SEEN)?.attr("datetime");
+                if (luxon.DateTime.fromISO(lastSeen).isValid) this._joined = new Date(lastSeen);
+
+                // Parse donation
+                const donation = $(MEMBER.AMOUNT_DONATED)?.text().replace("$", "");
+                this._amountDonated = donation ? parseInt(donation) : 0;
+            }
         } else throw htmlResponse.value;
     }
 

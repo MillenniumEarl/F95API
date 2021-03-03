@@ -29,6 +29,10 @@ export const GENERIC = {
      * the platform in the attribute `data-user-id`.
      */
     CURRENT_USER_ID: "span.avatar[data-user-id]",
+    /**
+     * Banner containing any error messages as text.
+     */
+    ERROR_BANNER: "div.p-body-pageContent > div.blockMessage",
 }
 
 export const WATCHED_THREAD = {
