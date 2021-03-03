@@ -7,12 +7,5 @@
             "command": "npm run test",
             "cwd": "${workspaceFolder}"
         },
-        {
-            "type": "node-terminal",
-            "name": "Devtest",
-            "request": "launch",
-            "command": "npm run run-devtest",
-            "cwd": "${workspaceFolder}"
-        }
     ]
 }
