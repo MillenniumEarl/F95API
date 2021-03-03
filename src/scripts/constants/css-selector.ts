@@ -23,6 +23,32 @@ export const selectors = {
     BK_TIME: "div.contentRow-minor > * time",
 };
 
+export const WATCHED_THREAD = {
+    /**
+     * List of elements containing the data of the watched threads.
+     */
+    BODIES: "div.structItem-cell--main",
+    /**
+     * Link element containing the partial URL 
+     * of the thread in the `href` attribute.
+     * 
+     * It may be followed by the `/unread` segment.
+     * 
+     * For use within a `WATCHED_THREAD.BODIES` selector.
+     */
+    URL: "div > a[data-tp-primary]",
+    /**
+     * Name of the forum to which the thread belongs as text.
+     * 
+     * For use within a `WATCHED_THREAD.BODIES` selector.
+     */
+    FORUM: "div.structItem-cell--main > div.structItem-minor > ul.structItem-parts > li:last-of-type > a",
+    /**
+     * Index of the last page available as text.
+     */
+    LAST_PAGE: "ul.pageNav-main > li:last-child > a"
+}
+
 export const THREAD = {
     /**
      * Number of pages in the thread (as text of the element).
@@ -70,37 +96,37 @@ export const POST = {
     /**
      * Unique post number for the current thread. 
      * 
-     * For use within a `threads.POSTS_IN_PAGE` selector.
+     * For use within a `THREAD.POSTS_IN_PAGE` selector.
      */
     NUMBER: "* ul.message-attribution-opposite > li > a:not([id])[rel=\"nofollow\"]",
     /**
      * Unique ID of the post in the F95Zone platform in the `id` attribute.
      * 
-     * For use within a `threads.POSTS_IN_PAGE` selector.
+     * For use within a `THREAD.POSTS_IN_PAGE` selector.
      */
     ID: "span[id^=\"post\"]",
     /**
      * Main body of the post where the message written by the user is contained.
      * 
-     * For use within a `threads.POSTS_IN_PAGE` selector.
+     * For use within a `THREAD.POSTS_IN_PAGE` selector.
      */
     BODY: "* article.message-body > div.bbWrapper",
     /**
      * Publication date of the post contained in the `datetime` attribute as an ISO date.
      * 
-     * For use within a `threads.POSTS_IN_PAGE` selector.
+     * For use within a `THREAD.POSTS_IN_PAGE` selector.
      */
     PUBLISH_DATE: "* div.message-attribution-main > a > time",
     /**
      * Last modified date of the post contained in the `datetime` attribute as the ISO date.
      * 
-     * For use within a `threads.POSTS_IN_PAGE` selector.
+     * For use within a `THREAD.POSTS_IN_PAGE` selector.
      */
     LAST_EDIT: "* div.message-lastEdit > time",
     /**
      * Gets the element only if the post has been bookmarked.
      * 
-     * For use within a `threads.POSTS_IN_PAGE` selector.
+     * For use within a `THREAD.POSTS_IN_PAGE` selector.
      */
     BOOKMARKED: "* ul.message-attribution-opposite >li > a[title=\"Bookmark\"].is-bookmarked",
 };
