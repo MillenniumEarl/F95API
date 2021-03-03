@@ -24,14 +24,14 @@ export default async function fetchHandiworkURLs(query: HandiworkSearchQuery, li
     // Convert the query
     if (searchType === "latest") {
         // Cast the query
-        const castedQuery = query.cast<LatestSearchQuery>();
+        const castedQuery = query.cast<LatestSearchQuery>("LatestSearchQuery");
 
         // Fetch the urls
         urls = await fetchLatestHandiworkURLs(castedQuery, limit);
     }
     else {
         // Cast the query
-        const castedQuery = query.cast<ThreadSearchQuery>();
+        const castedQuery = query.cast<ThreadSearchQuery>("ThreadSearchQuery");
 
         // Fetch the urls
         urls = await fetchThreadHandiworkURLs(castedQuery, limit);
