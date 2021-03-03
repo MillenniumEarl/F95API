@@ -4,7 +4,6 @@
 import shared from "./scripts/shared.js";
 import search from "./scripts/search.js";
 import { authenticate, urlExists, isF95URL } from "./scripts/network-helper.js";
-import { getUserData as retrieveUserData } from "./scripts/scrape-data/scrape-user.js";
 import fetchLatestHandiworkURLs from "./scripts/fetch-data/fetch-latest.js";
 import fetchPlatformData from "./scripts/fetch-data/fetch-platform-data.js";
 import getHandiworkInformation from "./scripts/scrape-data/handiwork-parse.js";
@@ -13,21 +12,34 @@ import { IBasic } from "./scripts/interfaces.js";
 // Classes from file
 import Credentials from "./scripts/classes/credentials.js";
 import LoginResult from "./scripts/classes/login-result.js";
-import UserData from "./scripts/classes/user-data.js";
+import UserProfile from "./scripts/classes/mapping/user-profile.js";
 import LatestSearchQuery from "./scripts/classes/query/latest-search-query.js";
 import HandiworkSearchQuery from "./scripts/classes/query/handiwork-search-query.js";
 import HandiWork from "./scripts/classes/handiwork/handiwork.js";
+import { UserNotLogged } from "./scripts/classes/errors.js";
 
 //#region Global variables
+
 const USER_NOT_LOGGED = "User not authenticated, unable to continue";
+
 //#endregion
 
-//#region Export classes
-// module.exports.GameInfo = GameInfo;
-// module.exports.LoginResult = LoginResult;
-// module.exports.UserData = UserData;
-// module.exports.PrefixParser = PrefixParser;
-//#endregion Export classes
+//#region Re-export classes
+export { default as Animation } from "./scripts/classes/handiwork/animation.js";
+export { default as Asset } from "./scripts/classes/handiwork/asset.js";
+export { default as Comic } from "./scripts/classes/handiwork/comic.js";
+export { default as Game } from "./scripts/classes/handiwork/game.js";
+export { default as Handiwork } from "./scripts/classes/handiwork/handiwork.js";
+
+export { default as PlatformUser } from "./scripts/classes/mapping/platform-user.js";
+export { default as Post } from "./scripts/classes/mapping/post.js";
+export { default as Thread } from "./scripts/classes/mapping/thread.js";
+export { default as UserProfile } from "./scripts/classes/mapping/user-profile.js";
+
+export { default as HandiworkSearchQuery } from "./scripts/classes/query/handiwork-search-query.js";
+export { default as LatestSearchQuery } from "./scripts/classes/query/latest-search-query.js";
+export { default as ThreadSearchQuery } from "./scripts/classes/query/thread-search-query.js";
+//#endregion Re-export classes
 
 //#region Export properties
 /**
@@ -40,24 +52,32 @@ shared.logger.level = "warn"; // By default log only the warn messages
 /**
  * Indicates whether a user is logged in to the F95Zone platform or not.
  */
-export function isLogged(): boolean {
-    return shared.isLogged;
-};
+export function isLogged(): boolean { return shared.isLogged; };
 //#endregion Export properties
 
 //#region Export methods
+
 /**
  * Log in to the F95Zone platform.
+ * 
  * This **must** be the first operation performed before accessing any other script functions.
- * @returns {Promise<LoginResult>} Result of the operation
  */
 export async function login(username: string, password: string): Promise<LoginResult> {
-    /* istanbul ignore next */
-    if (shared.isLogged) {
-        shared.logger.info(`${username} already authenticated`);
-        return new LoginResult(true, `${username} already authenticated`);
+    // Try to load a previous session
+    await shared.session.load();
+
+    // If the session is valid, return
+    if (shared.session.isValid(username, password)) {
+        shared.logger.info(`Loading previous session for ${username}`);
+
+        // Load platform data
+        await fetchPlatformData();
+
+        shared.setIsLogged(true);
+        return new LoginResult(true, `${username} already authenticated (session)`);
     }
 
+    // Creating credentials and fetch unique platform token
     shared.logger.trace("Fetching token...");
     const creds = new Credentials(username, password);
     await creds.fetchToken();
@@ -66,15 +86,16 @@ export async function login(username: string, password: string): Promise<LoginRe
     const result = await authenticate(creds);
     shared.setIsLogged(result.success);
 
-    // Load platform data
     if (result.success) {
+        // Load platform data
         await fetchPlatformData();
-        shared.session.create(username, password, creds.token);
-    }
 
-    /* istambul ignore next */
-    if (result.success) shared.logger.info("User logged in through the platform");
-    else shared.logger.warn(`Error during authentication: ${result.message}`);
+        // Recreate the session, overwriting the old one
+        shared.session.create(username, password, creds.token);
+        await shared.session.save();
+
+        shared.logger.info("User logged in through the platform");
+    } else shared.logger.warn(`Error during authentication: ${result.message}`);
 
     return result;
 };
@@ -88,11 +109,8 @@ export async function checkIfHandiworkHasUpdate(hw: HandiWork): Promise<boolean>
     // Local variables
     let hasUpdate = false;
 
-    /* istanbul ignore next */
-    if (!shared.isLogged) {
-        shared.logger.warn(USER_NOT_LOGGED);
-        return false;
-    }
+    // Check if the user is logged
+    if (!shared.isLogged) throw new UserNotLogged(USER_NOT_LOGGED);
 
     // F95 change URL at every game update,
     // so if the URL is different an update is available
@@ -108,35 +126,28 @@ export async function checkIfHandiworkHasUpdate(hw: HandiWork): Promise<boolean>
 };
 
 /**
- * Starting from the name, it gets all the information about the game you are looking for.
+ * Search for one or more handiworks identified by a specific query.
+ * 
  * You **must** be logged in to the portal before calling this method.
- * @param {String} name Name of the game searched
- * @param {Boolean} mod Indicate if you are looking for mods or games
- * @returns {Promise<GameInfo[]>} List of information obtained where each item corresponds to
- * an identified game (in the case of homonymy of titles)
+ * 
+ * @param {HandiworkSearchQuery} query Parameters used for the search.
+ * @param {Number} limit Maximum number of results. Default: 10
  */
-export async function getHandiwork<T extends IBasic>(query: HandiworkSearchQuery, limit: number = 30): Promise<T[]> {
-    /* istanbul ignore next */
-    if (!shared.isLogged) {
-        shared.logger.warn(USER_NOT_LOGGED);
-        return null;
-    }
+export async function searchHandiwork<T extends IBasic>(query: HandiworkSearchQuery, limit: number = 10): Promise<T[]> {
+    // Check if the user is logged
+    if (!shared.isLogged) throw new UserNotLogged(USER_NOT_LOGGED);
 
     return await search<T>(query, limit);
 };
 
 /**
- * Starting from the url, it gets all the information 
- * about the handiwork requested.
+ * Given the url, it gets all the information about the handiwork requested.
  * 
  * You **must** be logged in to the portal before calling this method.
  */
 export async function getHandiworkFromURL<T extends IBasic>(url: string): Promise<T> {
-    /* istanbul ignore next */
-    if (!shared.isLogged) {
-        shared.logger.warn(USER_NOT_LOGGED);
-        return null;
-    }
+    // Check if the user is logged
+    if (!shared.isLogged) throw new UserNotLogged(USER_NOT_LOGGED);
 
     // Check URL validity
     const exists = await urlExists(url);
@@ -149,29 +160,36 @@ export async function getHandiworkFromURL<T extends IBasic>(url: string): Promis
 
 /**
  * Gets the data of the currently logged in user.
+ * 
  * You **must** be logged in to the portal before calling this method.
- * @returns {Promise<UserData>} Data of the user currently logged in
+ * 
+ * @returns {Promise<UserProfile>} Data of the user currently logged in
  */
-export async function getUserData(): Promise<UserData> {
-    /* istanbul ignore next */
-    if (!shared.isLogged) {
-        shared.logger.warn(USER_NOT_LOGGED);
-        return null;
-    }
+export async function getUserData(): Promise<UserProfile> {
+    // Check if the user is logged
+    if (!shared.isLogged) throw new UserNotLogged(USER_NOT_LOGGED);
 
-    return await retrieveUserData();
+    // Create and fetch profile data
+    const profile = new UserProfile();
+    await profile.fetch();
+    
+    return profile;
 };
 
 /**
  * Gets the latest updated games that match the specified parameters.
+ * 
  * You **must** be logged in to the portal before calling this method.
- * @param {LatestSearchQuery} query
- * Parameters used for the search.
- * @param {Number} limit Maximum number of results
+ * 
+ * @param {LatestSearchQuery} query Parameters used for the search.
+ * @param {Number} limit Maximum number of results. Default: 10
  */
-export async function getLatestUpdates<T extends IBasic>(query: LatestSearchQuery, limit: number): Promise<T[]> {
+export async function getLatestUpdates<T extends IBasic>(query: LatestSearchQuery, limit: number = 10): Promise<T[]> {
     // Check limit value
     if (limit <= 0) throw new Error("limit must be greater than 0");
+
+    // Check if the user is logged
+    if (!shared.isLogged) throw new UserNotLogged(USER_NOT_LOGGED);
 
     // Fetch the results
     const urls = await fetchLatestHandiworkURLs(query, limit);
@@ -180,4 +198,5 @@ export async function getLatestUpdates<T extends IBasic>(query: LatestSearchQuer
     const promiseList = urls.map((u: string) => getHandiworkInformation<T>(u));
     return await Promise.all(promiseList);
 };
+
 //#endregion
