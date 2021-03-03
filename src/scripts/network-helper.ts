@@ -4,7 +4,6 @@
 import axios, { AxiosResponse } from "axios";
 import cheerio from "cheerio";
 import axiosCookieJarSupport from "axios-cookiejar-support";
-import tough from "tough-cookie";
 
 // Modules from file
 import shared from "./shared.js";
@@ -21,13 +20,25 @@ const userAgent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15) " +
 // @ts-ignore
 axiosCookieJarSupport.default(axios);
 
+/**
+ * Common configuration used to send request via Axios.
+ */
 const commonConfig = {
+    /**
+     * Headers to add to the request.
+     */
     headers: {
         "User-Agent": userAgent,
         "Connection": "keep-alive"
     },
+    /**
+     * Specify if send credentials along the request.
+     */
     withCredentials: true,
-    jar: new tough.CookieJar() // Used to store the token in the PC
+    /**
+     * Jar of cookies to send along the request.
+     */
+    jar: shared.session.cookieJar,
 };
 
 /**
@@ -38,6 +49,7 @@ export async function fetchHTML(url: string): Promise<Result<GenericAxiosError |
     const response = await fetchGETResponse(url);
 
     if (response.isSuccess()) {
+        // Check if the response is a HTML source code
         const isHTML = response.value.headers["content-type"].includes("text/html");
 
         const unexpectedResponseError = new UnexpectedResponseContentType({
@@ -93,7 +105,7 @@ export async function authenticate(credentials: credentials, force: boolean = fa
 
             // Return the result of the authentication
             const result = errorMessage.trim() === "";
-            const message = errorMessage.trim() === "" ? "Authentication successful" : errorMessage;
+            const message = result ? "Authentication successful" : errorMessage;
             return new LoginResult(result, message);
         }
         else throw response.value;
@@ -127,6 +139,7 @@ export async function fetchGETResponse(url: string): Promise<Result<GenericAxios
 
     try {
         // Fetch and return the response
+        commonConfig.jar = shared.session.cookieJar;
         const response = await axios.get(secureURL, commonConfig);
         return success(response);
     } catch (e) {
@@ -142,10 +155,10 @@ export async function fetchGETResponse(url: string): Promise<Result<GenericAxios
 
 /**
  * Enforces the scheme of the URL is https and returns the new URL.
- * @returns {String} Secure URL or `null` if the argument is not a string
  */
 export function enforceHttpsUrl(url: string): string {
-    return isStringAValidURL(url) ? url.replace(/^(https?:)?\/\//, "https://") : null;
+    if (isStringAValidURL(url)) return url.replace(/^(https?:)?\/\//, "https://");
+    else throw new Error(`${url} is not a valid URL`);
 };
 
 /**
@@ -159,7 +172,6 @@ export function isF95URL(url: string): boolean {
  * Checks if the string passed by parameter has a 
  * properly formatted and valid path to a URL (HTTP/HTTPS).
  * @param {String} url String to check for correctness
- * @returns {Boolean} true if the string is a valid URL, false otherwise
  */
 export function isStringAValidURL(url: string): boolean {
     // Many thanks to Daveo at StackOverflow (https://preview.tinyurl.com/y2f2e2pc)
@@ -217,6 +229,7 @@ export async function fetchPOSTResponse(url: string, params: { [s: string]: stri
     for (const [key, value] of Object.entries(params)) urlParams.append(key, value);
 
     // Shallow copy of the common configuration object
+    commonConfig.jar = shared.session.cookieJar;
     const config = Object.assign({}, commonConfig);
 
     // Remove the cookies if forced
