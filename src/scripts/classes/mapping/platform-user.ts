@@ -94,11 +94,18 @@ export default class PlatformUser {
 
     //#endregion Getters
 
-    constructor(id: number) { this._id = id; }
+    constructor()
+    constructor(id: number)
+    constructor(id: number = undefined) { this._id = id; }
 
     //#region Public methods
 
+    public setID(id: number) { this._id = id; }
+
     public async fetch() {
+        // Check ID
+        if (!this.id && this.id < 1) throw new Error("Invalid user ID");
+
         // Prepare the URL
         const url = new URL(this.id.toString(), `${urls.F95_MEMBERS}/`).toString();
 
