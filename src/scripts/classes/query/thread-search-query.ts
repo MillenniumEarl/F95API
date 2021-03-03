@@ -43,8 +43,8 @@ export default class ThreadSearchQuery implements IQuery {
      * Minimum number of answers that the thread must possess.
      */
     public minimumReplies: number = 0;
-    public includedPrefixes: string[];
-    public category: TCategory;
+    public includedPrefixes: string[] = [];
+    public category: TCategory = null;
     /**
      * Results presentation order.
      */
@@ -114,9 +114,11 @@ export default class ThreadSearchQuery implements IQuery {
         }
 
         // Set the category
-        const catID = this.categoryToID(this.category).toString();
         url.searchParams.set("c[child_nodes]", "1"); // Always set
-        url.searchParams.set("c[nodes][0]", catID);
+        if (this.category) {
+            const catID = this.categoryToID(this.category).toString();
+            url.searchParams.set("c[nodes][0]", catID);
+        }
 
         // Set the other values
         url.searchParams.set("o", this.order.toString());
