@@ -59,6 +59,7 @@ async function main() {
 
         // Prepare the query
         const query: HandiworkSearchQuery = new HandiworkSearchQuery();
+        query.category = "games";
         query.keywords = gamename;
 
         // Fetch the first result
