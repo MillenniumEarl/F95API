@@ -71,7 +71,8 @@ export default class LatestSearchQuery implements IQuery {
         url.searchParams.set("cmd", "list");
 
         // Set the category
-        url.searchParams.set("cat", this.category);
+        const cat: TCategory = this.category === "mods" ? "games" : this.category;
+        url.searchParams.set("cat", cat);
 
         // Add tags and prefixes
         const parser = new PrefixParser();
