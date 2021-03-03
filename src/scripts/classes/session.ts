@@ -33,23 +33,23 @@ export default class Session {
     /**
      * Path of the session map file on disk.
      */
-    public get path() { return this._path; };
+    public get path() { return this._path; }
     /**
      * Indicates if the session is mapped on disk.
      */
-    public get isMapped() { return this._isMapped; };
+    public get isMapped() { return this._isMapped; }
     /**
      * Date of creation of the session.
      */
-    public get created() { return this._created; };
+    public get created() { return this._created; }
     /**
      * MD5 hash of the username and the password.
      */
-    public get hash() { return this._hash; };
+    public get hash() { return this._hash; }
     /**
      * Token used to login to F95Zone.
      */
-    public get token() { return this._token; };
+    public get token() { return this._token; }
 
     //#endregion Getters
 
@@ -86,6 +86,7 @@ export default class Session {
         return {
             _created: this._created,
             _hash: this._hash,
+            _token: this._token,
         };
     }
 
@@ -94,7 +95,7 @@ export default class Session {
     //#region Public Methods
 
     /**
-     * Create a new session
+     * Create a new session.
      */
     create(username: string, password: string, token: string): void {
         // First, create the _hash of the credentials
@@ -135,6 +136,7 @@ export default class Session {
             // Assign values
             this._created = json._created;
             this._hash = json._hash;
+            this._token = json._token;
         }
     }
 
