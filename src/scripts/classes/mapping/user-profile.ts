@@ -7,7 +7,7 @@ import cheerio from "cheerio";
 import Post from "./post.js";
 import PlatformUser from "./platform-user.js";
 import { urls } from "../../constants/url.js";
-import { WATCHED_THREAD } from "../../constants/css-selector.js";
+import { GENERIC, WATCHED_THREAD } from "../../constants/css-selector.js";
 import { fetchHTML } from "../../network-helper.js";
 import { GenericAxiosError, UnexpectedResponseContentType } from "../errors.js";
 import { Result } from "../result.js";
@@ -69,10 +69,16 @@ export default class UserProfile extends PlatformUser {
 
     //#endregion Getters
 
+    constructor() { super(); }
+
     //#region Public methods
 
     public async fetch() {
-        // First fetch the basic data
+        // First get the user ID and set it
+        const id = await this.fetchUserID();
+        super.setID(id);
+
+        // Than fetch the basic data
         await super.fetch();
 
         // Now fetch the watched threads
@@ -82,6 +88,21 @@ export default class UserProfile extends PlatformUser {
     //#endregion Public methods
 
     //#region Private methods
+
+    private async fetchUserID(): Promise<number> {
+        // Local variables
+        const url = new URL(urls.F95_BASE_URL).toString();
+
+        // fetch and parse page
+        const htmlResponse = await fetchHTML(url);
+        if (htmlResponse.isSuccess()) {
+            // Load page with cheerio
+            const $ = cheerio.load(htmlResponse.value);
+
+            const sid = $(GENERIC.CURRENT_USER_ID).attr("data-user-id").trim();
+            return parseInt(sid);
+        } else throw htmlResponse.value;
+    }
 
     private async fetchWatchedThread(): Promise<IWatchedThread[]> {
         // Prepare and fetch URL
