@@ -20,10 +20,10 @@ import ThreadSearchQuery from "../classes/query/thread-search-query.js";
  * Maximum number of items to get. Default: 30
  * @returns {Promise<String[]>} URLs of the handiworks
  */
-export default async function fetchThreadHandiworkURLs(query: ThreadSearchQuery, limit:number = 30): Promise<string[]> {
+export default async function fetchThreadHandiworkURLs(query: ThreadSearchQuery, limit: number = 30): Promise<string[]> {
     // Get the query
-    const url = query.createURL().toString();
-
+    const url = decodeURI(query.createURL().href);
+    
     // Fetch the results from F95 and return the handiwork urls
     return await fetchResultURLs(url, limit); 
 }
