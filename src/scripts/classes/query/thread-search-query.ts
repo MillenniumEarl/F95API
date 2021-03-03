@@ -78,9 +78,9 @@ export default class ThreadSearchQuery implements IQuery {
         if (this.onlyTitles) url.searchParams.set("c[title_only]", "1");
 
         // Add keywords
-        const encodedKeywords = this.keywords ? encodeURIComponent(this.keywords) : "*";
+        const encodedKeywords = this.keywords ?? "*";
         url.searchParams.set("q", encodedKeywords);
-
+        
         // Specify the scope of the search (only "threads/post")
         url.searchParams.set("t", "post");
         
@@ -99,11 +99,11 @@ export default class ThreadSearchQuery implements IQuery {
         // The tags are first joined with a comma, then encoded to URI
         const includedTags = encodeURIComponent(this.includedTags.join(","));
         const excludedTags = encodeURIComponent(this.excludedTags.join(","));
-        url.searchParams.set("c[tags]", includedTags);
-        url.searchParams.set("c[excludeTags]", excludedTags);
+        if (includedTags) url.searchParams.set("c[tags]", includedTags);
+        if (excludedTags) url.searchParams.set("c[excludeTags]", excludedTags);
 
         // Set minimum reply number
-        url.searchParams.set("c[min_reply_count]", this.minimumReplies.toString());
+        if (this.minimumReplies > 0) url.searchParams.set("c[min_reply_count]", this.minimumReplies.toString());
 
         // Add prefixes
         const parser = new PrefixParser();
