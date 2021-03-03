@@ -5,9 +5,9 @@ import cheerio from "cheerio";
 import luxon from "luxon";
 
 // Modules from files
-import { urls } from "../constants/url.js";
-import { fetchHTML } from "../network-helper.js";
-import { MEMBER } from "../constants/css-selector.js";
+import { urls } from "../../constants/url.js";
+import { fetchHTML } from "../../network-helper.js";
+import { MEMBER } from "../../constants/css-selector.js";
 
 /**
  * Represents a generic user registered on the platform.
