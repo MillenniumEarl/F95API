@@ -32,7 +32,9 @@ type THandiworkOrder = "date" | "likes" | "relevance" | "replies" | "title" | "v
 export default class HandiworkSearchQuery implements IQuery {
     
     //#region Private fields
+
     static MIN_PAGE = 1;
+
     //#endregion Private fields
 
     //#region Properties
@@ -53,8 +55,8 @@ export default class HandiworkSearchQuery implements IQuery {
      * Tags to exclude from the search.
      */
     public excludedTags: string[] = [];
-    public includedPrefixes: string[];
-    public category: TCategory;
+    public includedPrefixes: string[] = [];
+    public category: TCategory = null;
     /**
      * Results presentation order.
      */
@@ -94,7 +96,7 @@ export default class HandiworkSearchQuery implements IQuery {
 
     public createURL(): URL {
         // Local variables
-        let query: LatestSearchQuery | ThreadSearchQuery = null;
+        let url = null;
 
         // Check if the query is valid
         if (!this.validate()) {
@@ -102,22 +104,19 @@ export default class HandiworkSearchQuery implements IQuery {
         }
 
         // Convert the query
-        if (this.selectSearchType() === "latest") query = this.cast<LatestSearchQuery>();
-        else query = this.cast<ThreadSearchQuery>();
+        if (this.selectSearchType() === "latest") url = this.cast<LatestSearchQuery>("LatestSearchQuery").createURL();
+        else url = this.cast<ThreadSearchQuery>("ThreadSearchQuery").createURL();
 
-        return query.createURL();
+        return url;
     }
 
-    public cast<T extends IQuery>(): T {
+    public cast<T extends IQuery>(type: TQueryInterface): T {
         // Local variables
         let returnValue = null;
-
-        // Cast the query
-        const query:T = {} as IQuery as T;
         
         // Convert the query
-        if (query.itype === "LatestSearchQuery") returnValue = this.castToLatest();
-        else if (query.itype === "ThreadSearchQuery") returnValue = this.castToThread();
+        if (type === "LatestSearchQuery") returnValue = this.castToLatest();
+        else if (type === "ThreadSearchQuery") returnValue = this.castToThread();
         else returnValue = this as HandiworkSearchQuery;
 
         // Cast the result to T
@@ -127,12 +126,16 @@ export default class HandiworkSearchQuery implements IQuery {
 
     //#region Private methods
     private castToLatest(): LatestSearchQuery {
-        // Cast the basic query object
-        const query: LatestSearchQuery = this as IQuery as LatestSearchQuery;
-        let orderFilter = this.order as string;
-        query.itype = "LatestSearchQuery";
+        // Cast the basic query object and copy common values
+        const query: LatestSearchQuery = new LatestSearchQuery;
+        Object.keys(this).forEach(key => {
+            if (query.hasOwnProperty(key)) {
+                query[key] = this[key];
+            }
+        });
 
         // Adapt order filter
+        let orderFilter = this.order as string;
         if (orderFilter === "relevance") orderFilter = "rating";
         else if (orderFilter === "replies") orderFilter = "views";
         query.order = orderFilter as TLatestOrder;
@@ -144,18 +147,19 @@ export default class HandiworkSearchQuery implements IQuery {
     }
 
     private castToThread(): ThreadSearchQuery {
-        // Cast the basic query object
-        const query: ThreadSearchQuery = this as IQuery as ThreadSearchQuery;
-        let orderFilter = this.order as string;
+        // Cast the basic query object and copy common values
+        const query: ThreadSearchQuery = new ThreadSearchQuery;
+        Object.keys(this).forEach(key => { 
+            if (query.hasOwnProperty(key)) {
+                query[key] = this[key];
+            }
+        });
 
-        // Set common values
-        query.excludedTags = this.excludedTags;
-        query.newerThan = this.newerThan;
-        query.olderThan = this.olderThan;
+        // Set uncommon values
         query.onlyTitles = true;
-        query.keywords = this.keywords;
-
+        
         // Adapt order filter
+        let orderFilter = this.order as string;
         if (orderFilter === "likes" || orderFilter === "title") orderFilter = "relevance";
         query.order = orderFilter as TThreadOrder;
 
