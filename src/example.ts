@@ -63,16 +63,16 @@ async function main() {
         query.keywords = gamename;
 
         // Fetch the first result
-        const result = await searchHandiwork<Game>(query, 1);
+        const searchResult = await searchHandiwork<Game>(query, 1);
 
         // No game found
-        if (result.length === 0) {
+        if (searchResult.length === 0) {
             console.log(`No data found for '${gamename}'`);
             continue;
         }
 
         // Extract first game
-        const gamedata = result.shift();
+        const gamedata = searchResult.shift();
         const authors = gamedata.authors.map((a, idx) => a.name).join(", ");
         console.log(`Found: ${gamedata.name} (${gamedata.version}) by ${authors}\n`);
     }
