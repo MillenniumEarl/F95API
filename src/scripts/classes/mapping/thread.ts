@@ -7,14 +7,14 @@ import luxon from "luxon";
 // Modules from files
 import Post from "./post.js";
 import PlatformUser from "./platform-user.js";
-import { TCategory, TRating } from "../interfaces.js";
-import { urls } from "../constants/url.js";
-import { POST, THREAD } from "../constants/css-selector.js";
-import { fetchHTML, fetchPOSTResponse } from "../network-helper.js";
-import Shared from "../shared.js";
-import { GenericAxiosError, ParameterError, UnexpectedResponseContentType } from "./errors.js";
-import { Result } from "./result.js";
-import { getJSONLD, TJsonLD } from "../scrape-data/json-ld.js";
+import { TCategory, TRating } from "../../interfaces.js";
+import { urls } from "../../constants/url.js";
+import { POST, THREAD } from "../../constants/css-selector.js";
+import { fetchHTML, fetchPOSTResponse } from "../../network-helper.js";
+import Shared from "../../shared.js";
+import { GenericAxiosError, ParameterError, UnexpectedResponseContentType } from "../errors.js";
+import { Result } from "../result.js";
+import { getJSONLD, TJsonLD } from "../../scrape-data/json-ld.js";
 
 /**
  * Represents a generic F95Zone platform thread.
