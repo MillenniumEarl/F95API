@@ -36,6 +36,6 @@ export default async function executeQuery(query: any, limit: number = 30): Prom
             "handiwork");
 
     // Fetch and return the urls
-    return await searchMap[key](query, limit);
+    return searchMap[key](query, limit);
 }
 //#endregion

@@ -29,15 +29,15 @@ export default class LatestSearchQuery implements IQuery {
 
     public category: TCategory = 'games';
     /**
-     * Ordering type. 
-     * 
+     * Ordering type.
+     *
      * Default: `date`.
      */
     public order: TLatestOrder = 'date';
     /**
      * Date limit in days, to be understood as "less than".
      * Use `1` to indicate "today" or `null` to indicate "anytime".
-     * 
+     *
      * Default: `null`
      */
     public date: TDate = null;
@@ -74,7 +74,7 @@ export default class LatestSearchQuery implements IQuery {
         const decoded = decodeURIComponent(url.toString());
         
         // Fetch the result
-        return await fetchGETResponse(decoded);
+        return fetchGETResponse(decoded);
     }
 
     /**
@@ -127,7 +127,7 @@ export default class LatestSearchQuery implements IQuery {
     }
 
     /**
-     * 
+     *
      */
     private dateDiffInDays(a: Date, b: Date) {
         const MS_PER_DAY = 1000 * 60 * 60 * 24;

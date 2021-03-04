@@ -11,7 +11,7 @@ export default class PrefixParser {
     //#region Private methods
     /**
      * Gets the key associated with a given value from a dictionary.
-     * @param {Object} object Dictionary to search 
+     * @param {Object} object Dictionary to search
      * @param {Any} value Value associated with the key
      * @returns {String|undefined} Key found or undefined
      */
@@ -43,7 +43,7 @@ export default class PrefixParser {
     }
 
     /**
-     * Search within the platform prefixes for the 
+     * Search within the platform prefixes for the
      * desired element and return the dictionary that contains it.
      * @param element Element to search in the prefixes as a key or as a value
      */
