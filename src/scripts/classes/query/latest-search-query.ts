@@ -77,6 +77,9 @@ export default class LatestSearchQuery implements IQuery {
         return await fetchGETResponse(decoded);
     }
 
+    /**
+     * Gets the value (in days) acceptable in the query starting from a generic date.
+     */
     public findNearestDate(d: Date): TDate {
         // Find the difference between today and the passed date
         const diff = this.dateDiffInDays(new Date(), d);
