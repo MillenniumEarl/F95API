@@ -16,26 +16,28 @@ import fetchThreadHandiworkURLs from "./fetch-thread.js";
  * Maximum number of items to get. Default: 30
  * @returns {Promise<String[]>} URLs of the handiworks
  */
-export default async function fetchHandiworkURLs(query: HandiworkSearchQuery, limit: number = 30): Promise<string[]> {
-    // Local variables
-    let urls: string[] = null;
-    const searchType = query.selectSearchType();
+export default async function fetchHandiworkURLs(
+  query: HandiworkSearchQuery,
+  limit = 30
+): Promise<string[]> {
+  // Local variables
+  let urls: string[] = null;
+  const searchType = query.selectSearchType();
 
-    // Convert the query
-    if (searchType === "latest") {
-        // Cast the query
-        const castedQuery = query.cast<LatestSearchQuery>("LatestSearchQuery");
+  // Convert the query
+  if (searchType === "latest") {
+    // Cast the query
+    const castedQuery = query.cast<LatestSearchQuery>("LatestSearchQuery");
 
-        // Fetch the urls
-        urls = await fetchLatestHandiworkURLs(castedQuery, limit);
-    }
-    else {
-        // Cast the query
-        const castedQuery = query.cast<ThreadSearchQuery>("ThreadSearchQuery");
+    // Fetch the urls
+    urls = await fetchLatestHandiworkURLs(castedQuery, limit);
+  } else {
+    // Cast the query
+    const castedQuery = query.cast<ThreadSearchQuery>("ThreadSearchQuery");
 
-        // Fetch the urls
-        urls = await fetchThreadHandiworkURLs(castedQuery, limit);
-    }
+    // Fetch the urls
+    urls = await fetchThreadHandiworkURLs(castedQuery, limit);
+  }
 
-    return urls;
+  return urls;
 }

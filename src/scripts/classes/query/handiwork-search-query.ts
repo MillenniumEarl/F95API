@@ -1,15 +1,15 @@
 "use strict";
 
-import { AxiosResponse } from 'axios';
+import { AxiosResponse } from "axios";
 // Public modules from npm
-import validator from 'class-validator';
+import validator from "class-validator";
 
 // Module from files
 import { IQuery, TCategory, TQueryInterface } from "../../interfaces.js";
-import { GenericAxiosError, UnexpectedResponseContentType } from '../errors.js';
-import { Result } from '../result.js';
-import LatestSearchQuery, { TLatestOrder } from './latest-search-query.js';
-import ThreadSearchQuery, { TThreadOrder } from './thread-search-query.js';
+import { GenericAxiosError, UnexpectedResponseContentType } from "../errors.js";
+import { Result } from "../result.js";
+import LatestSearchQuery, { TLatestOrder } from "./latest-search-query.js";
+import ThreadSearchQuery, { TThreadOrder } from "./thread-search-query.js";
 
 // Type definitions
 /**
@@ -30,149 +30,165 @@ import ThreadSearchQuery, { TThreadOrder } from './thread-search-query.js';
  *
  * `views`: Order based on the number of visits. Replacement: `replies`.
  */
-type THandiworkOrder = "date" | "likes" | "relevance" | "replies" | "title" | "views";
+type THandiworkOrder =
+  | "date"
+  | "likes"
+  | "relevance"
+  | "replies"
+  | "title"
+  | "views";
 type TExecuteResult = Result<GenericAxiosError, AxiosResponse<any>>;
 
 export default class HandiworkSearchQuery implements IQuery {
-    
-    //#region Private fields
+  //#region Private fields
 
-    static MIN_PAGE = 1;
+  static MIN_PAGE = 1;
 
-    //#endregion Private fields
+  //#endregion Private fields
 
-    //#region Properties
+  //#region Properties
 
-    /**
-     * Keywords to use in the search.
-     */
-    public keywords: string = "";
-    /**
-     * The results must be more recent than the date indicated.
-     */
-    public newerThan: Date = null;
-    /**
-     * The results must be older than the date indicated.
-     */
-    public olderThan: Date = null;
-    public includedTags: string[] = [];
-    /**
-     * Tags to exclude from the search.
-     */
-    public excludedTags: string[] = [];
-    public includedPrefixes: string[] = [];
-    public category: TCategory = null;
-    /**
-     * Results presentation order.
-     */
-    public order: THandiworkOrder = "relevance";
-    @validator.IsInt({
-        message: "$property expect an integer, received $value"
-    })
-    @validator.Min(HandiworkSearchQuery.MIN_PAGE, {
-        message: "The minimum $property value must be $constraint1, received $value"
-    })
-    public page: number = 1;
-    itype: TQueryInterface = "HandiworkSearchQuery";
+  /**
+   * Keywords to use in the search.
+   */
+  public keywords = "";
+  /**
+   * The results must be more recent than the date indicated.
+   */
+  public newerThan: Date = null;
+  /**
+   * The results must be older than the date indicated.
+   */
+  public olderThan: Date = null;
+  public includedTags: string[] = [];
+  /**
+   * Tags to exclude from the search.
+   */
+  public excludedTags: string[] = [];
+  public includedPrefixes: string[] = [];
+  public category: TCategory = null;
+  /**
+   * Results presentation order.
+   */
+  public order: THandiworkOrder = "relevance";
+  @validator.IsInt({
+    message: "$property expect an integer, received $value"
+  })
+  @validator.Min(HandiworkSearchQuery.MIN_PAGE, {
+    message: "The minimum $property value must be $constraint1, received $value"
+  })
+  public page = 1;
+  itype: TQueryInterface = "HandiworkSearchQuery";
 
-    //#endregion Properties
+  //#endregion Properties
 
-    //#region Public methods
+  //#region Public methods
 
-    /**
-     * Select what kind of search should be
-     * performed based on the properties of
-     * the query.
-     */
-    public selectSearchType(): "latest" | "thread" {
-        // Local variables
-        const MAX_TAGS_LATEST_SEARCH = 5;
-        const DEFAULT_SEARCH_TYPE = "latest";
+  /**
+   * Select what kind of search should be
+   * performed based on the properties of
+   * the query.
+   */
+  public selectSearchType(): "latest" | "thread" {
+    // Local variables
+    const MAX_TAGS_LATEST_SEARCH = 5;
+    const DEFAULT_SEARCH_TYPE = "latest";
 
-        // If the keywords are set or the number
-        // of included tags is greather than 5,
-        // we must perform a thread search
-        if (this.keywords || this.includedTags.length > MAX_TAGS_LATEST_SEARCH) return "thread";
+    // If the keywords are set or the number
+    // of included tags is greather than 5,
+    // we must perform a thread search
+    if (this.keywords || this.includedTags.length > MAX_TAGS_LATEST_SEARCH)
+      return "thread";
 
-        return DEFAULT_SEARCH_TYPE;
+    return DEFAULT_SEARCH_TYPE;
+  }
+
+  public validate(): boolean {
+    return validator.validateSync(this).length === 0;
+  }
+
+  public async execute(): Promise<TExecuteResult> {
+    // Local variables
+    let response: TExecuteResult = null;
+
+    // Check if the query is valid
+    if (!this.validate()) {
+      throw new Error(
+        `Invalid query: ${validator.validateSync(this).join("\n")}`
+      );
     }
 
-    public validate(): boolean { return validator.validateSync(this).length === 0; }
+    // Convert the query
+    if (this.selectSearchType() === "latest")
+      response = await this.cast<LatestSearchQuery>(
+        "LatestSearchQuery"
+      ).execute();
+    else
+      response = await this.cast<ThreadSearchQuery>(
+        "ThreadSearchQuery"
+      ).execute();
 
-    public async execute(): Promise<TExecuteResult> {
-        // Local variables
-        let response: TExecuteResult = null;
+    return response;
+  }
 
-        // Check if the query is valid
-        if (!this.validate()) {
-            throw new Error(`Invalid query: ${validator.validateSync(this).join("\n")}`);
-        }
+  public cast<T extends IQuery>(type: TQueryInterface): T {
+    // Local variables
+    let returnValue = null;
 
-        // Convert the query
-        if (this.selectSearchType() === "latest") response = await this.cast<LatestSearchQuery>("LatestSearchQuery").execute();
-        else response = await this.cast<ThreadSearchQuery>("ThreadSearchQuery").execute();
+    // Convert the query
+    if (type === "LatestSearchQuery") returnValue = this.castToLatest();
+    else if (type === "ThreadSearchQuery") returnValue = this.castToThread();
+    else returnValue = this as HandiworkSearchQuery;
 
-        return response;
-    }
+    // Cast the result to T
+    return returnValue as T;
+  }
 
-    public cast<T extends IQuery>(type: TQueryInterface): T {
-        // Local variables
-        let returnValue = null;
-        
-        // Convert the query
-        if (type === "LatestSearchQuery") returnValue = this.castToLatest();
-        else if (type === "ThreadSearchQuery") returnValue = this.castToThread();
-        else returnValue = this as HandiworkSearchQuery;
+  //#endregion Public methods
 
-        // Cast the result to T
-        return returnValue as T;
-    }
+  //#region Private methods
 
-    //#endregion Public methods
+  private castToLatest(): LatestSearchQuery {
+    // Cast the basic query object and copy common values
+    const query: LatestSearchQuery = new LatestSearchQuery();
+    Object.keys(this).forEach((key) => {
+      if (query.hasOwnProperty(key)) {
+        query[key] = this[key];
+      }
+    });
 
-    //#region Private methods
+    // Adapt order filter
+    let orderFilter = this.order as string;
+    if (orderFilter === "relevance") orderFilter = "rating";
+    else if (orderFilter === "replies") orderFilter = "views";
+    query.order = orderFilter as TLatestOrder;
 
-    private castToLatest(): LatestSearchQuery {
-        // Cast the basic query object and copy common values
-        const query: LatestSearchQuery = new LatestSearchQuery();
-        Object.keys(this).forEach(key => {
-            if (query.hasOwnProperty(key)) {
-                query[key] = this[key];
-            }
-        });
+    // Adapt date
+    if (this.newerThan) query.date = query.findNearestDate(this.newerThan);
 
-        // Adapt order filter
-        let orderFilter = this.order as string;
-        if (orderFilter === "relevance") orderFilter = "rating";
-        else if (orderFilter === "replies") orderFilter = "views";
-        query.order = orderFilter as TLatestOrder;
+    return query;
+  }
 
-        // Adapt date
-        if (this.newerThan) query.date = query.findNearestDate(this.newerThan);
+  private castToThread(): ThreadSearchQuery {
+    // Cast the basic query object and copy common values
+    const query: ThreadSearchQuery = new ThreadSearchQuery();
+    Object.keys(this).forEach((key) => {
+      if (query.hasOwnProperty(key)) {
+        query[key] = this[key];
+      }
+    });
 
-        return query;
-    }
+    // Set uncommon values
+    query.onlyTitles = true;
 
-    private castToThread(): ThreadSearchQuery {
-        // Cast the basic query object and copy common values
-        const query: ThreadSearchQuery = new ThreadSearchQuery();
-        Object.keys(this).forEach(key => {
-            if (query.hasOwnProperty(key)) {
-                query[key] = this[key];
-            }
-        });
+    // Adapt order filter
+    let orderFilter = this.order as string;
+    if (orderFilter === "title") orderFilter = "relevance";
+    else if (orderFilter === "likes") orderFilter = "replies";
+    query.order = orderFilter as TThreadOrder;
 
-        // Set uncommon values
-        query.onlyTitles = true;
-        
-        // Adapt order filter
-        let orderFilter = this.order as string;
-        if (orderFilter === "title") orderFilter = "relevance";
-        else if (orderFilter === "likes") orderFilter = "replies";
-        query.order = orderFilter as TThreadOrder;
+    return query;
+  }
 
-        return query;
-    }
-
-    //#endregion
+  //#endregion
 }

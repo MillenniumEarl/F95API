@@ -1,177 +1,183 @@
 "use strict";
 
 // Public modules from npm
-import validator from 'class-validator';
+import validator from "class-validator";
 
 // Module from files
 import { IQuery, TCategory, TQueryInterface } from "../../interfaces.js";
 import { urls } from "../../constants/url.js";
 import PrefixParser from "./../prefix-parser.js";
-import { fetchPOSTResponse } from '../../network-helper.js';
-import { AxiosResponse } from 'axios';
-import { GenericAxiosError } from '../errors.js';
-import { Result } from '../result.js';
-import Shared from '../../shared.js';
+import { fetchPOSTResponse } from "../../network-helper.js";
+import { AxiosResponse } from "axios";
+import { GenericAxiosError } from "../errors.js";
+import { Result } from "../result.js";
+import Shared from "../../shared.js";
 
 // Type definitions
 export type TThreadOrder = "relevance" | "date" | "last_update" | "replies";
 
 export default class ThreadSearchQuery implements IQuery {
+  //#region Private fields
 
-    //#region Private fields
+  static MIN_PAGE = 1;
 
-    static MIN_PAGE = 1;
+  //#endregion Private fields
 
-    //#endregion Private fields
+  //#region Properties
 
-    //#region Properties
+  /**
+   * Keywords to use in the search.
+   */
+  public keywords = "";
+  /**
+   * Indicates to search by checking only the thread titles and not the content.
+   */
+  public onlyTitles = false;
+  /**
+   * The results must be more recent than the date indicated.
+   */
+  public newerThan: Date = null;
+  /**
+   * The results must be older than the date indicated.
+   */
+  public olderThan: Date = null;
+  public includedTags: string[] = [];
+  /**
+   * Tags to exclude from the search.
+   */
+  public excludedTags: string[] = [];
+  /**
+   * Minimum number of answers that the thread must possess.
+   */
+  public minimumReplies = 0;
+  public includedPrefixes: string[] = [];
+  public category: TCategory = null;
+  /**
+   * Results presentation order.
+   */
+  public order: TThreadOrder = "relevance";
+  @validator.IsInt({
+    message: "$property expect an integer, received $value"
+  })
+  @validator.Min(ThreadSearchQuery.MIN_PAGE, {
+    message: "The minimum $property value must be $constraint1, received $value"
+  })
+  public page = 1;
+  itype: TQueryInterface = "ThreadSearchQuery";
 
-    /**
-     * Keywords to use in the search.
-     */
-    public keywords: string = "";
-    /**
-     * Indicates to search by checking only the thread titles and not the content.
-     */
-    public onlyTitles: boolean = false;
-    /**
-     * The results must be more recent than the date indicated.
-     */
-    public newerThan: Date = null;
-    /**
-     * The results must be older than the date indicated.
-     */
-    public olderThan: Date = null;
-    public includedTags: string[] = [];
-    /**
-     * Tags to exclude from the search.
-     */
-    public excludedTags: string[] = [];
-    /**
-     * Minimum number of answers that the thread must possess.
-     */
-    public minimumReplies: number = 0;
-    public includedPrefixes: string[] = [];
-    public category: TCategory = null;
-    /**
-     * Results presentation order.
-     */
-    public order: TThreadOrder = "relevance";
-    @validator.IsInt({
-        message: "$property expect an integer, received $value"
-    })
-    @validator.Min(ThreadSearchQuery.MIN_PAGE, {
-        message: "The minimum $property value must be $constraint1, received $value"
-    })
-    public page: number = 1;
-    itype: TQueryInterface = "ThreadSearchQuery";
+  //#endregion Properties
 
-    //#endregion Properties
+  //#region Public methods
 
-    //#region Public methods
-    
-    public validate(): boolean { return validator.validateSync(this).length === 0; }
-    
-    public async execute(): Promise<Result<GenericAxiosError, AxiosResponse<any>>> {
-        // Check if the query is valid
-        if (!this.validate()) {
-            throw new Error(`Invalid query: ${validator.validateSync(this).join("\n")}`);
-        }
+  public validate(): boolean {
+    return validator.validateSync(this).length === 0;
+  }
 
-        // Define the POST parameters
-        const params = this.preparePOSTParameters();
-
-        // Return the POST response
-        return fetchPOSTResponse(urls.F95_SEARCH_URL, params);
+  public async execute(): Promise<
+    Result<GenericAxiosError, AxiosResponse<any>>
+  > {
+    // Check if the query is valid
+    if (!this.validate()) {
+      throw new Error(
+        `Invalid query: ${validator.validateSync(this).join("\n")}`
+      );
     }
 
-    //#endregion Public methods
+    // Define the POST parameters
+    const params = this.preparePOSTParameters();
 
-    //#region Private methods
+    // Return the POST response
+    return fetchPOSTResponse(urls.F95_SEARCH_URL, params);
+  }
 
-    /**
-     * Prepare the parameters for post request with the data in the query.
-     */
-    private preparePOSTParameters(): { [s: string]: string } {
-        // Local variables
-        const params = {};
+  //#endregion Public methods
 
-        // Ad the session token
-        params["_xfToken"] = Shared.session.token;
+  //#region Private methods
 
-        // Specify if only the title should be searched
-        if (this.onlyTitles) params["c[title_only]"] = "1";
+  /**
+   * Prepare the parameters for post request with the data in the query.
+   */
+  private preparePOSTParameters(): { [s: string]: string } {
+    // Local variables
+    const params = {};
 
-        // Add keywords
-        params["keywords"] = this.keywords ?? "*";
+    // Ad the session token
+    params["_xfToken"] = Shared.session.token;
 
-        // Specify the scope of the search (only "threads/post")
-        params["search_type"] = "post";
+    // Specify if only the title should be searched
+    if (this.onlyTitles) params["c[title_only]"] = "1";
 
-        // Set the dates
-        if (this.newerThan) {
-            const date = this.convertShortDate(this.newerThan);
-            params["c[newer_than]"] = date;
-        }
+    // Add keywords
+    params["keywords"] = this.keywords ?? "*";
 
-        if (this.olderThan) {
-            const date = this.convertShortDate(this.olderThan);
-            params["c[older_than]"] = date;
-        }
+    // Specify the scope of the search (only "threads/post")
+    params["search_type"] = "post";
 
-        // Set included and excluded tags (joined with a comma)
-        if (this.includedTags) params["c[tags]"] = this.includedTags.join(",");
-        if (this.excludedTags) params["c[excludeTags]"] = this.excludedTags.join(",");
-
-        // Set minimum reply number
-        if (this.minimumReplies > 0) params["c[min_reply_count]"] = this.minimumReplies.toString();
-
-        // Add prefixes
-        const parser = new PrefixParser();
-        const ids = parser.prefixesToIDs(this.includedPrefixes);
-        for (let i = 0; i < ids.length; i++) {
-            const name = `c[prefixes][${i}]`;
-            params[name] = ids[i].toString();
-        }
-
-        // Set the category
-        params["c[child_nodes]"] = "1"; // Always set
-        if (this.category) {
-            const catID = this.categoryToID(this.category).toString();
-            params["c[nodes][0]"] = catID;
-        }
-
-        // Set the other values
-        params["order"] = this.order.toString();
-        params["page"] = this.page.toString();
-
-        return params;
+    // Set the dates
+    if (this.newerThan) {
+      const date = this.convertShortDate(this.newerThan);
+      params["c[newer_than]"] = date;
     }
 
-    /**
-     * Convert a date in the YYYY-MM-DD format taking into account the time zone.
-     */
-    private convertShortDate(d: Date): string {
-        const offset = d.getTimezoneOffset()
-        d = new Date(d.getTime() - (offset * 60 * 1000))
-        return d.toISOString().split('T')[0]
+    if (this.olderThan) {
+      const date = this.convertShortDate(this.olderThan);
+      params["c[older_than]"] = date;
     }
 
-    /**
-     * Gets the unique ID of the selected category.
-     */
-    private categoryToID(category: TCategory): number {
-        const catMap = {
-            "games": 2,
-            "mods": 41,
-            "comics": 40,
-            "animations": 94,
-            "assets": 95,
-        }
+    // Set included and excluded tags (joined with a comma)
+    if (this.includedTags) params["c[tags]"] = this.includedTags.join(",");
+    if (this.excludedTags)
+      params["c[excludeTags]"] = this.excludedTags.join(",");
 
-        return catMap[category as string];
+    // Set minimum reply number
+    if (this.minimumReplies > 0)
+      params["c[min_reply_count]"] = this.minimumReplies.toString();
+
+    // Add prefixes
+    const parser = new PrefixParser();
+    const ids = parser.prefixesToIDs(this.includedPrefixes);
+    for (let i = 0; i < ids.length; i++) {
+      const name = `c[prefixes][${i}]`;
+      params[name] = ids[i].toString();
     }
 
-    //#endregion Private methods
+    // Set the category
+    params["c[child_nodes]"] = "1"; // Always set
+    if (this.category) {
+      const catID = this.categoryToID(this.category).toString();
+      params["c[nodes][0]"] = catID;
+    }
 
+    // Set the other values
+    params["order"] = this.order.toString();
+    params["page"] = this.page.toString();
+
+    return params;
+  }
+
+  /**
+   * Convert a date in the YYYY-MM-DD format taking into account the time zone.
+   */
+  private convertShortDate(d: Date): string {
+    const offset = d.getTimezoneOffset();
+    d = new Date(d.getTime() - offset * 60 * 1000);
+    return d.toISOString().split("T")[0];
+  }
+
+  /**
+   * Gets the unique ID of the selected category.
+   */
+  private categoryToID(category: TCategory): number {
+    const catMap = {
+      games: 2,
+      mods: 41,
+      comics: 40,
+      animations: 94,
+      assets: 95
+    };
+
+    return catMap[category as string];
+  }
+
+  //#endregion Private methods
 }

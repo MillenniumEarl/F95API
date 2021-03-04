@@ -21,13 +21,17 @@ import ThreadSearchQuery from "../classes/query/thread-search-query.js";
  * Maximum number of items to get. Default: 30
  * @returns {Promise<String[]>} URLs of the handiworks
  */
-export default async function fetchThreadHandiworkURLs(query: ThreadSearchQuery, limit: number = 30): Promise<string[]> {
-    // Execute the query
-    const response = await query.execute();
+export default async function fetchThreadHandiworkURLs(
+  query: ThreadSearchQuery,
+  limit = 30
+): Promise<string[]> {
+  // Execute the query
+  const response = await query.execute();
 
-    // Fetch the results from F95 and return the handiwork urls
-    if (response.isSuccess()) return fetchResultURLs(response.value.data as string, limit);
-    else throw response.value
+  // Fetch the results from F95 and return the handiwork urls
+  if (response.isSuccess())
+    return fetchResultURLs(response.value.data as string, limit);
+  else throw response.value;
 }
 
 //#endregion Public methods
@@ -39,20 +43,23 @@ export default async function fetchThreadHandiworkURLs(query: ThreadSearchQuery,
  * @param {number} limit
  * Maximum number of items to get. Default: 30
  */
-async function fetchResultURLs(html: string, limit: number = 30): Promise<string[]> {
-    // Prepare cheerio
-    const $ = cheerio.load(html);
+async function fetchResultURLs(html: string, limit = 30): Promise<string[]> {
+  // Prepare cheerio
+  const $ = cheerio.load(html);
 
-    // Here we get all the DIV that are the body of the various query results
-    const results = $("body").find(f95Selector.GS_RESULT_BODY);
+  // Here we get all the DIV that are the body of the various query results
+  const results = $("body").find(f95Selector.GS_RESULT_BODY);
 
-    // Than we extract the URLs
-    const urls = results.slice(0, limit).map((idx, el) => {
-        const elementSelector = $(el);
-        return extractLinkFromResult(elementSelector);
-    }).get();
+  // Than we extract the URLs
+  const urls = results
+    .slice(0, limit)
+    .map((idx, el) => {
+      const elementSelector = $(el);
+      return extractLinkFromResult(elementSelector);
+    })
+    .get();
 
-    return urls;
+  return urls;
 }
 
 /**
@@ -61,15 +68,15 @@ async function fetchResultURLs(html: string, limit: number = 30): Promise<string
  * @returns {String} URL to thread
  */
 function extractLinkFromResult(selector: cheerio.Cheerio): string {
-    shared.logger.trace("Extracting thread link from result...");
+  shared.logger.trace("Extracting thread link from result...");
 
-    const partialLink = selector
-        .find(f95Selector.GS_RESULT_THREAD_TITLE)
-        .attr("href")
-        .trim();
+  const partialLink = selector
+    .find(f95Selector.GS_RESULT_THREAD_TITLE)
+    .attr("href")
+    .trim();
 
-    // Compose and return the URL
-    return new URL(partialLink, f95urls.F95_BASE_URL).toString();
+  // Compose and return the URL
+  return new URL(partialLink, f95urls.F95_BASE_URL).toString();
 }
 
 //#endregion Private methods

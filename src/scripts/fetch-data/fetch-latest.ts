@@ -4,7 +4,6 @@
 import LatestSearchQuery from "../classes/query/latest-search-query.js";
 import { urls } from "../constants/url.js";
 
-
 /**
  * Gets the URLs of the latest handiworks that match the passed parameters.
  *
@@ -15,39 +14,44 @@ import { urls } from "../constants/url.js";
  * Maximum number of items to get. Default: 30
  * @returns {Promise<String[]>} URLs of the handiworks
  */
-export default async function fetchLatestHandiworkURLs(query: LatestSearchQuery, limit: number = 30): Promise<string[]> {
-    // Local variables
-    const shallowQuery: LatestSearchQuery = Object.assign(new LatestSearchQuery(), query);
-    const resultURLs = [];
-    let fetchedResults = 0;
-    let noMorePages = false;
+export default async function fetchLatestHandiworkURLs(
+  query: LatestSearchQuery,
+  limit = 30
+): Promise<string[]> {
+  // Local variables
+  const shallowQuery: LatestSearchQuery = Object.assign(
+    new LatestSearchQuery(),
+    query
+  );
+  const resultURLs = [];
+  let fetchedResults = 0;
+  let noMorePages = false;
 
-    do {
-        // Fetch the response (application/json)
-        const response = await shallowQuery.execute();
+  do {
+    // Fetch the response (application/json)
+    const response = await shallowQuery.execute();
 
-        // Save the URLs
-        if (response.isSuccess()) {
-            // In-loop variables
-            const data: [{ thread_id: number}] = response.value.data.msg.data;
-            const totalPages: number = response.value.data.msg.pagination.total;
-            
-            data.map((e, idx) => {
-                if (fetchedResults < limit) {
-                    
-                    const gameURL = new URL(e.thread_id.toString(), urls.F95_THREADS).href;
-                    resultURLs.push(gameURL);
+    // Save the URLs
+    if (response.isSuccess()) {
+      // In-loop variables
+      const data: [{ thread_id: number }] = response.value.data.msg.data;
+      const totalPages: number = response.value.data.msg.pagination.total;
 
-                    fetchedResults += 1;
-                }
-            });
+      data.map((e, idx) => {
+        if (fetchedResults < limit) {
+          const gameURL = new URL(e.thread_id.toString(), urls.F95_THREADS)
+            .href;
+          resultURLs.push(gameURL);
 
-            // Increment page and check for it's existence
-            shallowQuery.page += 1;
-            noMorePages = shallowQuery.page > totalPages;
-        } else throw response.value;
-    }
-    while (fetchedResults < limit && !noMorePages);
+          fetchedResults += 1;
+        }
+      });
 
-    return resultURLs;
+      // Increment page and check for it's existence
+      shallowQuery.page += 1;
+      noMorePages = shallowQuery.page > totalPages;
+    } else throw response.value;
+  } while (fetchedResults < limit && !noMorePages);
+
+  return resultURLs;
 }

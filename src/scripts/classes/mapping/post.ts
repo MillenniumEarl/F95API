@@ -5,7 +5,10 @@ import cheerio from "cheerio";
 
 // Modules from file
 import PlatformUser from "./platform-user.js";
-import { IPostElement, parseF95ThreadPost } from "../../scrape-data/post-parse.js";
+import {
+  IPostElement,
+  parseF95ThreadPost
+} from "../../scrape-data/post-parse.js";
 import { POST, THREAD } from "../../constants/css-selector.js";
 import { urls } from "../../constants/url.js";
 import { fetchHTML } from "../../network-helper.js";
@@ -14,122 +17,150 @@ import { fetchHTML } from "../../network-helper.js";
  * Represents a post published by a user on the F95Zone platform.
  */
 export default class Post {
+  //#region Fields
 
-    //#region Fields
+  private _id: number;
+  private _number: number;
+  private _published: Date;
+  private _lastEdit: Date;
+  private _owner: PlatformUser;
+  private _bookmarked: boolean;
+  private _message: string;
+  private _body: IPostElement[];
 
-    private _id: number;
-    private _number: number;
-    private _published: Date;
-    private _lastEdit: Date;
-    private _owner: PlatformUser;
-    private _bookmarked: boolean;
-    private _message: string;
-    private _body: IPostElement[];
+  //#endregion Fields
 
-    //#endregion Fields
+  //#region Getters
 
-    //#region Getters
+  /**
+   * Represents a post published by a user on the F95Zone platform.
+   */
+  public get id() {
+    return this._id;
+  }
+  /**
+   * Unique ID of the post within the thread in which it is present.
+   */
+  public get number() {
+    return this._number;
+  }
+  /**
+   * Date the post was first published.
+   */
+  public get published() {
+    return this._published;
+  }
+  /**
+   * Date the post was last modified.
+   */
+  public get lastEdit() {
+    return this._lastEdit;
+  }
+  /**
+   * User who owns the post.
+   */
+  public get owner() {
+    return this._owner;
+  }
+  /**
+   * Indicates whether the post has been bookmarked.
+   */
+  public get bookmarked() {
+    return this._bookmarked;
+  }
+  /**
+   * Post message text.
+   */
+  public get message() {
+    return this._message;
+  }
+  /**
+   * Set of the elements that make up the body of the post.
+   */
+  public get body() {
+    return this._body;
+  }
 
-    /**
-     * Represents a post published by a user on the F95Zone platform.
-     */
-    public get id() { return this._id; }
-    /**
-     * Unique ID of the post within the thread in which it is present.
-     */
-    public get number() { return this._number; }
-    /**
-     * Date the post was first published.
-     */
-    public get published() { return this._published; }
-    /**
-     * Date the post was last modified.
-     */
-    public get lastEdit() { return this._lastEdit; }
-    /**
-     * User who owns the post.
-     */
-    public get owner() { return this._owner; }
-    /**
-     * Indicates whether the post has been bookmarked.
-     */
-    public get bookmarked() { return this._bookmarked; }
-    /**
-     * Post message text.
-     */
-    public get message() { return this._message; }
-    /**
-     * Set of the elements that make up the body of the post.
-     */
-    public get body() { return this._body; }
+  //#endregion Getters
 
-    //#endregion Getters
+  constructor(id: number) {
+    this._id = id;
+  }
 
-    constructor(id: number) { this._id = id; }
+  //#region Public methods
 
-    //#region Public methods
+  /**
+   * Gets the post data starting from its unique ID for the entire platform.
+   */
+  public async fetch() {
+    // Fetch HTML page containing the post
+    const url = new URL(this.id.toString(), urls.F95_POSTS).toString();
+    const htmlResponse = await fetchHTML(url);
 
-    /**
-     * Gets the post data starting from its unique ID for the entire platform.
-     */
-    public async fetch() {
-        // Fetch HTML page containing the post
-        const url = new URL(this.id.toString(), urls.F95_POSTS).toString();
-        const htmlResponse = await fetchHTML(url);
+    if (htmlResponse.isSuccess()) {
+      // Load cheerio and find post
+      const $ = cheerio.load(htmlResponse.value);
 
-        if (htmlResponse.isSuccess()) {
-            // Load cheerio and find post
-            const $ = cheerio.load(htmlResponse.value);
+      const post = $(THREAD.POSTS_IN_PAGE)
+        .toArray()
+        .find((el, idx) => {
+          // Fetch the ID and check if it is what we are searching
+          const sid: string = $(el)
+            .find(POST.ID)
+            .attr("id")
+            .replace("post-", "");
+          const id = parseInt(sid, 10);
 
-            const post = $(THREAD.POSTS_IN_PAGE).toArray().find((el, idx) => {
-                // Fetch the ID and check if it is what we are searching
-                const sid: string = $(el).find(POST.ID).attr("id").replace("post-", "");
-                const id = parseInt(sid, 10);
+          if (id === this.id) return el;
+        });
 
-                if (id === this.id) return el;
-            });
+      // Finally parse the post
+      await this.parsePost($, $(post));
+    } else throw htmlResponse.value;
+  }
 
-            // Finally parse the post
-            await this.parsePost($, $(post));
-        } else throw htmlResponse.value;
-    }
+  //#endregion Public methods
 
-    //#endregion Public methods
+  //#region Private methods
 
-    //#region Private methods
+  private async parsePost(
+    $: cheerio.Root,
+    post: cheerio.Cheerio
+  ): Promise<void> {
+    // Find post's ID
+    const sid: string = post.find(POST.ID).attr("id").replace("post-", "");
+    this._id = parseInt(sid, 10);
 
-    private async parsePost($: cheerio.Root, post: cheerio.Cheerio): Promise<void> {
-        // Find post's ID
-        const sid: string = post.find(POST.ID).attr("id").replace("post-", "");
-        this._id = parseInt(sid, 10);
+    // Find post's number
+    const sNumber: string = post.find(POST.NUMBER).text().replace("#", "");
+    this._number = parseInt(sNumber, 10);
 
-        // Find post's number
-        const sNumber: string = post.find(POST.NUMBER).text().replace("#", "");
-        this._number = parseInt(sNumber, 10);
+    // Find post's publishing date
+    const sPublishing: string = post.find(POST.PUBLISH_DATE).attr("datetime");
+    this._published = new Date(sPublishing);
 
-        // Find post's publishing date
-        const sPublishing: string = post.find(POST.PUBLISH_DATE).attr("datetime");
-        this._published = new Date(sPublishing);
+    // Find post's last edit date
+    const sLastEdit: string = post.find(POST.LAST_EDIT).attr("datetime");
+    this._lastEdit = new Date(sLastEdit);
 
-        // Find post's last edit date
-        const sLastEdit: string = post.find(POST.LAST_EDIT).attr("datetime");
-        this._lastEdit = new Date(sLastEdit);
+    // Find post's owner
+    const sOwnerID: string = post
+      .find(POST.OWNER_ID)
+      .attr("data-user-id")
+      .trim();
+    this._owner = new PlatformUser(parseInt(sOwnerID, 10));
+    await this._owner.fetch();
 
-        // Find post's owner
-        const sOwnerID: string = post.find(POST.OWNER_ID).attr("data-user-id").trim();
-        this._owner = new PlatformUser(parseInt(sOwnerID, 10));
-        await this._owner.fetch();
+    // Find if the post is bookmarked
+    this._bookmarked = post.find(POST.BOOKMARKED).length !== 0;
 
-        // Find if the post is bookmarked
-        this._bookmarked = post.find(POST.BOOKMARKED).length !== 0;
+    // Find post's message
+    this._message = post.find(POST.BODY).text();
 
-        // Find post's message
-        this._message = post.find(POST.BODY).text();
-        
-        // Parse post's body
-        const body = post.find(POST.BODY);
-        this._body = parseF95ThreadPost($, body);
-    }
+    // Parse post's body
+    const body = post.find(POST.BODY);
+    this._body = parseF95ThreadPost($, body);
+  }
 
-    //#endregion
+  //#endregion
 }

@@ -11,14 +11,17 @@ import getURLsFromQuery from "./fetch-data/fetch-query.js";
  * @param {Number} limit
  * Maximum number of items to get. Default: 30
  */
-export default async function search<T extends IBasic>(query: IQuery, limit: number = 30): Promise<T[]> {
-    // Fetch the URLs
-    const urls: string[] = await getURLsFromQuery(query, limit);
+export default async function search<T extends IBasic>(
+  query: IQuery,
+  limit = 30
+): Promise<T[]> {
+  // Fetch the URLs
+  const urls: string[] = await getURLsFromQuery(query, limit);
 
-    // Fetch the data
-    const results = urls.map((url, idx) => {
-        return getHandiworkInformation<T>(url);
-    });
+  // Fetch the data
+  const results = urls.map((url, idx) => {
+    return getHandiworkInformation<T>(url);
+  });
 
-    return Promise.all(results);
+  return Promise.all(results);
 }

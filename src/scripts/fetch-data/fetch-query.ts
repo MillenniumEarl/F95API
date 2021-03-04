@@ -16,17 +16,20 @@ import { IQuery } from "../interfaces.js";
  * @param limit Maximum number of items to get. Default: 30
  * @returns URLs of the fetched games
  */
-export default async function getURLsFromQuery(query: IQuery, limit: number = 30): Promise<string[]> {
-    switch (query.itype) {
-        case "HandiworkSearchQuery":
-            return fetchHandiworkURLs(query as HandiworkSearchQuery, limit);
-        case "LatestSearchQuery":
-            return fetchLatestHandiworkURLs(query as LatestSearchQuery, limit);
-        case "ThreadSearchQuery":
-            return fetchThreadHandiworkURLs(query as ThreadSearchQuery, limit);
-        default:
-            throw Error(`Invalid query type: ${query.itype}`);
-    }
+export default async function getURLsFromQuery(
+  query: IQuery,
+  limit = 30
+): Promise<string[]> {
+  switch (query.itype) {
+    case "HandiworkSearchQuery":
+      return fetchHandiworkURLs(query as HandiworkSearchQuery, limit);
+    case "LatestSearchQuery":
+      return fetchLatestHandiworkURLs(query as LatestSearchQuery, limit);
+    case "ThreadSearchQuery":
+      return fetchThreadHandiworkURLs(query as ThreadSearchQuery, limit);
+    default:
+      throw Error(`Invalid query type: ${query.itype}`);
+  }
 }
 
 //#endregion
