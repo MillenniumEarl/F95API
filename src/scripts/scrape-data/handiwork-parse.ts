@@ -212,7 +212,7 @@ function fillWithPostData(hw: HandiWork, elements: IPostElement[]) {
         getPostElementByName(elements, "developer/publisher") ||
         getPostElementByName(elements, "artist");
     const author: TAuthor = {
-        name: authorElement.text,
+        name: authorElement?.text,
         platforms: []
     };
 
