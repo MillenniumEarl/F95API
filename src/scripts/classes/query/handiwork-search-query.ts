@@ -167,7 +167,8 @@ export default class HandiworkSearchQuery implements IQuery {
         
         // Adapt order filter
         let orderFilter = this.order as string;
-        if (orderFilter === "likes" || orderFilter === "title") orderFilter = "relevance";
+        if (orderFilter === "title") orderFilter = "relevance";
+        else if (orderFilter === "likes") orderFilter = "replies";
         query.order = orderFilter as TThreadOrder;
 
         return query;
