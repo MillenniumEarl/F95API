@@ -1,18 +1,9 @@
 "use strict";
 
 // Modules from file
-import { IBasic } from "./interfaces.js";
-import HandiworkSearchQuery from "./classes/query/handiwork-search-query.js";
-import LatestSearchQuery from "./classes/query/latest-search-query.js";
-import ThreadSearchQuery from "./classes/query/thread-search-query.js";
+import { IBasic, IQuery } from "./interfaces.js";
 import getHandiworkInformation from "./scrape-data/handiwork-parse.js";
-import executeQuery from "./fetch-data/fetch-query.js";
-
-export async function search<T extends IBasic>(query: LatestSearchQuery, limit: number): Promise<T[]>
-
-export async function search<T extends IBasic>(query: HandiworkSearchQuery, limit: number): Promise<T[]>
-
-export async function search<T extends IBasic>(query: ThreadSearchQuery, limit: number): Promise<T[]>
+import getURLsFromQuery from "./fetch-data/fetch-query.js";
 
 /**
  * Gets the handiworks that match the passed parameters.
@@ -20,9 +11,9 @@ export async function search<T extends IBasic>(query: ThreadSearchQuery, limit: 
  * @param {Number} limit
  * Maximum number of items to get. Default: 30
  */
-export default async function search<T extends IBasic>(query: any, limit: number = 30): Promise<T[]> {
+export default async function search<T extends IBasic>(query: IQuery, limit: number = 30): Promise<T[]> {
     // Fetch the URLs
-    const urls: string[] = await executeQuery(query, limit);
+    const urls: string[] = await getURLsFromQuery(query, limit);
 
     // Fetch the data
     const results = urls.map((url, idx) => {
