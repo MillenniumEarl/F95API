@@ -6,7 +6,7 @@ import { promisify } from "util";
 import path from "path";
 
 // Public modules from npm
-import md5 from "md5";
+import { sha256 } from "js-sha256";
 import tough, { CookieJar } from "tough-cookie";
 
 // Promisifed functions
@@ -114,7 +114,7 @@ export default class Session {
     create(username: string, password: string, token: string): void {
         // First, create the _hash of the credentials
         const value = `${username}%%%${password}`;
-        this._hash = md5(value);
+        this._hash = sha256(value);
 
         // Set the token
         this._token = token;
@@ -187,7 +187,7 @@ export default class Session {
         
         // Check the hash
         const value = `${username}%%%${password}`;
-        const hashValid = md5(value) === this._hash;
+        const hashValid = sha256(value) === this._hash;
 
         // Search for expired cookies
         const jarValid = this._cookieJar
