@@ -23,6 +23,8 @@
     "user data"
   ],
   "scripts": {
+    "lint": "eslint . --ext .ts",
+    "prettier-format": "prettier --config .prettierrc 'src/**/*.ts' --write",
     "compile": "tsc",
     "publish": "npm publish",
     "test": "nyc --reporter=text mocha './test/index-test.ts'",
@@ -57,9 +59,12 @@
     "chai": "^4.3.0",
     "dotenv": "^8.2.0",
     "eslint": "^7.20.0",
+    "eslint-config-prettier": "^8.1.0",
+    "eslint-plugin-prettier": "^3.3.1",
     "lodash": "^4.17.20",
     "mocha": "^8.3.0",
     "nyc": "^15.1.0",
+    "prettier": "^2.2.1",
     "ts-mocha": "^8.0.0",
     "ts-node": "^9.1.1",
     "typescript": "^4.2.0-insiders.20210210"
