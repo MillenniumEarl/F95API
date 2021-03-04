@@ -13,21 +13,21 @@ import ThreadSearchQuery, { TThreadOrder } from './thread-search-query.js';
 
 // Type definitions
 /**
- * Method of sorting results. Try to unify the two types of 
- * sorts in the "Latest" section and in the "Thread search" 
- * section. Being dynamic research, if a sorting type is not 
+ * Method of sorting results. Try to unify the two types of
+ * sorts in the "Latest" section and in the "Thread search"
+ * section. Being dynamic research, if a sorting type is not
  * available, the replacement sort is chosen.
- * 
+ *
  * `date`: Order based on the latest update
  *
  * `likes`: Order based on the number of likes received. Replacement: `replies`.
- * 
+ *
  * `relevance`: Order based on the relevance of the result (or rating).
- * 
+ *
  * `replies`: Order based on the number of answers to the thread. Replacement: `views`.
- * 
+ *
  * `title`: Order based on the growing alphabetical order of the titles.
- * 
+ *
  * `views`: Order based on the number of visits. Replacement: `replies`.
  */
 type THandiworkOrder = "date" | "likes" | "relevance" | "replies" | "title" | "views";
@@ -80,8 +80,8 @@ export default class HandiworkSearchQuery implements IQuery {
     //#region Public methods
 
     /**
-     * Select what kind of search should be 
-     * performed based on the properties of 
+     * Select what kind of search should be
+     * performed based on the properties of
      * the query.
      */
     public selectSearchType(): "latest" | "thread" {
@@ -89,8 +89,8 @@ export default class HandiworkSearchQuery implements IQuery {
         const MAX_TAGS_LATEST_SEARCH = 5;
         const DEFAULT_SEARCH_TYPE = "latest";
 
-        // If the keywords are set or the number 
-        // of included tags is greather than 5, 
+        // If the keywords are set or the number
+        // of included tags is greather than 5,
         // we must perform a thread search
         if (this.keywords || this.includedTags.length > MAX_TAGS_LATEST_SEARCH) return "thread";
 
@@ -156,7 +156,7 @@ export default class HandiworkSearchQuery implements IQuery {
     private castToThread(): ThreadSearchQuery {
         // Cast the basic query object and copy common values
         const query: ThreadSearchQuery = new ThreadSearchQuery;
-        Object.keys(this).forEach(key => { 
+        Object.keys(this).forEach(key => {
             if (query.hasOwnProperty(key)) {
                 query[key] = this[key];
             }

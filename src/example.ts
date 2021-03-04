@@ -1,5 +1,5 @@
-/* 
-to use this example, create an .env file 
+/*
+to use this example, create an .env file
 in the project root with the following values:
 
 F95_USERNAME = YOUR_USERNAME
@@ -12,12 +12,12 @@ F95_PASSWORD = YOUR_PASSWORD
 import dotenv from "dotenv";
 
 // Modules from file
-import { login, 
-    getUserData, 
-    getLatestUpdates, 
-    LatestSearchQuery, 
-    Game, 
-    searchHandiwork, 
+import { login,
+    getUserData,
+    getLatestUpdates,
+    LatestSearchQuery,
+    Game,
+    searchHandiwork,
     HandiworkSearchQuery
 } from "./index.js";
 

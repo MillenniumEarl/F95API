@@ -43,7 +43,7 @@ interface ILatestResource {
 
 //#region Public methods
 /**
- * Gets the basic data used for game data processing 
+ * Gets the basic data used for game data processing
  * (such as graphics engines and progress statuses)
  */
 export default async function fetchPlatformData(): Promise<void> {
@@ -106,7 +106,7 @@ function saveCache(path: string): void {
 
 /**
  * @private
- * Given the HTML code of the response from the F95Zone, 
+ * Given the HTML code of the response from the F95Zone,
  * parse it and return the result.
  */
 function parseLatestPlatformHTML(html: string): ILatestResource{

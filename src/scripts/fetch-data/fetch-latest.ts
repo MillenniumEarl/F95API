@@ -9,7 +9,7 @@ import { urls as f95url } from "../constants/url.js";
  * You *must* be logged.
  * @param {LatestSearchQuery} query
  * Query used for the search
- * @param {Number} limit 
+ * @param {Number} limit
  * Maximum number of items to get. Default: 30
  * @returns {Promise<String[]>} URLs of the handiworks
  */

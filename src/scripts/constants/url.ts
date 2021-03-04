@@ -8,8 +8,8 @@ export const urls = {
     F95_LATEST_PHP: "https://f95zone.to/new_latest.php",
     F95_BOOKMARKS: "https://f95zone.to/account/bookmarks",
     /**
-     * Add the unique ID of the post to 
-     * get the thread page where the post 
+     * Add the unique ID of the post to
+     * get the thread page where the post
      * is present.
      */
     F95_POSTS: "https://f95zone.to/posts/",

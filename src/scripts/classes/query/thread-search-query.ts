@@ -82,7 +82,7 @@ export default class ThreadSearchQuery implements IQuery {
         const params = this.preparePOSTParameters();
 
         // Return the POST response
-        return await fetchPOSTResponse(urls.F95_SEARCH_URL, params);
+        return fetchPOSTResponse(urls.F95_SEARCH_URL, params);
     }
 
     //#endregion Public methods

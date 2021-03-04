@@ -15,7 +15,7 @@ import { failure, Result, success } from "./classes/result.js";
 import { GenericAxiosError, InvalidF95Token, UnexpectedResponseContentType } from "./classes/errors.js";
 
 // Global variables
-const userAgent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15) " + 
+const userAgent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15) " +
     "AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0 Safari/605.1.15";
 // @ts-ignore
 axiosCookieJarSupport.default(axios);
@@ -61,15 +61,15 @@ export async function fetchHTML(url: string): Promise<Result<GenericAxiosError |
             error: null
         });
 
-        return isHTML ? 
+        return isHTML ?
             success(response.value.data as string) :
             failure(unexpectedResponseError);
     } else return failure(response.value as GenericAxiosError);
 }
 
 /**
- * It authenticates to the platform using the credentials 
- * and token obtained previously. Save cookies on your 
+ * It authenticates to the platform using the credentials
+ * and token obtained previously. Save cookies on your
  * device after authentication.
  * @param {module:./classes/credentials.ts:Credentials} credentials Platform access credentials
  * @param {Boolean} force Specifies whether the request should be forced, ignoring any saved cookies
@@ -173,7 +173,7 @@ export function isF95URL(url: string): boolean {
 };
 
 /**
- * Checks if the string passed by parameter has a 
+ * Checks if the string passed by parameter has a
  * properly formatted and valid path to a URL (HTTP/HTTPS).
  * @param {String} url String to check for correctness
  */
@@ -187,7 +187,7 @@ export function isStringAValidURL(url: string): boolean {
 /**
  * Check if a particular URL is valid and reachable on the web.
  * @param {string} url URL to check
- * @param {boolean} [checkRedirect] 
+ * @param {boolean} [checkRedirect]
  * If true, the function will consider redirects a violation and return false.
  * Default: false
  * @returns {Promise<Boolean>} true if the URL exists, false otherwise
