@@ -135,7 +135,7 @@ export default class PlatformUser {
                 this._followed = $(MEMBER.FOLLOWED).text() === "Unfollow";
                 this._ignored = $(MEMBER.IGNORED).text() === "Unignore";
                 this._messages = parseInt($(MEMBER.MESSAGES).text(), 10);
-                this._reactionScore = parseInt($(MEMBER.REACTION_SCORE).text());
+                this._reactionScore = parseInt($(MEMBER.REACTION_SCORE).text(), 10);
                 this._points = parseInt($(MEMBER.POINTS).text(), 10);
                 this._ratingsReceived = parseInt($(MEMBER.RATINGS_RECEIVED).text(), 10);
 

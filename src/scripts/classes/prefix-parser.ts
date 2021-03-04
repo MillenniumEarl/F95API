@@ -82,7 +82,7 @@ export default class PrefixParser {
             if (dict) {
                 // Extract the key from the dict
                 const key = this.getKeyByValue(dict, p);
-                ids.push(parseInt(key), 10);
+                ids.push(parseInt(key, 10));
             }
         }
         return ids;
