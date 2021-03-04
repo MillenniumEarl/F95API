@@ -2,10 +2,12 @@
 
 // Modules from file
 import LatestSearchQuery from "../classes/query/latest-search-query.js";
-import { urls as f95url } from "../constants/url.js";
+import { urls } from "../constants/url.js";
+
 
 /**
  * Gets the URLs of the latest handiworks that match the passed parameters.
+ * 
  * You *must* be logged.
  * @param {LatestSearchQuery} query
  * Query used for the search
@@ -13,9 +15,8 @@ import { urls as f95url } from "../constants/url.js";
  * Maximum number of items to get. Default: 30
  * @returns {Promise<String[]>} URLs of the handiworks
  */
-export default async function fetchLatestHandiworkURLs(query: LatestSearchQuery, limit = 30): Promise<string[]> {
+export default async function fetchLatestHandiworkURLs(query: LatestSearchQuery, limit: number = 30): Promise<string[]> {
     // Local variables
-    const threadURL = new URL("threads/", f95url.F95_BASE_URL).href;
     const resultURLs = [];
     let fetchedResults = 0;
     let page = 1;
@@ -30,7 +31,7 @@ export default async function fetchLatestHandiworkURLs(query: LatestSearchQuery,
             //@ts-ignore
             for (const result of response.value.data.msg.data) {
                 if (fetchedResults < limit) {
-                    const gameURL = new URL(result.thread_id, threadURL).href;
+                    const gameURL = new URL(result.thread_id, urls.F95_THREADS).href;
                     resultURLs.push(gameURL);
                     fetchedResults += 1;
                 }
