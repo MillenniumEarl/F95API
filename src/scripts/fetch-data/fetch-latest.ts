@@ -17,31 +17,34 @@ import { urls } from "../constants/url.js";
  */
 export default async function fetchLatestHandiworkURLs(query: LatestSearchQuery, limit: number = 30): Promise<string[]> {
     // Local variables
+    const shallowQuery: LatestSearchQuery = Object.assign(new LatestSearchQuery(), query);
     const resultURLs = [];
     let fetchedResults = 0;
-    let page = 1;
     let noMorePages = false;
 
     do {
         // Fetch the response (application/json)
-        const response = await query.execute();
+        const response = await shallowQuery.execute();
 
         // Save the URLs
         if (response.isSuccess()) {
-            //@ts-ignore
-            for (const result of response.value.data.msg.data) {
+            // In-loop variables
+            const data: [{ thread_id: number}] = response.value.data.msg.data;
+            const totalPages: number = response.value.data.msg.pagination.total;
+            
+            data.map((e, idx) => {
                 if (fetchedResults < limit) {
-                    const gameURL = new URL(result.thread_id, urls.F95_THREADS).href;
+                    
+                    const gameURL = new URL(e.thread_id.toString(), urls.F95_THREADS).href;
                     resultURLs.push(gameURL);
+
                     fetchedResults += 1;
                 }
-            }
+            });
 
             // Increment page and check for it's existence
-            page += 1;
-
-            //@ts-ignore
-            if (page > response.value.data.msg.pagination.total) noMorePages = true;
+            shallowQuery.page += 1;
+            noMorePages = shallowQuery.page > totalPages;
         } else throw response.value;
     }
     while (fetchedResults < limit && !noMorePages);
