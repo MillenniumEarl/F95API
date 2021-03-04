@@ -162,7 +162,7 @@ export default class ThreadSearchQuery implements IQuery {
      */
     private categoryToID(category: TCategory): number {
         const catMap = {
-            "games": 1,
+            "games": 2,
             "mods": 41,
             "comics": 40,
             "animations": 94,
