@@ -231,17 +231,19 @@ function fillWithPostData(hw: HandiWork, elements: IPostElement[]) {
     //#region Get the changelog
     hw.changelog = [];
     const changelogElement = getPostElementByName(elements, "changelog") || getPostElementByName(elements, "change-log");
-    const changelogSpoiler = changelogElement?.content.find(el => {
-        return el.type === "Spoiler" && el.content.length > 0;
-    });
+    if (changelogElement) {
+        const changelogSpoiler = changelogElement?.content.find(el => {
+            return el.type === "Spoiler" && el.content.length > 0;
+        });
 
-    // Add to the changelog the single spoilers
-    changelogSpoiler.content.forEach(el => {
-        if (el.text.trim()) hw.changelog.push(el.text);
-    });
+        // Add to the changelog the single spoilers
+        changelogSpoiler?.content.forEach(el => {
+            if (el.text.trim()) hw.changelog.push(el.text);
+        });
 
-    // Add at the ened also the text of the "changelog" element
-    hw.changelog.push(changelogSpoiler.text);
+        // Add at the end also the text of the "changelog" element
+        hw.changelog.push(changelogSpoiler.text);
+    }
     //#endregion Get the changelog
 }
 
