@@ -38,91 +38,91 @@ export default class PlatformUser {
   /**
    * Unique user ID.
    */
-  public get id() {
+  public get id(): number {
     return this._id;
   }
   /**
    * Username.
    */
-  public get name() {
+  public get name(): string {
     return this._name;
   }
   /**
    * Title assigned to the user by the platform.
    */
-  public get title() {
+  public get title(): string {
     return this._title;
   }
   /**
    * List of banners assigned by the platform.
    */
-  public get banners() {
+  public get banners(): string[] {
     return this._banners;
   }
   /**
    * Number of messages written by the user.
    */
-  public get messages() {
+  public get messages(): number {
     return this._messages;
   }
   /**
    * @todo Reaction score.
    */
-  public get reactionScore() {
+  public get reactionScore(): number {
     return this._reactionScore;
   }
   /**
    * @todo Points.
    */
-  public get points() {
+  public get points(): number {
     return this._points;
   }
   /**
    * Number of ratings received.
    */
-  public get ratingsReceived() {
+  public get ratingsReceived(): number {
     return this._ratingsReceived;
   }
   /**
    * Date of joining the platform.
    */
-  public get joined() {
+  public get joined(): Date {
     return this._joined;
   }
   /**
    * Date of the last connection to the platform.
    */
-  public get lastSeen() {
+  public get lastSeen(): Date {
     return this._lastSeen;
   }
   /**
    * Indicates whether the user is followed by the currently logged in user.
    */
-  public get followed() {
+  public get followed(): boolean {
     return this._followed;
   }
   /**
    * Indicates whether the user is ignored by the currently logged on user.
    */
-  public get ignored() {
+  public get ignored(): boolean {
     return this._ignored;
   }
   /**
    * Indicates that the profile is private and not viewable by the user.
    */
-  public get private() {
+  public get private(): boolean {
     return this._private;
   }
   /**
    * URL of the image used as the user's avatar.
    */
-  public get avatar() {
+  public get avatar(): string {
     return this._avatar;
   }
   /**
    * Value of donations made.
    */
-  public get donation() {
+  public get donation(): number {
     return this._amountDonated;
   }
 
@@ -134,11 +134,11 @@ export default class PlatformUser {
 
   //#region Public methods
 
-  public setID(id: number) {
+  public setID(id: number): void {
     this._id = id;
   }
 
-  public async fetch() {
+  public async fetch(): Promise<void> {
     // Check ID
     if (!this.id && this.id < 1) throw new Error("Invalid user ID");
 

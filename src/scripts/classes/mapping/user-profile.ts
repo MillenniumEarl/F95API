@@ -52,28 +52,28 @@ export default class UserProfile extends PlatformUser {
   /**
    * List of followed thread data.
    */
-  public get watched() {
+  public get watched(): IWatchedThread[] {
     return this._watched;
   }
   /**
    * List of bookmarked posts.
    * @todo
    */
-  public get bookmarks() {
+  public get bookmarks(): Post[] {
     return this._bookmarks;
   }
   /**
    * List of alerts.
    * @todo
    */
-  public get alerts() {
+  public get alerts(): string[] {
     return this._alerts;
   }
   /**
    * List of conversations.
    * @todo
    */
-  public get conversation() {
+  public get conversation(): string[] {
     return this._conversations;
   }
 
@@ -85,7 +85,7 @@ export default class UserProfile extends PlatformUser {
 
   //#region Public methods
 
-  public async fetch() {
+  public async fetch(): Promise<void> {
     // First get the user ID and set it
     const id = await this.fetchUserID();
     super.setID(id);

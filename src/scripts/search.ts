@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-inferrable-types */
 "use strict";
 
 // Modules from file
@@ -13,15 +14,13 @@ import getURLsFromQuery from "./fetch-data/fetch-query.js";
  */
 export default async function search<T extends IBasic>(
   query: IQuery,
-  limit = 30
+  limit: number = 30
 ): Promise<T[]> {
   // Fetch the URLs
   const urls: string[] = await getURLsFromQuery(query, limit);
 
   // Fetch the data
-  const results = urls.map((url, idx) => {
-    return getHandiworkInformation<T>(url);
-  });
+  const results = urls.map((url) => getHandiworkInformation<T>(url));
 
   return Promise.all(results);
 }

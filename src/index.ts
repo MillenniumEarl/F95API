@@ -45,8 +45,8 @@ export { default as ThreadSearchQuery } from "./scripts/classes/query/thread-sea
 /**
  * Set the logger level for module debugging.
  */
-/* istambul ignore next */
-export var loggerLevel = shared.logger.level;
+// eslint-disable-next-line prefer-const
+export let loggerLevel = shared.logger.level;
 shared.logger.level = "warn"; // By default log only the warn messages
 
 /**

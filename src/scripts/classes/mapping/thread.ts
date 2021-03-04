@@ -45,7 +45,7 @@ export default class Thread {
   /**
    * Unique ID of the thread on the platform.
    */
-  public get id() {
+  public get id(): number {
     return this._id;
   }
   /**
@@ -53,55 +53,55 @@ export default class Thread {
    *
    * It may vary depending on any versions of the contained product.
    */
-  public get url() {
+  public get url(): string {
     return this._url;
   }
   /**
    * Thread title.
    */
-  public get title() {
+  public get title(): string {
     return this._title;
   }
   /**
    * Tags associated with the thread.
    */
-  public get tags() {
+  public get tags(): string[] {
     return this._tags;
   }
   /**
    * Prefixes associated with the thread
    */
-  public get prefixes() {
+  public get prefixes(): string[] {
     return this._prefixes;
   }
   /**
    * Rating assigned to the thread.
    */
-  public get rating() {
+  public get rating(): TRating {
     return this._rating;
   }
   /**
    * Owner of the thread.
    */
-  public get owner() {
+  public get owner(): PlatformUser {
     return this._owner;
   }
   /**
    * Date the thread was first published.
    */
-  public get publication() {
+  public get publication(): Date {
     return this._publication;
   }
   /**
    * Date the thread was last modified.
    */
-  public get modified() {
+  public get modified(): Date {
     return this._modified;
   }
   /**
    * Category to which the content of the thread belongs.
    */
-  public get category() {
+  public get category(): TCategory {
     return this._category;
   }
 
@@ -233,7 +233,7 @@ export default class Thread {
   /**
    * Gets information about this thread.
    */
-  public async fetch() {
+  public async fetch(): Promise<void> {
     // Prepare the url
     this._url = new URL(this.id.toString(), urls.F95_THREADS).toString();
 

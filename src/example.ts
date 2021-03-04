@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 /*
 to use this example, create an .env file
 in the project root with the following values:

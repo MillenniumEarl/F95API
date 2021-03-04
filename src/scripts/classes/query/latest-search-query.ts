@@ -8,6 +8,9 @@ import { urls } from "../../constants/url.js";
 import PrefixParser from "../prefix-parser.js";
 import { IQuery, TCategory, TQueryInterface } from "../../interfaces.js";
 import { fetchGETResponse } from "../../network-helper.js";
+import { AxiosResponse } from "axios";
+import { GenericAxiosError } from "../errors.js";
+import { Result } from "../result.js";
 
 // Type definitions
 export type TLatestOrder = "date" | "likes" | "views" | "title" | "rating";
@@ -64,7 +67,9 @@ export default class LatestSearchQuery implements IQuery {
     return validator.validateSync(this).length === 0;
   }
 
-  public async execute() {
+  public async execute(): Promise<
+    Result<GenericAxiosError, AxiosResponse<any>>
+  > {
     // Check if the query is valid
     if (!this.validate()) {
       throw new Error(

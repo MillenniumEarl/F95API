@@ -84,7 +84,7 @@ export async function fetchHTML(
  */
 export async function authenticate(
   credentials: credentials,
-  force = false
+  force: boolean = false
 ): Promise<LoginResult> {
   shared.logger.info(`Authenticating with user ${credentials.username}`);
   if (!credentials.token)
@@ -140,7 +140,7 @@ export async function authenticate(
 /**
  * Obtain the token used to authenticate the user to the platform.
  */
-export async function getF95Token() {
+export async function getF95Token(): Promise<string> {
   // Fetch the response of the platform
   const response = await fetchGETResponse(f95url.F95_LOGIN_URL);
 
@@ -167,7 +167,6 @@ export async function fetchGETResponse(
     const response = await axios.get(secureURL, commonConfig);
     return success(response);
   } catch (e) {
-    console.log(e.response);
     shared.logger.error(
       `(GET) Error ${e.message} occurred while trying to fetch ${secureURL}`
     );
@@ -217,7 +216,7 @@ export function isStringAValidURL(url: string): boolean {
  */
 export async function urlExists(
   url: string,
-  checkRedirect = false
+  checkRedirect: boolean = false
 ): Promise<boolean> {
   // Local variables
   let valid = false;

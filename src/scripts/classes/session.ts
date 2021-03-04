@@ -37,37 +37,37 @@ export default class Session {
   /**
    * Path of the session map file on disk.
    */
-  public get path() {
+  public get path(): string {
     return this._path;
   }
   /**
    * Indicates if the session is mapped on disk.
    */
-  public get isMapped() {
+  public get isMapped(): boolean {
     return this._isMapped;
   }
   /**
    * Date of creation of the session.
    */
-  public get created() {
+  public get created(): Date {
     return this._created;
   }
   /**
    * MD5 hash of the username and the password.
    */
-  public get hash() {
+  public get hash(): string {
     return this._hash;
   }
   /**
    * Token used to login to F95Zone.
    */
-  public get token() {
+  public get token(): string {
     return this._token;
   }
   /**
    * Cookie holder.
    */
-  public get cookieJar() {
+  public get cookieJar(): tough.CookieJar {
     return this._cookieJar;
   }
 

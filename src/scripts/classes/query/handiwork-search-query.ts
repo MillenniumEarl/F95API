@@ -6,7 +6,7 @@ import validator from "class-validator";
 
 // Module from files
 import { IQuery, TCategory, TQueryInterface } from "../../interfaces.js";
-import { GenericAxiosError, UnexpectedResponseContentType } from "../errors.js";
+import { GenericAxiosError } from "../errors.js";
 import { Result } from "../result.js";
 import LatestSearchQuery, { TLatestOrder } from "./latest-search-query.js";
 import ThreadSearchQuery, { TThreadOrder } from "./thread-search-query.js";

@@ -35,49 +35,49 @@ export default class Post {
   /**
    * Represents a post published by a user on the F95Zone platform.
    */
-  public get id() {
+  public get id(): number {
     return this._id;
   }
   /**
    * Unique ID of the post within the thread in which it is present.
    */
-  public get number() {
+  public get number(): number {
     return this._number;
   }
   /**
    * Date the post was first published.
    */
-  public get published() {
+  public get published(): Date {
     return this._published;
   }
   /**
    * Date the post was last modified.
    */
-  public get lastEdit() {
+  public get lastEdit(): Date {
     return this._lastEdit;
   }
   /**
    * User who owns the post.
    */
-  public get owner() {
+  public get owner(): PlatformUser {
     return this._owner;
   }
   /**
    * Indicates whether the post has been bookmarked.
    */
-  public get bookmarked() {
+  public get bookmarked(): boolean {
     return this._bookmarked;
   }
   /**
    * Post message text.
    */
-  public get message() {
+  public get message(): string {
     return this._message;
   }
   /**
    * Set of the elements that make up the body of the post.
    */
-  public get body() {
+  public get body(): IPostElement[] {
     return this._body;
   }
 
@@ -92,7 +92,7 @@ export default class Post {
   /**
    * Gets the post data starting from its unique ID for the entire platform.
    */
-  public async fetch() {
+  public async fetch(): Promise<void> {
     // Fetch HTML page containing the post
     const url = new URL(this.id.toString(), urls.F95_POSTS).toString();
     const htmlResponse = await fetchHTML(url);

@@ -90,13 +90,7 @@ function parseCheerioSpoilerNode(
       if (element.attr("class") === "bbCodeSpoiler") {
         const spoiler = parseCheerioSpoilerNode($, element);
         content.content.push(spoiler);
-      }
-      //@ts-ignore
-      // else if (el.name === "br") {
-      //     // Add new line
-      //     content.text += "\n";
-      // }
-      else if (el.type === "text") {
+      } else if (el.type === "text") {
         // Append text
         content.text += element.text();
       }
@@ -266,7 +260,7 @@ function parseCheerioNode(
 function parsePostElements(elements: IPostElement[]): IPostElement[] {
   // Local variables
   const pairs: IPostElement[] = [];
-  const specialCharsRegex = /^[-!$%^&*()_+|~=`{}\[\]:";'<>?,.\/]/;
+  const specialCharsRegex = /^[-!$%^&*()_+|~=`{}[\]:";'<>?,./]/;
   const specialRegex = new RegExp(specialCharsRegex);
 
   for (let i = 0; i < elements.length; i++) {

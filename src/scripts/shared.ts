@@ -14,6 +14,7 @@ import Session from "./classes/session.js";
 // Types declaration
 export type TPrefixDict = { [n: number]: string };
 type TPrefixKey = "engines" | "statuses" | "tags" | "others";
+type TPrefixes = { [key in TPrefixKey]: TPrefixDict };
 
 /**
  * Class containing variables shared between modules.
@@ -22,9 +23,7 @@ export default abstract class Shared {
   //#region Fields
 
   private static _isLogged = false;
-  private static _prefixes: { [key in TPrefixKey]: TPrefixDict } = {} as {
-    [key in TPrefixKey]: TPrefixDict;
-  };
+  private static _prefixes: TPrefixes = {} as TPrefixes;
   private static _logger: log4js.Logger = log4js.getLogger();
   private static _session = new Session(join(tmpdir(), "f95session.json"));
 
