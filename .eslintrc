@@ -15,13 +15,7 @@
         "no-inferrable-types": 0,
         "no-console": 1, // Means warning
         "prettier/prettier": 2, // Means error  
-        "no-unused-vars": [
-            1,
-            {
-                "vars": "all",
-                "args": "after-used"
-            }
-        ]
+        "no-unused-vars": 0
     },
     "overrides": [
         {
