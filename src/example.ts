@@ -1,3 +1,8 @@
+// Copyright (c) 2021 MillenniumEarl
+//
+// This software is released under the MIT License.
+// https://opensource.org/licenses/MIT
+
 /* eslint-disable no-console */
 /*
 to use this example, create an .env file
