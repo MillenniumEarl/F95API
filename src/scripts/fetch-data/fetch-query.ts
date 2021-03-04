@@ -19,11 +19,11 @@ import { IQuery } from "../interfaces.js";
 export default async function getURLsFromQuery(query: IQuery, limit: number = 30): Promise<string[]> {
     switch (query.itype) {
         case "HandiworkSearchQuery":
-            return await fetchHandiworkURLs(query as HandiworkSearchQuery, limit);
+            return fetchHandiworkURLs(query as HandiworkSearchQuery, limit);
         case "LatestSearchQuery":
-            return await fetchLatestHandiworkURLs(query as LatestSearchQuery, limit);
+            return fetchLatestHandiworkURLs(query as LatestSearchQuery, limit);
         case "ThreadSearchQuery":
-            return await fetchThreadHandiworkURLs(query as ThreadSearchQuery, limit);
+            return fetchThreadHandiworkURLs(query as ThreadSearchQuery, limit);
         default:
             throw Error(`Invalid query type: ${query.itype}`);
     }

@@ -7,7 +7,7 @@ import { urls } from "../constants/url.js";
 
 /**
  * Gets the URLs of the latest handiworks that match the passed parameters.
- * 
+ *
  * You *must* be logged.
  * @param {LatestSearchQuery} query
  * Query used for the search
