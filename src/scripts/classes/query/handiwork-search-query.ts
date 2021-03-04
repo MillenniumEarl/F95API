@@ -31,8 +31,7 @@ import ThreadSearchQuery, { TThreadOrder } from './thread-search-query.js';
  * `views`: Order based on the number of visits. Replacement: `replies`.
  */
 type THandiworkOrder = "date" | "likes" | "relevance" | "replies" | "title" | "views";
-type TLatestResult = Result<GenericAxiosError | UnexpectedResponseContentType, string>;
-type TThreadResult = Result<GenericAxiosError, AxiosResponse<any>>;
+type TExecuteResult = Result<GenericAxiosError, AxiosResponse<any>>;
 
 export default class HandiworkSearchQuery implements IQuery {
     
@@ -100,9 +99,9 @@ export default class HandiworkSearchQuery implements IQuery {
 
     public validate(): boolean { return validator.validateSync(this).length === 0; }
 
-    public async execute(): Promise<TLatestResult | TThreadResult> {
+    public async execute(): Promise<TExecuteResult> {
         // Local variables
-        let response: TLatestResult | TThreadResult = null;
+        let response: TExecuteResult = null;
 
         // Check if the query is valid
         if (!this.validate()) {
@@ -173,6 +172,6 @@ export default class HandiworkSearchQuery implements IQuery {
 
         return query;
     }
-    
+
     //#endregion
 }

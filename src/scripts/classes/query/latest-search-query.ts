@@ -7,7 +7,7 @@ import validator from 'class-validator';
 import { urls } from "../../constants/url.js";
 import PrefixParser from '../prefix-parser.js';
 import { IQuery, TCategory, TQueryInterface } from "../../interfaces.js";
-import { fetchHTML } from '../../network-helper.js';
+import { fetchGETResponse } from '../../network-helper.js';
 
 // Type definitions
 export type TLatestOrder = "date" | "likes" | "views" | "title" | "rating";
@@ -74,7 +74,7 @@ export default class LatestSearchQuery implements IQuery {
         const decoded = decodeURIComponent(url.toString());
         
         // Fetch the result
-        return await fetchHTML(decoded);
+        return await fetchGETResponse(decoded);
     }
 
     public findNearestDate(d: Date): TDate {
