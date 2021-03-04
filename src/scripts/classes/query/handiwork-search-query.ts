@@ -134,7 +134,7 @@ export default class HandiworkSearchQuery implements IQuery {
 
     private castToLatest(): LatestSearchQuery {
         // Cast the basic query object and copy common values
-        const query: LatestSearchQuery = new LatestSearchQuery;
+        const query: LatestSearchQuery = new LatestSearchQuery();
         Object.keys(this).forEach(key => {
             if (query.hasOwnProperty(key)) {
                 query[key] = this[key];
@@ -155,7 +155,7 @@ export default class HandiworkSearchQuery implements IQuery {
 
     private castToThread(): ThreadSearchQuery {
         // Cast the basic query object and copy common values
-        const query: ThreadSearchQuery = new ThreadSearchQuery;
+        const query: ThreadSearchQuery = new ThreadSearchQuery();
         Object.keys(this).forEach(key => {
             if (query.hasOwnProperty(key)) {
                 query[key] = this[key];
