@@ -142,7 +142,7 @@ export default class ThreadSearchQuery implements IQuery {
         }
 
         // Set the other values
-        params["o"] = this.order.toString();
+        params["order"] = this.order.toString();
         params["page"] = this.page.toString();
 
         return params;
