@@ -24,7 +24,7 @@
   ],
   "scripts": {
     "lint": "eslint . --ext .ts",
-    "prettier-format": "prettier --config .prettierrc 'src/**/*.ts' --write",
+    "prettier-format": "prettier --config .prettierrc '{src,tests}/**/*.ts' --write",
     "compile": "tsc",
     "publish": "npm publish",
     "test": "nyc --reporter=text mocha './test/index-test.ts'",
