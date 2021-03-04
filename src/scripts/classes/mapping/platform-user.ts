@@ -101,7 +101,7 @@ export default class PlatformUser {
 
     constructor()
     constructor(id: number)
-    constructor(id: number = undefined) { this._id = id; }
+    constructor(id?: number) { this._id = id; }
 
     //#region Public methods
 
@@ -134,10 +134,10 @@ export default class PlatformUser {
                 this._avatar = $(MEMBER.AVATAR).attr("src");
                 this._followed = $(MEMBER.FOLLOWED).text() === "Unfollow";
                 this._ignored = $(MEMBER.IGNORED).text() === "Unignore";
-                this._messages = parseInt($(MEMBER.MESSAGES).text());
+                this._messages = parseInt($(MEMBER.MESSAGES).text(), 10);
                 this._reactionScore = parseInt($(MEMBER.REACTION_SCORE).text());
-                this._points = parseInt($(MEMBER.POINTS).text());
-                this._ratingsReceived = parseInt($(MEMBER.RATINGS_RECEIVED).text());
+                this._points = parseInt($(MEMBER.POINTS).text(), 10);
+                this._ratingsReceived = parseInt($(MEMBER.RATINGS_RECEIVED).text(), 10);
 
                 // Parse date
                 const joined = $(MEMBER.JOINED)?.attr("datetime");
@@ -148,7 +148,7 @@ export default class PlatformUser {
 
                 // Parse donation
                 const donation = $(MEMBER.AMOUNT_DONATED)?.text().replace("$", "");
-                this._amountDonated = donation ? parseInt(donation) : 0;
+                this._amountDonated = donation ? parseInt(donation, 10) : 0;
             }
         } else throw htmlResponse.value;
     }
