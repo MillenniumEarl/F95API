@@ -29,9 +29,9 @@ main();
 async function main() {
     // Local variables
     const gameList = [
-        "Four Elements Trainer",
-        "corrupted kingdoms",
-        "summertime saga"
+        "City of broken dreamers",
+        "Seeds of chaos",
+        "MIST"
     ];
 
     // Log in the platform
@@ -61,13 +61,14 @@ async function main() {
         const query: HandiworkSearchQuery = new HandiworkSearchQuery();
         query.category = "games";
         query.keywords = gamename;
+        query.order = "likes"; // To find the most popular games
 
         // Fetch the first result
         const searchResult = await searchHandiwork<Game>(query, 1);
 
         // No game found
         if (searchResult.length === 0) {
-            console.log(`No data found for '${gamename}'`);
+            console.log(`No data found for '${gamename}'\n`);
             continue;
         }
 
