@@ -45,7 +45,7 @@ export default class Thread {
     public get id() { return this._id; }
     /**
      * URL of the thread.
-     * 
+     *
      * It may vary depending on any versions of the contained product.
      */
     public get url() { return this._url; }
@@ -85,8 +85,8 @@ export default class Thread {
     //#endregion Getters
 
     /**
-     * Initializes an object for mapping a thread. 
-     * 
+     * Initializes an object for mapping a thread.
+     *
      * The unique ID of the thread must be specified.
      */
     constructor(id: number) { this._id = id; }
@@ -167,7 +167,7 @@ export default class Thread {
     }
 
     /**
-     * It processes the rating of the thread 
+     * It processes the rating of the thread
      * starting from the data contained in the JSON+LD tag.
      */
     private parseRating(data: TJsonLD): TRating {
@@ -241,7 +241,7 @@ export default class Thread {
 
     /**
      * Gets the post in the `index` position with respect to the posts in the thread.
-     * 
+     *
      * `index` must be greater or equal to 1.
      * If the post is not found, `null` is returned.
      */

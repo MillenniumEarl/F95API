@@ -87,7 +87,7 @@ function toUpperCaseArray(a: string[]): string[] {
 
 /**
  * Check if the string `s` is in the dict `a`.
- * 
+ *
  * Case insensitive.
  */
 function stringInDict(s: string, a: TPrefixDict): boolean {
@@ -99,7 +99,7 @@ function stringInDict(s: string, a: TPrefixDict): boolean {
 
 /**
  * Convert a string to a boolean.
- * 
+ *
  * Check also for `yes`/`no` and `1`/`0`.
  */
 function stringToBoolean(s: string): boolean {
@@ -116,7 +116,7 @@ function stringToBoolean(s: string): boolean {
 
 /**
  * Gets the element with the given name or `undefined`.
- * 
+ *
  * Case-insensitive.
  */
 function getPostElementByName(elements: IPostElement[], name: string): IPostElement | undefined {
@@ -127,7 +127,7 @@ function getPostElementByName(elements: IPostElement[], name: string): IPostElem
 
 /**
  * Parse the post prefixes.
- * 
+ *
  * In particular, it elaborates the following prefixes for games:
  * `Engine`, `Status`, `Mod`.
  */
@@ -174,7 +174,7 @@ function fillWithPrefixes(hw: HandiWork, prefixes: string[]) {
 /**
  * Compiles a HandiWork object with the data extracted
  * from the main post of the HandiWork page.
- * 
+ *
  * The values that will be added are:
  * `Overview`, `OS`, `Language`, `Version`, `Installation`,
  * `Pages`, `Resolution`, `Lenght`, `Genre`, `Censored`,

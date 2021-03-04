@@ -149,7 +149,7 @@ export default class UserProfile extends PlatformUser {
         }
 
         // Wait for the promises to resolve
-        return await Promise.all(responsePromiseList);
+        return Promise.all(responsePromiseList);
     }
 
     /**

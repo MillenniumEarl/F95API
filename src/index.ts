@@ -59,7 +59,7 @@ export function isLogged(): boolean { return shared.isLogged; };
 
 /**
  * Log in to the F95Zone platform.
- * 
+ *
  * This **must** be the first operation performed before accessing any other script functions.
  */
 export async function login(username: string, password: string): Promise<LoginResult> {
@@ -102,7 +102,7 @@ export async function login(username: string, password: string): Promise<LoginRe
 
 /**
  * Chek if exists a new version of the handiwork.
- * 
+ *
  * You **must** be logged in to the portal before calling this method.
  */
 export async function checkIfHandiworkHasUpdate(hw: HandiWork): Promise<boolean> {
@@ -127,9 +127,9 @@ export async function checkIfHandiworkHasUpdate(hw: HandiWork): Promise<boolean>
 
 /**
  * Search for one or more handiworks identified by a specific query.
- * 
+ *
  * You **must** be logged in to the portal before calling this method.
- * 
+ *
  * @param {HandiworkSearchQuery} query Parameters used for the search.
  * @param {Number} limit Maximum number of results. Default: 10
  */
@@ -137,12 +137,12 @@ export async function searchHandiwork<T extends IBasic>(query: HandiworkSearchQu
     // Check if the user is logged
     if (!shared.isLogged) throw new UserNotLogged(USER_NOT_LOGGED);
 
-    return await search<T>(query, limit);
+    return search<T>(query, limit);
 };
 
 /**
  * Given the url, it gets all the information about the handiwork requested.
- * 
+ *
  * You **must** be logged in to the portal before calling this method.
  */
 export async function getHandiworkFromURL<T extends IBasic>(url: string): Promise<T> {
@@ -155,14 +155,14 @@ export async function getHandiworkFromURL<T extends IBasic>(url: string): Promis
     if (!isF95URL(url)) throw new Error(`${url} is not a valid F95Zone URL`);
     
     // Get game data
-    return await getHandiworkInformation<T>(url);
+    return getHandiworkInformation<T>(url);
 };
 
 /**
  * Gets the data of the currently logged in user.
- * 
+ *
  * You **must** be logged in to the portal before calling this method.
- * 
+ *
  * @returns {Promise<UserProfile>} Data of the user currently logged in
  */
 export async function getUserData(): Promise<UserProfile> {
@@ -178,9 +178,9 @@ export async function getUserData(): Promise<UserProfile> {
 
 /**
  * Gets the latest updated games that match the specified parameters.
- * 
+ *
  * You **must** be logged in to the portal before calling this method.
- * 
+ *
  * @param {LatestSearchQuery} query Parameters used for the search.
  * @param {Number} limit Maximum number of results. Default: 10
  */
@@ -196,7 +196,7 @@ export async function getLatestUpdates<T extends IBasic>(query: LatestSearchQuer
 
     // Get the data from urls
     const promiseList = urls.map((u: string) => getHandiworkInformation<T>(u));
-    return await Promise.all(promiseList);
+    return Promise.all(promiseList);
 };
 
 //#endregion

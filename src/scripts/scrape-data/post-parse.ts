@@ -21,11 +21,11 @@ export interface ILink extends IPostElement {
  * Given a post of a thread page it extracts the information contained in the body.
  */
 export function parseF95ThreadPost($: cheerio.Root, post: cheerio.Cheerio): IPostElement[] {
-    // The data is divided between "tag" and "text" elements. 
-    // Simple data is composed of a "tag" element followed 
-    // by a "text" element, while more complex data (contained 
-    // in spoilers) is composed of a "tag" element, followed 
-    // by a text containing only ":" and then by an additional 
+    // The data is divided between "tag" and "text" elements.
+    // Simple data is composed of a "tag" element followed
+    // by a "text" element, while more complex data (contained
+    // in spoilers) is composed of a "tag" element, followed
+    // by a text containing only ":" and then by an additional
     // "tag" element having as the first term "Spoiler"
 
     // First fetch all the elements in the post
@@ -44,13 +44,13 @@ export function parseF95ThreadPost($: cheerio.Root, post: cheerio.Cheerio): IPos
 //#region Private methods
 
 /**
- * Process a spoiler element by getting its text broken 
+ * Process a spoiler element by getting its text broken
  * down by any other spoiler elements present.
  */
 function parseCheerioSpoilerNode($: cheerio.Root, spoiler: cheerio.Cheerio): IPostElement {
-    // A spoiler block is composed of a div with class "bbCodeSpoiler", 
-    // containing a div "bbCodeSpoiler-content" containing, in cascade, 
-    // a div with class "bbCodeBlock--spoiler" and a div with class "bbCodeBlock-content". 
+    // A spoiler block is composed of a div with class "bbCodeSpoiler",
+    // containing a div "bbCodeSpoiler-content" containing, in cascade,
+    // a div with class "bbCodeBlock--spoiler" and a div with class "bbCodeBlock-content".
     // This last tag contains the required data.
 
     // Local variables
@@ -94,7 +94,7 @@ function parseCheerioSpoilerNode($: cheerio.Root, spoiler: cheerio.Cheerio): IPo
 }
 
 /**
- * Check if the node passed as a parameter is of text type. 
+ * Check if the node passed as a parameter is of text type.
  * This also includes formatted nodes (i.e. `<b>`).
  */
 function isTextNode(node: cheerio.Element): boolean {
@@ -106,7 +106,7 @@ function isTextNode(node: cheerio.Element): boolean {
 }
 
 /**
- * Gets the text of the node only, excluding child nodes. 
+ * Gets the text of the node only, excluding child nodes.
  * Also includes formatted text elements (i.e. `<b>`).
  */
 function getCheerioNonChildrenText(node: cheerio.Cheerio): string {
@@ -120,7 +120,7 @@ function getCheerioNonChildrenText(node: cheerio.Cheerio): string {
 }
 
 /**
- * Process a node and see if it contains a 
+ * Process a node and see if it contains a
  * link or image. If not, it returns `null`.
  */
 function parseCheerioLinkNode(element: cheerio.Cheerio): ILink | null {
@@ -149,7 +149,7 @@ function parseCheerioLinkNode(element: cheerio.Cheerio): ILink | null {
 }
 
 /**
- * Collapse an `IPostElement` element with a single subnode 
+ * Collapse an `IPostElement` element with a single subnode
  * in the `Content` field in case it has no information.
  */
 function reducePostElement(element: IPostElement): IPostElement {
@@ -234,7 +234,7 @@ function parseCheerioNode($: cheerio.Root, node: cheerio.Element, reduce = true)
 }
 
 /**
- * It simplifies the `IPostElement` elements by associating 
+ * It simplifies the `IPostElement` elements by associating
  * the corresponding value to each characterizing element (i.e. author).
  */
 function parsePostElements(elements: IPostElement[]): IPostElement[] {
