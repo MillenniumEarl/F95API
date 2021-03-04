@@ -125,7 +125,7 @@ export default class Thread {
             .toArray()
             .map((el, idx) => {
                 const id = $(el).find(POST.ID).attr("id").replace("post-", "");
-                return new Post(parseInt(id));
+                return new Post(parseInt(id, 10));
             });
 
         // Wait for the post to be fetched
@@ -174,8 +174,8 @@ export default class Thread {
         const ratingTree = data["aggregateRating"] as TJsonLD;
         const rating: TRating = {
             average: ratingTree ? parseFloat(ratingTree["ratingValue"] as string) : 0,
-            best: ratingTree ? parseInt(ratingTree["bestRating"] as string) : 0,
-            count: ratingTree ? parseInt(ratingTree["ratingCount"] as string) : 0,
+            best: ratingTree ? parseInt(ratingTree["bestRating"] as string, 10) : 0,
+            count: ratingTree ? parseInt(ratingTree["ratingCount"] as string, 10) : 0,
         };
 
         return rating;
@@ -227,7 +227,7 @@ export default class Thread {
             this._title = this.cleanHeadline(JSONLD["headline"] as string);
             this._tags = tagArray.map(el => $(el).text().trim());
             this._prefixes = prefixArray.map(el => $(el).text().trim());
-            this._owner = new PlatformUser(parseInt(ownerID));
+            this._owner = new PlatformUser(parseInt(ownerID, 10));
             await this._owner.fetch();
             this._rating = this.parseRating(JSONLD);
             this._category = JSONLD["articleSection"] as TCategory;

@@ -100,7 +100,7 @@ export default class UserProfile extends PlatformUser {
             const $ = cheerio.load(htmlResponse.value);
 
             const sid = $(GENERIC.CURRENT_USER_ID).attr("data-user-id").trim();
-            return parseInt(sid);
+            return parseInt(sid, 10);
         } else throw htmlResponse.value;
     }
 
@@ -116,7 +116,7 @@ export default class UserProfile extends PlatformUser {
             const $ = cheerio.load(htmlResponse.value);
 
             // Fetch the pages
-            const lastPage = parseInt($(WATCHED_THREAD.LAST_PAGE).text().trim());
+            const lastPage = parseInt($(WATCHED_THREAD.LAST_PAGE).text().trim(), 10);
             const pages = await this.fetchPages(url, lastPage);
             
             const watchedThreads = pages.map((r, idx) => {

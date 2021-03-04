@@ -84,7 +84,7 @@ export default class Post {
             const post = $(THREAD.POSTS_IN_PAGE).toArray().find((el, idx) => {
                 // Fetch the ID and check if it is what we are searching
                 const sid: string = $(el).find(POST.ID).attr("id").replace("post-", "");
-                const id = parseInt(sid);
+                const id = parseInt(sid, 10);
 
                 if (id === this.id) return el;
             });
@@ -101,11 +101,11 @@ export default class Post {
     private async parsePost($: cheerio.Root, post: cheerio.Cheerio): Promise<void> {
         // Find post's ID
         const sid: string = post.find(POST.ID).attr("id").replace("post-", "");
-        this._id = parseInt(sid);
+        this._id = parseInt(sid, 10);
 
         // Find post's number
         const sNumber: string = post.find(POST.NUMBER).text().replace("#", "");
-        this._number = parseInt(sNumber);
+        this._number = parseInt(sNumber, 10);
 
         // Find post's publishing date
         const sPublishing: string = post.find(POST.PUBLISH_DATE).attr("datetime");
@@ -117,7 +117,7 @@ export default class Post {
 
         // Find post's owner
         const sOwnerID: string = post.find(POST.OWNER_ID).attr("data-user-id").trim();
-        this._owner = new PlatformUser(parseInt(sOwnerID));
+        this._owner = new PlatformUser(parseInt(sOwnerID, 10));
         await this._owner.fetch();
 
         // Find if the post is bookmarked
