@@ -193,7 +193,7 @@ export default class Thread {
 
         // Get the title name
         let name = headline;
-        matches.forEach(e => name = name.replace(e, ""));
+        if (matches) matches.forEach(e => name = name.replace(e, ""));
         return name.trim();
     }
 
