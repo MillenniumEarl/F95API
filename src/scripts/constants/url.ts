@@ -1,6 +1,6 @@
 export const urls = {
     F95_BASE_URL: "https://f95zone.to",
-    F95_SEARCH_URL: "https://f95zone.to/search/105286576/",
+    F95_SEARCH_URL: "https://f95zone.to/search/search/",
     F95_LATEST_UPDATES: "https://f95zone.to/latest",
     F95_THREADS: "https://f95zone.to/threads/",
     F95_LOGIN_URL: "https://f95zone.to/login/login",

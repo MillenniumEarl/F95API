@@ -4,13 +4,13 @@
 import cheerio from "cheerio";
 
 // Modules from file
-import { fetchHTML } from "../network-helper.js";
 import shared from "../shared.js";
 import { selectors as f95Selector } from "../constants/css-selector.js";
 import { urls as f95urls } from "../constants/url.js";
 import ThreadSearchQuery from "../classes/query/thread-search-query.js";
 
 //#region Public methods
+
 /**
  * Gets the URLs of the handiwork' threads that match the passed parameters.
  * You *must* be logged.
@@ -21,42 +21,37 @@ import ThreadSearchQuery from "../classes/query/thread-search-query.js";
  * @returns {Promise<String[]>} URLs of the handiworks
  */
 export default async function fetchThreadHandiworkURLs(query: ThreadSearchQuery, limit: number = 30): Promise<string[]> {
-    // Get the query
-    const url = decodeURI(query.createURL().href);
-    
+    // Execute the query
+    const response = await query.execute();
+
     // Fetch the results from F95 and return the handiwork urls
-    return await fetchResultURLs(url, limit); 
+    if (response.isSuccess()) return await fetchResultURLs(response.value.data as string, limit); 
+    else throw response.value
 }
 
 //#endregion Public methods
 
 //#region Private methods
+
 /**
  * Gets the URLs of the threads resulting from the F95Zone search.
  * @param {number} limit
  * Maximum number of items to get. Default: 30
- * @return {Promise<String[]>} List of URLs
  */
-async function fetchResultURLs(url: string, limit: number = 30): Promise<string[]> {
-    shared.logger.trace(`Fetching ${url}...`);
+async function fetchResultURLs(html: string, limit: number = 30): Promise<string[]> {
+    // Prepare cheerio
+    const $ = cheerio.load(html);
 
-    // Fetch HTML and prepare Cheerio
-    const html = await fetchHTML(url);
+    // Here we get all the DIV that are the body of the various query results
+    const results = $("body").find(f95Selector.GS_RESULT_BODY);
 
-    if (html.isSuccess()) {
-        const $ = cheerio.load(html.value);
+    // Than we extract the URLs
+    const urls = results.slice(0, limit).map((idx, el) => {
+        const elementSelector = $(el);
+        return extractLinkFromResult(elementSelector);
+    }).get();
 
-        // Here we get all the DIV that are the body of the various query results
-        const results = $("body").find(f95Selector.GS_RESULT_BODY);
-
-        // Than we extract the URLs
-        const urls = results.slice(0, limit).map((idx, el) => {
-            const elementSelector = $(el);
-            return extractLinkFromResult(elementSelector);
-        }).get();
-
-        return urls;
-    } else throw html.value;
+    return urls;
 }
 
 /**
@@ -75,4 +70,5 @@ function extractLinkFromResult(selector: cheerio.Cheerio): string {
     // Compose and return the URL
     return new URL(partialLink, f95urls.F95_BASE_URL).toString();
 }
+
 //#endregion Private methods

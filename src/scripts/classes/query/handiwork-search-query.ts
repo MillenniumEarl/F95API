@@ -1,10 +1,13 @@
 "use strict";
 
+import { AxiosResponse } from 'axios';
 // Public modules from npm
 import validator from 'class-validator';
 
 // Module from files
 import { IQuery, TCategory, TQueryInterface } from "../../interfaces.js";
+import { GenericAxiosError, UnexpectedResponseContentType } from '../errors.js';
+import { Result } from '../result.js';
 import LatestSearchQuery, { TLatestOrder } from './latest-search-query.js';
 import ThreadSearchQuery, { TThreadOrder } from './thread-search-query.js';
 
@@ -28,6 +31,8 @@ import ThreadSearchQuery, { TThreadOrder } from './thread-search-query.js';
  * `views`: Order based on the number of visits. Replacement: `replies`.
  */
 type THandiworkOrder = "date" | "likes" | "relevance" | "replies" | "title" | "views";
+type TLatestResult = Result<GenericAxiosError | UnexpectedResponseContentType, string>;
+type TThreadResult = Result<GenericAxiosError, AxiosResponse<any>>;
 
 export default class HandiworkSearchQuery implements IQuery {
     
@@ -38,6 +43,7 @@ export default class HandiworkSearchQuery implements IQuery {
     //#endregion Private fields
 
     //#region Properties
+
     /**
      * Keywords to use in the search.
      */
@@ -69,9 +75,11 @@ export default class HandiworkSearchQuery implements IQuery {
     })
     public page: number = 1;
     itype: TQueryInterface = "HandiworkSearchQuery";
+
     //#endregion Properties
 
     //#region Public methods
+
     /**
      * Select what kind of search should be 
      * performed based on the properties of 
@@ -90,13 +98,11 @@ export default class HandiworkSearchQuery implements IQuery {
         return DEFAULT_SEARCH_TYPE;
     }
 
-    public validate(): boolean {
-        return validator.validateSync(this).length === 0;
-    }
+    public validate(): boolean { return validator.validateSync(this).length === 0; }
 
-    public createURL(): URL {
+    public async execute(): Promise<TLatestResult | TThreadResult> {
         // Local variables
-        let url = null;
+        let response: TLatestResult | TThreadResult = null;
 
         // Check if the query is valid
         if (!this.validate()) {
@@ -104,10 +110,10 @@ export default class HandiworkSearchQuery implements IQuery {
         }
 
         // Convert the query
-        if (this.selectSearchType() === "latest") url = this.cast<LatestSearchQuery>("LatestSearchQuery").createURL();
-        else url = this.cast<ThreadSearchQuery>("ThreadSearchQuery").createURL();
+        if (this.selectSearchType() === "latest") response = await this.cast<LatestSearchQuery>("LatestSearchQuery").execute();
+        else response = await this.cast<ThreadSearchQuery>("ThreadSearchQuery").execute();
 
-        return url;
+        return response;
     }
 
     public cast<T extends IQuery>(type: TQueryInterface): T {
@@ -122,9 +128,11 @@ export default class HandiworkSearchQuery implements IQuery {
         // Cast the result to T
         return returnValue as T;
     }
+
     //#endregion Public methods
 
     //#region Private methods
+
     private castToLatest(): LatestSearchQuery {
         // Cast the basic query object and copy common values
         const query: LatestSearchQuery = new LatestSearchQuery;
@@ -165,5 +173,6 @@ export default class HandiworkSearchQuery implements IQuery {
 
         return query;
     }
+    
     //#endregion
 }

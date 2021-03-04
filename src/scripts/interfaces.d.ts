@@ -288,8 +288,9 @@ export interface IQuery {
      */
     validate(): boolean,
     /**
-     * From the query values it generates the corresponding URL for the platform.
+     * Search with the data in the query and returns the result.
+     * 
      * If the query is invalid it throws an exception.
      */
-    createURL(): URL,
+    execute(): any,
 }

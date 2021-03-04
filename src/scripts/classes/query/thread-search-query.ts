@@ -7,6 +7,11 @@ import validator from 'class-validator';
 import { IQuery, TCategory, TQueryInterface } from "../../interfaces.js";
 import { urls } from "../../constants/url.js";
 import PrefixParser from "./../prefix-parser.js";
+import { fetchPOSTResponse } from '../../network-helper.js';
+import { AxiosResponse } from 'axios';
+import { GenericAxiosError } from '../errors.js';
+import { Result } from '../result.js';
+import Shared from '../../shared.js';
 
 // Type definitions
 export type TThreadOrder = "relevance" | "date" | "last_update" | "replies";
@@ -14,10 +19,13 @@ export type TThreadOrder = "relevance" | "date" | "last_update" | "replies";
 export default class ThreadSearchQuery implements IQuery {
 
     //#region Private fields
+
     static MIN_PAGE = 1;
+
     //#endregion Private fields
 
     //#region Properties
+
     /**
      * Keywords to use in the search.
      */
@@ -57,78 +65,89 @@ export default class ThreadSearchQuery implements IQuery {
     })
     public page: number = 1;
     itype: TQueryInterface = "ThreadSearchQuery";
+
     //#endregion Properties
 
     //#region Public methods
     
-    public validate(): boolean {
-        return validator.validateSync(this).length === 0;
-    }
+    public validate(): boolean { return validator.validateSync(this).length === 0; }
     
-    public createURL(): URL {
+    public async execute(): Promise<Result<GenericAxiosError, AxiosResponse<any>>> {
         // Check if the query is valid
         if (!this.validate()) {
             throw new Error(`Invalid query: ${validator.validateSync(this).join("\n")}`);
         }
-        
-        // Create the URL
-        const url = new URL(urls.F95_SEARCH_URL);
 
-        // Specifiy if only the title should be searched
-        if (this.onlyTitles) url.searchParams.set("c[title_only]", "1");
+        // Define the POST parameters
+        const params = this.preparePOSTParameters();
+
+        // Return the POST response
+        return await fetchPOSTResponse(urls.F95_SEARCH_URL, params);
+    }
+
+    //#endregion Public methods
+
+    //#region Private methods
+
+    /**
+     * Prepare the parameters for post request with the data in the query.
+     */
+    private preparePOSTParameters(): { [s: string]: string } {
+        // Local variables
+        const params = {};
+
+        // Ad the session token
+        params["_xfToken"] = Shared.session.token;
+
+        // Specify if only the title should be searched
+        if (this.onlyTitles) params["c[title_only]"] = "1";
 
         // Add keywords
-        const encodedKeywords = this.keywords ?? "*";
-        url.searchParams.set("q", encodedKeywords);
-        
+        params["keywords"] = this.keywords ?? "*";
+
         // Specify the scope of the search (only "threads/post")
-        url.searchParams.set("t", "post");
-        
+        params["search_type"] = "post";
+
         // Set the dates
         if (this.newerThan) {
             const date = this.convertShortDate(this.newerThan);
-            url.searchParams.set("c[newer_than]", date);
+            params["c[newer_than]"] = date;
         }
 
         if (this.olderThan) {
             const date = this.convertShortDate(this.olderThan);
-            url.searchParams.set("c[older_than]", date);
+            params["c[older_than]"] = date;
         }
 
-        // Set included and excluded tags
-        // The tags are first joined with a comma, then encoded to URI
-        const includedTags = encodeURIComponent(this.includedTags.join(","));
-        const excludedTags = encodeURIComponent(this.excludedTags.join(","));
-        if (includedTags) url.searchParams.set("c[tags]", includedTags);
-        if (excludedTags) url.searchParams.set("c[excludeTags]", excludedTags);
+        // Set included and excluded tags (joined with a comma)
+        if (this.includedTags) params["c[tags]"] = this.includedTags.join(",");
+        if (this.excludedTags) params["c[excludeTags]"] = this.excludedTags.join(",");
 
         // Set minimum reply number
-        if (this.minimumReplies > 0) url.searchParams.set("c[min_reply_count]", this.minimumReplies.toString());
+        if (this.minimumReplies > 0) params["c[min_reply_count]"] = this.minimumReplies.toString();
 
         // Add prefixes
         const parser = new PrefixParser();
         const ids = parser.prefixesToIDs(this.includedPrefixes);
         for (let i = 0; i < ids.length; i++) {
             const name = `c[prefixes][${i}]`;
-            url.searchParams.set(name, ids[i].toString());
+            params[name] = ids[i].toString();
         }
 
         // Set the category
-        url.searchParams.set("c[child_nodes]", "1"); // Always set
+        params["c[child_nodes]"] = "1"; // Always set
         if (this.category) {
             const catID = this.categoryToID(this.category).toString();
-            url.searchParams.set("c[nodes][0]", catID);
+            params["c[nodes][0]"] = catID;
         }
 
         // Set the other values
-        url.searchParams.set("o", this.order.toString());
-        url.searchParams.set("page", this.page.toString());
+        params["o"] = this.order.toString();
+        params["page"] = this.page.toString();
 
-        return url;
+        return params;
     }
-    //#endregion Public methods
 
-    //#region Private methods
     /**
      * Convert a date in the YYYY-MM-DD format taking into account the time zone.
      */
@@ -152,6 +171,7 @@ export default class ThreadSearchQuery implements IQuery {
 
         return catMap[category as string];
     }
+
     //#endregion Private methods
 
 }

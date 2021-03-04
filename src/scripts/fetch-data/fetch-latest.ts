@@ -1,7 +1,6 @@
 "use strict";
 
 // Modules from file
-import { fetchGETResponse } from "../network-helper.js";
 import LatestSearchQuery from "../classes/query/latest-search-query.js";
 import { urls as f95url } from "../constants/url.js";
 
@@ -23,11 +22,8 @@ export default async function fetchLatestHandiworkURLs(query: LatestSearchQuery,
     let noMorePages = false;
 
     do {
-        // Prepare the URL
-        const url = query.createURL().toString();
-
         // Fetch the response (application/json)
-        const response = await fetchGETResponse(url);
+        const response = await query.execute();
 
         // Save the URLs
         if (response.isSuccess()) {
