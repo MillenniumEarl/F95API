@@ -98,7 +98,11 @@ export async function login(
     await fetchPlatformData();
 
     shared.setIsLogged(true);
-    return new LoginResult(true, `${username} already authenticated (session)`);
+    return new LoginResult(
+      true,
+      LoginResult.ALREADY_AUTHENTICATED,
+      `${username} already authenticated (session)`
+    );
   }
 
   // Creating credentials and fetch unique platform token

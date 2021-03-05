@@ -129,6 +129,7 @@ export async function authenticate(
     );
     authResult = new LoginResult(
       false,
+      LoginResult.UNKNOWN_ERROR,
       `Error ${e.message} while authenticating`
     );
   }
@@ -169,7 +170,13 @@ export async function send2faCode(
     const message = result
       ? "Authentication successful"
       : r.data.errors.join(",");
-    return new LoginResult(result, message);
+    const code = result
+      ? LoginResult.AUTH_SUCCESSFUL_2FA
+      : message ===
+        "The two-step verification value could not be confirmed. Please try again"
+      ? LoginResult.INCORRECT_2FA_CODE
+      : LoginResult.UNKNOWN_ERROR;
+    return new LoginResult(result, code, message as string);
   });
 }
 
@@ -358,6 +365,7 @@ function manageLoginPOSTResponse(response: AxiosResponse<any>) {
   if (response.config.url.startsWith(urls.F95_2FA_LOGIN)) {
     return new LoginResult(
       false,
+      LoginResult.REQUIRE_2FA,
       "Two-factor authentication is needed to continue"
     );
   }
@@ -371,7 +379,12 @@ function manageLoginPOSTResponse(response: AxiosResponse<any>) {
   // Return the result of the authentication
   const result = errorMessage.trim() === "";
   const message = result ? "Authentication successful" : errorMessage;
-  return new LoginResult(result, message);
+  const code = result
+    ? LoginResult.AUTH_SUCCESSFUL
+    : message === "Incorrect password. Please try again."
+    ? LoginResult.INCORRECT_CREDENTIALS
+    : LoginResult.UNKNOWN_ERROR;
+  return new LoginResult(result, code, message);
 }
 
 //#endregion
