@@ -12,23 +12,25 @@ import axiosCookieJarSupport from "axios-cookiejar-support";
 
 // Modules from file
 import shared from "./shared.js";
-import { urls as f95url } from "./constants/url.js";
+import { urls } from "./constants/url.js";
 import { selectors as f95selector } from "./constants/css-selector.js";
 import LoginResult from "./classes/login-result.js";
-import credentials from "./classes/credentials.js";
 import { failure, Result, success } from "./classes/result.js";
 import {
   GenericAxiosError,
   InvalidF95Token,
   UnexpectedResponseContentType
 } from "./classes/errors.js";
+import Credentials from "./classes/credentials.js";
+
+// @ts-ignore
+// Configure axios to use the cookie jar
+axiosCookieJarSupport.default(axios);
 
 // Global variables
 const userAgent =
   "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15) " +
   "AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0 Safari/605.1.15";
-// @ts-ignore
-axiosCookieJarSupport.default(axios);
 
 /**
  * Common configuration used to send request via Axios.
@@ -88,7 +90,7 @@ export async function fetchHTML(
  * @returns {Promise<LoginResult>} Result of the operation
  */
 export async function authenticate(
-  credentials: credentials,
+  credentials: Credentials,
   force: boolean = false
 ): Promise<LoginResult> {
   shared.logger.info(`Authenticating with user ${credentials.username}`);
@@ -96,7 +98,7 @@ export async function authenticate(
     throw new InvalidF95Token(`Invalid token for auth: ${credentials.token}`);
 
   // Secure the URL
-  const secureURL = enforceHttpsUrl(f95url.F95_LOGIN_URL);
+  const secureURL = enforceHttpsUrl(urls.F95_LOGIN_URL);
 
   // Prepare the parameters to send to the platform to authenticate
   const params = {
@@ -113,15 +115,17 @@ export async function authenticate(
 
   try {
     // Try to log-in
-    const response = await fetchPOSTResponse(
-      f95url.F95_LOGIN_URL,
-      params,
-      force
-    );
+    const response = await fetchPOSTResponse(urls.F95_LOGIN_URL, params, force);
 
     if (response.isSuccess()) {
       // Parse the response HTML
       const $ = cheerio.load(response.value.data as string);
+      if (response.value.config.url.startsWith(urls.F95_2FA_LOGIN)) {
+        return new LoginResult(
+          false,
+          "Two-factor authentication is needed to continue"
+        );
+      }
 
       // Get the error message (if any) and remove the new line chars
       const errorMessage = $("body")
@@ -143,11 +147,49 @@ export async function authenticate(
 }
 
 /**
+ * Send an OTP code if the login procedure requires it.
+ * @param code OTP code.
+ * @param token Unique token for the session associated with the credentials in use.
+ * @param trustedDevice If the device in use is trusted, 2FA authentication is not required for 30 days.
+ */
+export async function send2faCode(
+  code: number,
+  token: string,
+  trustedDevice: boolean = false
+): Promise<Result<GenericAxiosError, LoginResult>> {
+  // Prepare the parameters to send via POST request
+  const params = {
+    _xfRedirect: urls.F95_BASE_URL,
+    _xfRequestUri:
+      "/login/two-step?_xfRedirect=https%3A%2F%2Ff95zone.to%2F&remember=1",
+    _xfResponseType: "json",
+    _xfToken: token,
+    _xfWithData: "1",
+    code: code.toString(),
+    confirm: "1",
+    provider: "totp",
+    remember: "1",
+    trust: trustedDevice ? "1" : "0"
+  };
+
+  // Send 2FA params
+  const response = await fetchPOSTResponse(urls.F95_2FA_LOGIN, params);
+  return response.applyOnSuccess((r: AxiosResponse<any>) => {
+    // r.data.status is 'ok' if the authentication is successful
+    const result = r.data.status === "";
+    const message = result
+      ? "Authentication successful"
+      : r.data.errors.join(",");
+    return new LoginResult(result, message);
+  });
+}
+
+/**
  * Obtain the token used to authenticate the user to the platform.
  */
 export async function getF95Token(): Promise<string> {
   // Fetch the response of the platform
-  const response = await fetchGETResponse(f95url.F95_LOGIN_URL);
+  const response = await fetchGETResponse(urls.F95_LOGIN_URL);
 
   if (response.isSuccess()) {
     // The response is a HTML page, we need to find the <input> with name "_xfToken"
@@ -157,6 +199,7 @@ export async function getF95Token(): Promise<string> {
 }
 
 //#region Utility methods
+
 /**
  * Performs a GET request to a specific URL and returns the response.
  */
@@ -182,70 +225,6 @@ export async function fetchGETResponse(
     });
     return failure(genericError);
   }
-}
-
-/**
- * Enforces the scheme of the URL is https and returns the new URL.
- */
-export function enforceHttpsUrl(url: string): string {
-  if (isStringAValidURL(url)) return url.replace(/^(https?:)?\/\//, "https://");
-  else throw new Error(`${url} is not a valid URL`);
-}
-
-/**
- * Check if the url belongs to the domain of the F95 platform.
- */
-export function isF95URL(url: string): boolean {
-  return url.toString().startsWith(f95url.F95_BASE_URL);
-}
-
-/**
- * Checks if the string passed by parameter has a
- * properly formatted and valid path to a URL (HTTP/HTTPS).
- * @param {String} url String to check for correctness
- */
-export function isStringAValidURL(url: string): boolean {
-  // Many thanks to Daveo at StackOverflow (https://preview.tinyurl.com/y2f2e2pc)
-  const expression = /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_+.~#?&//=]*)/;
-  const regex = new RegExp(expression);
-  return url.match(regex).length > 0;
-}
-
-/**
- * Check if a particular URL is valid and reachable on the web.
- * @param {string} url URL to check
- * @param {boolean} [checkRedirect]
- * If true, the function will consider redirects a violation and return false.
- * Default: false
- * @returns {Promise<Boolean>} true if the URL exists, false otherwise
- */
-export async function urlExists(
-  url: string,
-  checkRedirect: boolean = false
-): Promise<boolean> {
-  // Local variables
-  let valid = false;
-
-  if (isStringAValidURL(url)) {
-    valid = await axiosUrlExists(url);
-
-    if (valid && checkRedirect) {
-      const redirectUrl = await getUrlRedirect(url);
-      valid = redirectUrl === url;
-    }
-  }
-
-  return valid;
-}
-
-/**
- * Check if the URL has a redirect to another page.
- * @param {String} url URL to check for redirect
- * @returns {Promise<String>} Redirect URL or the passed URL
- */
-export async function getUrlRedirect(url: string): Promise<string> {
-  const response = await axios.head(url);
-  return response.config.url;
 }
 
 /**
@@ -291,9 +270,73 @@ export async function fetchPOSTResponse(
   }
 }
 
+/**
+ * Enforces the scheme of the URL is https and returns the new URL.
+ */
+export function enforceHttpsUrl(url: string): string {
+  if (isStringAValidURL(url)) return url.replace(/^(https?:)?\/\//, "https://");
+  else throw new Error(`${url} is not a valid URL`);
+}
+
+/**
+ * Check if the url belongs to the domain of the F95 platform.
+ */
+export function isF95URL(url: string): boolean {
+  return url.toString().startsWith(urls.F95_BASE_URL);
+}
+
+/**
+ * Checks if the string passed by parameter has a
+ * properly formatted and valid path to a URL (HTTP/HTTPS).
+ */
+export function isStringAValidURL(url: string): boolean {
+  // Many thanks to Daveo at StackOverflow (https://preview.tinyurl.com/y2f2e2pc)
+  const expression = /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_+.~#?&//=]*)/;
+  const regex = new RegExp(expression);
+  return url.match(regex).length > 0;
+}
+
+/**
+ * Check if a particular URL is valid and reachable on the web.
+ * @param {string} url URL to check
+ * @param {boolean} [checkRedirect]
+ * If true, the function will consider redirects a violation and return false.
+ * Default: false
+ * @returns {Promise<Boolean>} true if the URL exists, false otherwise
+ */
+export async function urlExists(
+  url: string,
+  checkRedirect: boolean = false
+): Promise<boolean> {
+  // Local variables
+  let valid = false;
+
+  if (isStringAValidURL(url)) {
+    valid = await axiosUrlExists(url);
+
+    if (valid && checkRedirect) {
+      const redirectUrl = await getUrlRedirect(url);
+      valid = redirectUrl === url;
+    }
+  }
+
+  return valid;
+}
+
+/**
+ * Check if the URL has a redirect to another page.
+ * @param {String} url URL to check for redirect
+ * @returns {Promise<String>} Redirect URL or the passed URL
+ */
+export async function getUrlRedirect(url: string): Promise<string> {
+  const response = await axios.head(url);
+  return response.config.url;
+}
+
 //#endregion Utility methods
 
 //#region Private methods
+
 /**
  * Check with Axios if a URL exists.
  */
@@ -314,4 +357,5 @@ async function axiosUrlExists(url: string): Promise<boolean> {
 
   return valid;
 }
+
 //#endregion
