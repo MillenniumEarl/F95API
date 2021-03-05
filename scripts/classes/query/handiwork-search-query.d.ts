@@ -20,51 +20,45 @@ import { Result } from "../result.js";
  *
  * `views`: Order based on the number of visits. Replacement: `replies`.
  */
-declare type THandiworkOrder =
-  | "date"
-  | "likes"
-  | "relevance"
-  | "replies"
-  | "title"
-  | "views";
+declare type THandiworkOrder = "date" | "likes" | "relevance" | "replies" | "title" | "views";
 declare type TExecuteResult = Result<GenericAxiosError, AxiosResponse<any>>;
 export default class HandiworkSearchQuery implements IQuery {
-  static MIN_PAGE: number;
-  /**
-   * Keywords to use in the search.
-   */
-  keywords: string;
-  /**
-   * The results must be more recent than the date indicated.
-   */
-  newerThan: Date;
-  /**
-   * The results must be older than the date indicated.
-   */
-  olderThan: Date;
-  includedTags: string[];
-  /**
-   * Tags to exclude from the search.
-   */
-  excludedTags: string[];
-  includedPrefixes: string[];
-  category: TCategory;
-  /**
-   * Results presentation order.
-   */
-  order: THandiworkOrder;
-  page: number;
-  itype: TQueryInterface;
-  /**
-   * Select what kind of search should be
-   * performed based on the properties of
-   * the query.
-   */
-  selectSearchType(): "latest" | "thread";
-  validate(): boolean;
-  execute(): Promise<TExecuteResult>;
-  cast<T extends IQuery>(type: TQueryInterface): T;
-  private castToLatest;
-  private castToThread;
+    static MIN_PAGE: number;
+    /**
+     * Keywords to use in the search.
+     */
+    keywords: string;
+    /**
+     * The results must be more recent than the date indicated.
+     */
+    newerThan: Date;
+    /**
+     * The results must be older than the date indicated.
+     */
+    olderThan: Date;
+    includedTags: string[];
+    /**
+     * Tags to exclude from the search.
+     */
+    excludedTags: string[];
+    includedPrefixes: string[];
+    category: TCategory;
+    /**
+     * Results presentation order.
+     */
+    order: THandiworkOrder;
+    page: number;
+    itype: TQueryInterface;
+    /**
+     * Select what kind of search should be
+     * performed based on the properties of
+     * the query.
+     */
+    selectSearchType(): "latest" | "thread";
+    validate(): boolean;
+    execute(): Promise<TExecuteResult>;
+    cast<T extends IQuery>(type: TQueryInterface): T;
+    private castToLatest;
+    private castToThread;
 }
 export {};

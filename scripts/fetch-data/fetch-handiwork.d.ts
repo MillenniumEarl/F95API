@@ -8,7 +8,4 @@ import HandiworkSearchQuery from "../classes/query/handiwork-search-query";
  * Maximum number of items to get. Default: 30
  * @returns {Promise<String[]>} URLs of the handiworks
  */
-export default function fetchHandiworkURLs(
-  query: HandiworkSearchQuery,
-  limit?: number
-): Promise<string[]>;
+export default function fetchHandiworkURLs(query: HandiworkSearchQuery, limit?: number): Promise<string[]>;

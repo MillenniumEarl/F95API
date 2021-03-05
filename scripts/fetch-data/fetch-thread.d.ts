@@ -9,7 +9,4 @@ import ThreadSearchQuery from "../classes/query/thread-search-query.js";
  * Maximum number of items to get. Default: 30
  * @returns {Promise<String[]>} URLs of the handiworks
  */
-export default function fetchThreadHandiworkURLs(
-  query: ThreadSearchQuery,
-  limit?: number
-): Promise<string[]>;
+export default function fetchThreadHandiworkURLs(query: ThreadSearchQuery, limit?: number): Promise<string[]>;
