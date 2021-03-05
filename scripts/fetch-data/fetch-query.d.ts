@@ -4,4 +4,7 @@ import { IQuery } from "../interfaces.js";
  * @param limit Maximum number of items to get. Default: 30
  * @returns URLs of the fetched games
  */
-export default function getURLsFromQuery(query: IQuery, limit?: number): Promise<string[]>;
+export default function getURLsFromQuery(
+  query: IQuery,
+  limit?: number
+): Promise<string[]>;

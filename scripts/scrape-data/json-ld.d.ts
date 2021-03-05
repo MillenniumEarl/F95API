@@ -3,7 +3,7 @@
  * Represents information contained in a JSON+LD tag.
  */
 export declare type TJsonLD = {
-    [s: string]: string | TJsonLD;
+  [s: string]: string | TJsonLD;
 };
 /**
  * Extracts and processes the JSON-LD values of the page.

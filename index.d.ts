@@ -33,7 +33,11 @@ export declare function isLogged(): boolean;
  * Callback used if two-factor authentication is required for the profile.
  * It must return he OTP code to use for the login.
  */
-export declare function login(username: string, password: string, cb2fa?: () => Promise<number>): Promise<LoginResult>;
+export declare function login(
+  username: string,
+  password: string,
+  cb2fa?: () => Promise<number>
+): Promise<LoginResult>;
 /**
  * Chek if exists a new version of the handiwork.
  *
@@ -48,7 +52,10 @@ export declare function checkIfHandiworkHasUpdate(hw: HandiWork): Promise<boolea
  * @param {HandiworkSearchQuery} query Parameters used for the search.
  * @param {Number} limit Maximum number of results. Default: 10
  */
-export declare function searchHandiwork<T extends IBasic>(query: HandiworkSearchQuery, limit?: number): Promise<T[]>;
+export declare function searchHandiwork<T extends IBasic>(
+  query: HandiworkSearchQuery,
+  limit?: number
+): Promise<T[]>;
 /**
  * Given the url, it gets all the information about the handiwork requested.
  *
@@ -71,4 +78,7 @@ export declare function getUserData(): Promise<UserProfile>;
  * @param {LatestSearchQuery} query Parameters used for the search.
  * @param {Number} limit Maximum number of results. Default: 10
  */
-export declare function getLatestUpdates<T extends IBasic>(query: LatestSearchQuery, limit?: number): Promise<T[]>;
+export declare function getLatestUpdates<T extends IBasic>(
+  query: LatestSearchQuery,
+  limit?: number
+): Promise<T[]>;
