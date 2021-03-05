@@ -85,7 +85,7 @@ export async function fetchHTML(
  * It authenticates to the platform using the credentials
  * and token obtained previously. Save cookies on your
  * device after authentication.
- * @param {module:./classes/credentials.ts:Credentials} credentials Platform access credentials
+ * @param {Credentials} credentials Platform access credentials
  * @param {Boolean} force Specifies whether the request should be forced, ignoring any saved cookies
  * @returns {Promise<LoginResult>} Result of the operation
  */
@@ -113,37 +113,26 @@ export async function authenticate(
     _xfToken: credentials.token
   };
 
+  // Try to log-in
+  let authResult: LoginResult = null;
   try {
-    // Try to log-in
+    // Fetch the response to the login request
     const response = await fetchPOSTResponse(urls.F95_LOGIN_URL, params, force);
 
-    if (response.isSuccess()) {
-      // Parse the response HTML
-      const $ = cheerio.load(response.value.data as string);
-      if (response.value.config.url.startsWith(urls.F95_2FA_LOGIN)) {
-        return new LoginResult(
-          false,
-          "Two-factor authentication is needed to continue"
-        );
-      }
-
-      // Get the error message (if any) and remove the new line chars
-      const errorMessage = $("body")
-        .find(f95selector.LOGIN_MESSAGE_ERROR)
-        .text()
-        .replace(/\n/g, "");
-
-      // Return the result of the authentication
-      const result = errorMessage.trim() === "";
-      const message = result ? "Authentication successful" : errorMessage;
-      return new LoginResult(result, message);
-    } else throw response.value;
+    // Parse the response
+    const result = response.applyOnSuccess((r) => manageLoginPOSTResponse(r));
+    if (result.isSuccess()) authResult = result.value;
+    else throw response.value;
   } catch (e) {
     shared.logger.error(
       `Error ${e.message} occurred while authenticating to ${secureURL}`
     );
-    return new LoginResult(false, `Error ${e.message} while authenticating`);
+    authResult = new LoginResult(
+      false,
+      `Error ${e.message} while authenticating`
+    );
   }
+  return authResult;
 }
 
 /**
@@ -176,7 +165,7 @@ export async function send2faCode(
   const response = await fetchPOSTResponse(urls.F95_2FA_LOGIN, params);
   return response.applyOnSuccess((r: AxiosResponse<any>) => {
     // r.data.status is 'ok' if the authentication is successful
-    const result = r.data.status === "";
+    const result = r.data.status === "ok";
     const message = result
       ? "Authentication successful"
       : r.data.errors.join(",");
@@ -356,6 +345,33 @@ async function axiosUrlExists(url: string): Promise<boolean> {
   }
 
   return valid;
+}
+
+/**
+ * Manages the response obtained from the server after requesting authentication.
+ */
+function manageLoginPOSTResponse(response: AxiosResponse<any>) {
+  // Parse the response HTML
+  const $ = cheerio.load(response.data as string);
+
+  // Check if 2 factor authentication is required
+  if (response.config.url.startsWith(urls.F95_2FA_LOGIN)) {
+    return new LoginResult(
+      false,
+      "Two-factor authentication is needed to continue"
+    );
+  }
+
+  // Get the error message (if any) and remove the new line chars
+  const errorMessage = $("body")
+    .find(f95selector.LOGIN_MESSAGE_ERROR)
+    .text()
+    .replace(/\n/g, "");
+
+  // Return the result of the authentication
+  const result = errorMessage.trim() === "";
+  const message = result ? "Authentication successful" : errorMessage;
+  return new LoginResult(result, message);
 }
 
 //#endregion
