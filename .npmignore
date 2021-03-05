@@ -1,11 +1,13 @@
-test
+tests
 coverage.lcov
 .dist
 .nyc_output
-.eslintrc.json
+.eslintignore
+.eslintrc
 .gitignore
 .gitattribute
 .github
 .vscode
 .deepsource.toml
 .env
+.prettierrc
