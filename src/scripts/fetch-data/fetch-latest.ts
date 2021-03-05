@@ -41,7 +41,7 @@ export default async function fetchLatestHandiworkURLs(
 
       data.map((e, idx) => {
         if (fetchedResults < limit) {
-          const gameURL = new URL(e.thread_id.toString(), urls.F95_THREADS).href;
+          const gameURL = new URL(e.thread_id.toString(), urls.THREADS).href;
           resultURLs.push(gameURL);
 
           fetchedResults += 1;

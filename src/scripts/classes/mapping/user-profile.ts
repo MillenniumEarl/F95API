@@ -105,7 +105,7 @@ export default class UserProfile extends PlatformUser {
 
   private async fetchUserID(): Promise<number> {
     // Local variables
-    const url = new URL(urls.F95_BASE_URL).toString();
+    const url = new URL(urls.BASE).toString();
 
     // fetch and parse page
     const htmlResponse = await fetchHTML(url);
@@ -120,7 +120,7 @@ export default class UserProfile extends PlatformUser {
 
   private async fetchWatchedThread(): Promise<IWatchedThread[]> {
     // Prepare and fetch URL
-    const url = new URL(urls.F95_WATCHED_THREADS);
+    const url = new URL(urls.WATCHED_THREADS);
     url.searchParams.set("unread", "0");
 
     const htmlResponse = await fetchHTML(url.toString());
@@ -177,10 +177,7 @@ export default class UserProfile extends PlatformUser {
       .map((idx, el) => {
         // Parse the URL
         const partialURL = $(el).find(WATCHED_THREAD.URL).attr("href");
-        const url = new URL(
-          partialURL.replace("unread", ""),
-          `${urls.F95_BASE_URL}`
-        ).toString();
+        const url = new URL(partialURL.replace("unread", ""), `${urls.BASE}`).toString();
 
         return {
           url: url.toString(),

@@ -58,7 +58,7 @@ export default async function fetchPlatformData(): Promise<void> {
   // Check if the data are cached
   if (!readCache(shared.cachePath)) {
     // Load the HTML
-    const html = await fetchHTML(f95url.F95_LATEST_UPDATES);
+    const html = await fetchHTML(f95url.LATEST_UPDATES);
 
     // Parse data
     if (html.isSuccess()) {

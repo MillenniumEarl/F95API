@@ -77,7 +77,7 @@ function extractLinkFromResult(selector: cheerio.Cheerio): string {
   const partialLink = selector.find(THREAD_SEARCH.THREAD_TITLE).attr("href").trim();
 
   // Compose and return the URL
-  return new URL(partialLink, f95urls.F95_BASE_URL).toString();
+  return new URL(partialLink, f95urls.BASE).toString();
 }
 
 //#endregion Private methods

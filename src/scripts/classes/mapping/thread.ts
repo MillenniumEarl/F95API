@@ -139,7 +139,7 @@ export default class Thread {
     };
 
     // Send POST request
-    const response = await fetchPOSTResponse(urls.F95_POSTS_NUMBER, params);
+    const response = await fetchPOSTResponse(urls.POSTS_NUMBER, params);
     if (response.isFailure()) throw response.value;
   }
 
@@ -238,7 +238,7 @@ export default class Thread {
    */
   public async fetch(): Promise<void> {
     // Prepare the url
-    this._url = new URL(this.id.toString(), urls.F95_THREADS).toString();
+    this._url = new URL(this.id.toString(), urls.THREADS).toString();
 
     // Fetch the HTML source
     const htmlResponse = await fetchHTML(this.url);

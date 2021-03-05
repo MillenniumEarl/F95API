@@ -4,29 +4,66 @@
 // https://opensource.org/licenses/MIT
 
 export const urls = {
-  F95_BASE_URL: "https://f95zone.to",
-  F95_2FA_LOGIN: "https://f95zone.to/login/two-step",
-  F95_SEARCH_URL: "https://f95zone.to/search/search/",
-  F95_LATEST_UPDATES: "https://f95zone.to/latest",
-  F95_THREADS: "https://f95zone.to/threads/",
-  F95_LOGIN_URL: "https://f95zone.to/login/login",
-  F95_WATCHED_THREADS: "https://f95zone.to/watched/threads",
-  F95_LATEST_PHP: "https://f95zone.to/new_latest.php",
-  F95_BOOKMARKS: "https://f95zone.to/account/bookmarks",
+  /**
+   * Page with the list of alerts for the user currently logged.
+   */
+  ALERTS: "https://f95zone.to/account/alerts",
+  /**
+   * Basic URL of the platform.
+   */
+  BASE: "https://f95zone.to",
+  /**
+   * Page with the list of favorite posts of the user currently logged.
+   */
+  BOOKMARKS: "https://f95zone.to/account/bookmarks",
+  /**
+   * Page with the list of conversations of the currently logged user.
+   */
+  CONVERSATIONS: "https://f95zone.to/conversations/",
+  /**
+   * URL of the script used for searching for content
+   * in the "Latest Updates" section of the platform.
+   */
+  LATEST_PHP: "https://f95zone.to/new_latest.php",
+  /**
+   * Page with the latest updated platform content.
+   */
+  LATEST_UPDATES: "https://f95zone.to/latest",
+  /**
+   * Page used for user login.
+   */
+  LOGIN: "https://f95zone.to/login/login",
+  /**
+   * Page used for entering the OTP code in the case of two-factor authentication.
+   */
+  LOGIN_2FA: "https://f95zone.to/login/two-step",
+  /**
+   * Summary page of users registered on the platform.
+   * Used for the search for a specific member through ID.
+   */
+  MEMBERS: "https://f95zone.to/members",
   /**
    * Add the unique ID of the post to
    * get the thread page where the post
    * is present.
    */
-  F95_POSTS: "https://f95zone.to/posts/",
+  POSTS: "https://f95zone.to/posts/",
   /**
-   * @todo
+   * URL used to send a POST request and change
+   * the number of posts that can be viewed per
+   * page of a specific thread.
    */
-  F95_CONVERSATIONS: "https://f95zone.to/conversations/",
+  POSTS_NUMBER: "https://f95zone.to/account/dpp-update",
   /**
-   * @todo
+   * URL used to search the platform by POST request.
    */
-  F95_ALERTS: "https://f95zone.to/account/alerts",
-  F95_POSTS_NUMBER: "https://f95zone.to/account/dpp-update",
-  F95_MEMBERS: "https://f95zone.to/members"
+  SEARCH: "https://f95zone.to/search/search/",
+  /**
+   * Add the unique ID of the thread to get it's page.
+   */
+  THREADS: "https://f95zone.to/threads/",
+  /**
+   * Page with the list of watched threads of the currently logged user.
+   */
+  WATCHED_THREADS: "https://f95zone.to/watched/threads"
 };

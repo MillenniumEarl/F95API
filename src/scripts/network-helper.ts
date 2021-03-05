@@ -98,7 +98,7 @@ export async function authenticate(
     throw new InvalidF95Token(`Invalid token for auth: ${credentials.token}`);
 
   // Secure the URL
-  const secureURL = enforceHttpsUrl(urls.F95_LOGIN_URL);
+  const secureURL = enforceHttpsUrl(urls.LOGIN);
 
   // Prepare the parameters to send to the platform to authenticate
   const params = {
@@ -117,7 +117,7 @@ export async function authenticate(
   let authResult: LoginResult = null;
   try {
     // Fetch the response to the login request
-    const response = await fetchPOSTResponse(urls.F95_LOGIN_URL, params, force);
+    const response = await fetchPOSTResponse(urls.LOGIN, params, force);
 
     // Parse the response
     const result = response.applyOnSuccess((r) => manageLoginPOSTResponse(r));
@@ -149,7 +149,7 @@ export async function send2faCode(
 ): Promise<Result<GenericAxiosError, LoginResult>> {
   // Prepare the parameters to send via POST request
   const params = {
-    _xfRedirect: urls.F95_BASE_URL,
+    _xfRedirect: urls.BASE,
     _xfRequestUri: "/login/two-step?_xfRedirect=https%3A%2F%2Ff95zone.to%2F&remember=1",
     _xfResponseType: "json",
     _xfToken: token,
@@ -162,7 +162,7 @@ export async function send2faCode(
   };
 
   // Send 2FA params
-  const response = await fetchPOSTResponse(urls.F95_2FA_LOGIN, params);
+  const response = await fetchPOSTResponse(urls.LOGIN_2FA, params);
   return response.applyOnSuccess((r: AxiosResponse<any>) => {
     // r.data.status is 'ok' if the authentication is successful
     const result = r.data.status === "ok";
@@ -182,7 +182,7 @@ export async function send2faCode(
  */
 export async function getF95Token(): Promise<string> {
   // Fetch the response of the platform
-  const response = await fetchGETResponse(urls.F95_LOGIN_URL);
+  const response = await fetchGETResponse(urls.LOGIN);
 
   if (response.isSuccess()) {
     // The response is a HTML page, we need to find the <input> with name "_xfToken"
@@ -274,7 +274,7 @@ export function enforceHttpsUrl(url: string): string {
  * Check if the url belongs to the domain of the F95 platform.
  */
 export function isF95URL(url: string): boolean {
-  return url.toString().startsWith(urls.F95_BASE_URL);
+  return url.toString().startsWith(urls.BASE);
 }
 
 /**
@@ -358,7 +358,7 @@ function manageLoginPOSTResponse(response: AxiosResponse<any>) {
   const $ = cheerio.load(response.data as string);
 
   // Check if 2 factor authentication is required
-  if (response.config.url.startsWith(urls.F95_2FA_LOGIN)) {
+  if (response.config.url.startsWith(urls.LOGIN_2FA)) {
     return new LoginResult(
       false,
       LoginResult.REQUIRE_2FA,

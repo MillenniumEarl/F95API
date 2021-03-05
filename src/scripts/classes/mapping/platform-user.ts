@@ -148,7 +148,7 @@ export default class PlatformUser {
     if (!this.id && this.id < 1) throw new Error("Invalid user ID");
 
     // Prepare the URL
-    const url = new URL(this.id.toString(), `${urls.F95_MEMBERS}/`).toString();
+    const url = new URL(this.id.toString(), `${urls.MEMBERS}/`).toString();
 
     // Fetch the page
     const htmlResponse = await fetchHTML(url);

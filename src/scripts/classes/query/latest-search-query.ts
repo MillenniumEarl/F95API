@@ -110,7 +110,7 @@ export default class LatestSearchQuery implements IQuery {
    */
   private prepareGETurl(): URL {
     // Create the URL
-    const url = new URL(urls.F95_LATEST_PHP);
+    const url = new URL(urls.LATEST_PHP);
     url.searchParams.set("cmd", "list");
 
     // Set the category

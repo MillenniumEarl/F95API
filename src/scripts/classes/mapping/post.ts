@@ -96,7 +96,7 @@ export default class Post {
    */
   public async fetch(): Promise<void> {
     // Fetch HTML page containing the post
-    const url = new URL(this.id.toString(), urls.F95_POSTS).toString();
+    const url = new URL(this.id.toString(), urls.POSTS).toString();
     const htmlResponse = await fetchHTML(url);
 
     if (htmlResponse.isSuccess()) {
