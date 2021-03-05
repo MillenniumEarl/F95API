@@ -65,6 +65,12 @@ async function main() {
   );
   console.log(`Authentication result: ${result.message}\n`);
 
+  // Manage failed login
+  if (!result.success) {
+    console.log("Failed authentication, impossible to continue");
+    return;
+  }
+
   // Get user data
   console.log("Fetching user data...");
   const userdata = await getUserData();
