@@ -10,7 +10,7 @@ import cheerio from "cheerio";
 
 // Modules from file
 import shared from "../shared.js";
-import { selectors as f95Selector } from "../constants/css-selector.js";
+import { THREAD_SEARCH } from "../constants/css-selector.js";
 import { urls as f95urls } from "../constants/url.js";
 import ThreadSearchQuery from "../classes/query/thread-search-query.js";
 
@@ -28,7 +28,7 @@ import ThreadSearchQuery from "../classes/query/thread-search-query.js";
  */
 export default async function fetchThreadHandiworkURLs(
   query: ThreadSearchQuery,
-  limit = 30
+  limit: number = 30
 ): Promise<string[]> {
   // Execute the query
   const response = await query.execute();
@@ -47,12 +47,12 @@ export default async function fetchThreadHandiworkURLs(
  * @param {number} limit
  * Maximum number of items to get. Default: 30
  */
-async function fetchResultURLs(html: string, limit = 30): Promise<string[]> {
+async function fetchResultURLs(html: string, limit: number = 30): Promise<string[]> {
   // Prepare cheerio
   const $ = cheerio.load(html);
 
   // Here we get all the DIV that are the body of the various query results
-  const results = $("body").find(f95Selector.GS_RESULT_BODY);
+  const results = $("body").find(THREAD_SEARCH.BODY);
 
   // Than we extract the URLs
   const urls = results
@@ -74,10 +74,7 @@ async function fetchResultURLs(html: string, limit = 30): Promise<string[]> {
 function extractLinkFromResult(selector: cheerio.Cheerio): string {
   shared.logger.trace("Extracting thread link from result...");
 
-  const partialLink = selector
-    .find(f95Selector.GS_RESULT_THREAD_TITLE)
-    .attr("href")
-    .trim();
+  const partialLink = selector.find(THREAD_SEARCH.THREAD_TITLE).attr("href").trim();
 
   // Compose and return the URL
   return new URL(partialLink, f95urls.F95_BASE_URL).toString();

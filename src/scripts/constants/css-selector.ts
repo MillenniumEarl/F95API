@@ -3,31 +3,6 @@
 // This software is released under the MIT License.
 // https://opensource.org/licenses/MIT
 
-export const selectors = {
-  WT_FILTER_POPUP_BUTTON: "a.filterBar-menuTrigger",
-  WT_NEXT_PAGE: "a.pageNav-jump--next",
-  WT_URLS: 'a[href^="/threads/"][data-tp-primary]',
-  WT_UNREAD_THREAD_CHECKBOX: 'input[type="checkbox"][name="unread"]',
-  GS_POSTS: "article.message-body:first-child > div.bbWrapper:first-of-type",
-  GS_RESULT_THREAD_TITLE: "h3.contentRow-title > a",
-  GS_RESULT_BODY: "div.contentRow-main",
-  GS_MEMBERSHIP: "li > a:not(.username)",
-  GET_REQUEST_TOKEN: 'input[name="_xfToken"]',
-  UD_USERNAME_ELEMENT: 'a[href="/account/"] > span.p-navgroup-linkText',
-  UD_AVATAR_PIC: 'a[href="/account/"] > span.avatar > img[class^="avatar"]',
-  LOGIN_MESSAGE_ERROR: "div.blockMessage.blockMessage--error.blockMessage--iconic",
-  LU_TAGS_SCRIPT: "script:contains('latestUpdates')",
-  BK_RESULTS: "ol.listPlain > *  div.contentRow-main",
-  BK_POST_URL: "div.contentRow-title > a",
-  BK_DESCRIPTION: "div.contentRow-snippet",
-  BK_POST_OWNER: "div.contentRow-minor > * a.username",
-  BK_TAGS: "div.contentRow-minor > * a.tagItem",
-  /**
-   * Attribute `datetime` contains an ISO date.
-   */
-  BK_TIME: "div.contentRow-minor > * time"
-};
-
 export const GENERIC = {
   /**
    * The ID of the user currently logged into
@@ -37,7 +12,19 @@ export const GENERIC = {
   /**
    * Banner containing any error messages as text.
    */
-  ERROR_BANNER: "div.p-body-pageContent > div.blockMessage"
+  ERROR_BANNER: "div.p-body-pageContent > div.blockMessage",
+  /**
+   * Locate the token used for the session.
+   */
+  GET_REQUEST_TOKEN: 'input[name="_xfToken"]',
+  /**
+   * Block containing the text of any errors that occurred during the login.
+   */
+  LOGIN_MESSAGE_ERROR: "div.blockMessage.blockMessage--error.blockMessage--iconic",
+  /**
+   * Locate the script containing the tags and prefixes of the platform content in JSON format.
+   */
+  LATEST_UPDATES_TAGS_SCRIPT: "script:contains('latestUpdates')"
 };
 
 export const WATCHED_THREAD = {
@@ -108,6 +95,17 @@ export const THREAD = {
    * Posts on the current page.
    */
   POSTS_IN_PAGE: "article.message"
+};
+
+export const THREAD_SEARCH = {
+  /**
+   * Thread title resulting from research.
+   */
+  THREAD_TITLE: "h3.contentRow-title > a",
+  /**
+   *Thread body resulting from research.
+   */
+  BODY: "div.contentRow-main"
 };
 
 export const POST = {

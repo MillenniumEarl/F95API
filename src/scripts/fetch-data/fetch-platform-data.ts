@@ -14,10 +14,11 @@ import cheerio from "cheerio";
 // Modules from file
 import shared, { TPrefixDict } from "../shared.js";
 import { urls as f95url } from "../constants/url.js";
-import { selectors as f95selector } from "../constants/css-selector.js";
+import { GENERIC } from "../constants/css-selector.js";
 import { fetchHTML } from "../network-helper.js";
 
 //#region Interface definitions
+
 /**
  * Represents the single element contained in the data categories.
  */
@@ -44,9 +45,11 @@ interface ILatestResource {
   tags: TPrefixDict;
   options: string;
 }
+
 //#endregion Interface definitions
 
 //#region Public methods
+
 /**
  * Gets the basic data used for game data processing
  * (such as graphics engines and progress statuses)
@@ -69,12 +72,13 @@ export default async function fetchPlatformData(): Promise<void> {
     } else throw html.value;
   }
 }
+
 //#endregion Public methods
 
 //#region Private methods
+
 /**
- * @private
- * Read the platform cache (if available)
+ * Read the platform cache (if available).
  */
 function readCache(path: string) {
   // Local variables
@@ -95,7 +99,6 @@ function readCache(path: string) {
 }
 
 /**
- * @private
  * Save the current platform variables to disk.
  */
 function saveCache(path: string): void {
@@ -110,7 +113,6 @@ function saveCache(path: string): void {
 }
 
 /**
- * @private
  * Given the HTML code of the response from the F95Zone,
  * parse it and return the result.
  */
@@ -118,7 +120,7 @@ function parseLatestPlatformHTML(html: string): ILatestResource {
   const $ = cheerio.load(html);
 
   // Clean the JSON string
-  const unparsedText = $(f95selector.LU_TAGS_SCRIPT).html().trim();
+  const unparsedText = $(GENERIC.LATEST_UPDATES_TAGS_SCRIPT).html().trim();
   const startIndex = unparsedText.indexOf("{");
   const endIndex = unparsedText.lastIndexOf("}");
   const parsedText = unparsedText.substring(startIndex, endIndex + 1);
@@ -126,7 +128,6 @@ function parseLatestPlatformHTML(html: string): ILatestResource {
 }
 
 /**
- * @private
  * Assign to the local variables the values from the F95Zone.
  */
 function assignLatestPlatformData(data: ILatestResource): void {
@@ -154,4 +155,5 @@ function assignLatestPlatformData(data: ILatestResource): void {
   shared.setPrefixPair("others", Object.assign({}, scrapedData["Other"]));
   shared.setPrefixPair("tags", data.tags);
 }
+
 //#endregion

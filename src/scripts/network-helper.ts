@@ -13,7 +13,7 @@ import axiosCookieJarSupport from "axios-cookiejar-support";
 // Modules from file
 import shared from "./shared.js";
 import { urls } from "./constants/url.js";
-import { selectors as f95selector } from "./constants/css-selector.js";
+import { GENERIC } from "./constants/css-selector.js";
 import LoginResult from "./classes/login-result.js";
 import { failure, Result, success } from "./classes/result.js";
 import {
@@ -187,7 +187,7 @@ export async function getF95Token(): Promise<string> {
   if (response.isSuccess()) {
     // The response is a HTML page, we need to find the <input> with name "_xfToken"
     const $ = cheerio.load(response.value.data as string);
-    return $("body").find(f95selector.GET_REQUEST_TOKEN).attr("value");
+    return $("body").find(GENERIC.GET_REQUEST_TOKEN).attr("value");
   } else throw response.value;
 }
 
@@ -368,7 +368,7 @@ function manageLoginPOSTResponse(response: AxiosResponse<any>) {
 
   // Get the error message (if any) and remove the new line chars
   const errorMessage = $("body")
-    .find(f95selector.LOGIN_MESSAGE_ERROR)
+    .find(GENERIC.LOGIN_MESSAGE_ERROR)
     .text()
     .replace(/\n/g, "");
 
