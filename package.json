@@ -24,13 +24,11 @@
   ],
   "scripts": {
     "lint": "eslint . --ext .ts",
-    "prettier-format": "prettier --config .prettierrc '{src,tests}/**/*.ts' --write",
-    "compile": "tsc",
+    "prettier-format": "prettier --config .prettierrc '**/*.ts' --write",
+    "ts:compile": "tsc",
+    "ts:definitions": "tsc --declaration --outDir . --emitDeclarationOnly",
     "publish": "npm publish",
-    "test": "nyc --reporter=text mocha './test/index-test.ts'",
-    "report-coverage": "nyc report --reporter=text-lcov > coverage.lcov && codecov -t 38ad72bf-a29d-4c2e-9827-96cbe037afd2",
-    "run-example": "npm run compile && node ./dist/example.js",
-    "test-ts": "set TS_NODE_COMPILER_OPTIONS='{\"module\": \"commonjs\" }' mocha -r ts-node/register 'tests/**/*.ts'"
+    "run-example": "npm run compile && node ./dist/example.js"
   },
   "engines": {
     "node": ">=10.0"
