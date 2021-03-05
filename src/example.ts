@@ -15,6 +15,7 @@ F95_PASSWORD = YOUR_PASSWORD
 "use strict";
 
 // Public modules from npm
+import inquirer from "inquirer";
 import dotenv from "dotenv";
 
 // Modules from file
@@ -33,6 +34,24 @@ dotenv.config();
 
 main();
 
+/**
+ * Ask the user to enter the OTP code
+ * necessary to authenticate on the server.
+ */
+async function insert2faCode(): Promise<number> {
+  const questions = [
+    {
+      type: "input",
+      name: "code",
+      message: "Insert 2FA code:"
+    }
+  ];
+
+  // Prompt the user to insert the code
+  const answers = await inquirer.prompt(questions);
+  return answers.code as number;
+}
+
 async function main() {
   // Local variables
   const gameList = ["City of broken dreamers", "Seeds of chaos", "MIST"];
@@ -41,7 +60,8 @@ async function main() {
   console.log("Authenticating...");
   const result = await login(
     process.env.F95_USERNAME,
-    process.env.F95_PASSWORD
+    process.env.F95_PASSWORD,
+    insert2faCode
   );
   console.log(`Authentication result: ${result.message}\n`);
 

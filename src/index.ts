@@ -8,7 +8,12 @@
 // Modules from file
 import shared from "./scripts/shared.js";
 import search from "./scripts/search.js";
-import { authenticate, urlExists, isF95URL } from "./scripts/network-helper.js";
+import {
+  authenticate,
+  urlExists,
+  isF95URL,
+  send2faCode
+} from "./scripts/network-helper.js";
 import fetchLatestHandiworkURLs from "./scripts/fetch-data/fetch-latest.js";
 import fetchPlatformData from "./scripts/fetch-data/fetch-platform-data.js";
 import getHandiworkInformation from "./scripts/scrape-data/handiwork-parse.js";
@@ -30,6 +35,7 @@ const USER_NOT_LOGGED = "User not authenticated, unable to continue";
 //#endregion
 
 //#region Re-export classes
+
 export { default as Animation } from "./scripts/classes/handiwork/animation.js";
 export { default as Asset } from "./scripts/classes/handiwork/asset.js";
 export { default as Comic } from "./scripts/classes/handiwork/comic.js";
@@ -44,9 +50,11 @@ export { default as UserProfile } from "./scripts/classes/mapping/user-profile.j
 export { default as HandiworkSearchQuery } from "./scripts/classes/query/handiwork-search-query.js";
 export { default as LatestSearchQuery } from "./scripts/classes/query/latest-search-query.js";
 export { default as ThreadSearchQuery } from "./scripts/classes/query/thread-search-query.js";
+
 //#endregion Re-export classes
 
 //#region Export properties
+
 /**
  * Set the logger level for module debugging.
  */
@@ -60,6 +68,7 @@ shared.logger.level = "warn"; // By default log only the warn messages
 export function isLogged(): boolean {
   return shared.isLogged;
 }
+
 //#endregion Export properties
 
 //#region Export methods
@@ -68,10 +77,15 @@ export function isLogged(): boolean {
  * Log in to the F95Zone platform.
  *
  * This **must** be the first operation performed before accessing any other script functions.
+ *
+ * @param cb2fa
+ * Callback used if two-factor authentication is required for the profile.
+ * It must return he OTP code to use for the login.
  */
 export async function login(
   username: string,
-  password: string
+  password: string,
+  cb2fa?: () => Promise<number>
 ): Promise<LoginResult> {
   // Try to load a previous session
   await shared.session.load();
@@ -93,16 +107,24 @@ export async function login(
   await creds.fetchToken();
 
   shared.logger.trace(`Authentication for ${username}`);
-  const result = await authenticate(creds);
+  let result = await authenticate(creds);
   shared.setIsLogged(result.success);
 
-  if (result.success) {
-    // Load platform data
-    await fetchPlatformData();
+  // 2FA Authentication is required, fetch OTP
+  if (result.message === "Two-factor authentication is needed to continue") {
+    const code = await cb2fa();
+    const response2fa = await send2faCode(code, creds.token);
+    if (response2fa.isSuccess()) result = response2fa.value;
+    else throw response2fa.value;
+  }
 
+  if (result.success) {
     // Recreate the session, overwriting the old one
     shared.session.create(username, password, creds.token);
     await shared.session.save();
+
+    // Load platform data
+    await fetchPlatformData();
 
     shared.logger.info("User logged in through the platform");
   } else shared.logger.warn(`Error during authentication: ${result.message}`);
@@ -147,7 +169,7 @@ export async function checkIfHandiworkHasUpdate(
  */
 export async function searchHandiwork<T extends IBasic>(
   query: HandiworkSearchQuery,
-  limit = 10
+  limit: number = 10
 ): Promise<T[]> {
   // Check if the user is logged
   if (!shared.isLogged) throw new UserNotLogged(USER_NOT_LOGGED);
@@ -203,7 +225,7 @@ export async function getUserData(): Promise<UserProfile> {
  */
 export async function getLatestUpdates<T extends IBasic>(
   query: LatestSearchQuery,
-  limit = 10
+  limit: number = 10
 ): Promise<T[]> {
   // Check limit value
   if (limit <= 0) throw new Error("limit must be greater than 0");
