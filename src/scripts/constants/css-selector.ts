@@ -15,8 +15,7 @@ export const selectors = {
   GET_REQUEST_TOKEN: 'input[name="_xfToken"]',
   UD_USERNAME_ELEMENT: 'a[href="/account/"] > span.p-navgroup-linkText',
   UD_AVATAR_PIC: 'a[href="/account/"] > span.avatar > img[class^="avatar"]',
-  LOGIN_MESSAGE_ERROR:
-    "div.blockMessage.blockMessage--error.blockMessage--iconic",
+  LOGIN_MESSAGE_ERROR: "div.blockMessage.blockMessage--error.blockMessage--iconic",
   LU_TAGS_SCRIPT: "script:contains('latestUpdates')",
   BK_RESULTS: "ol.listPlain > *  div.contentRow-main",
   BK_POST_URL: "div.contentRow-title > a",
@@ -117,8 +116,7 @@ export const POST = {
    *
    * For use within a `THREAD.POSTS_IN_PAGE` selector.
    */
-  NUMBER:
-    '* ul.message-attribution-opposite > li > a:not([id])[rel="nofollow"]',
+  NUMBER: '* ul.message-attribution-opposite > li > a:not([id])[rel="nofollow"]',
   /**
    * Unique ID of the post in the F95Zone platform in the `id` attribute.
    *
@@ -154,8 +152,7 @@ export const POST = {
    *
    * For use within a `THREAD.POSTS_IN_PAGE` selector.
    */
-  BOOKMARKED:
-    '* ul.message-attribution-opposite >li > a[title="Bookmark"].is-bookmarked'
+  BOOKMARKED: '* ul.message-attribution-opposite >li > a[title="Bookmark"].is-bookmarked'
 };
 
 export const MEMBER = {
@@ -188,15 +185,13 @@ export const MEMBER = {
    *
    * The date is contained in the `datetime` attribute as an ISO string.
    */
-  JOINED:
-    "div.uix_memberHeader__extra > div.memberHeader-blurb:nth-child(1) > * time",
+  JOINED: "div.uix_memberHeader__extra > div.memberHeader-blurb:nth-child(1) > * time",
   /**
    * Last time the user connected to the platform.
    *
    * The date is contained in the `datetime` attribute as an ISO string.
    */
-  LAST_SEEN:
-    "div.uix_memberHeader__extra > div.memberHeader-blurb:nth-child(2) > * time",
+  LAST_SEEN: "div.uix_memberHeader__extra > div.memberHeader-blurb:nth-child(2) > * time",
   MESSAGES: "div.pairJustifier > dl:nth-child(1) > * a",
   REACTION_SCORE: "div.pairJustifier > dl:nth-child(2) > dd",
   POINTS: "div.pairJustifier > dl:nth-child(3) > * a",
@@ -216,6 +211,5 @@ export const MEMBER = {
    * If the text is `Unignore` then the user is ignored.
    * If the text is `Ignore` then the user is not ignored.
    */
-  IGNORED:
-    "div.memberHeader-buttons > div.buttonGroup:first-child > a[data-sk-ignore]"
+  IGNORED: "div.memberHeader-buttons > div.buttonGroup:first-child > a[data-sk-ignore]"
 };

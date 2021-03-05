@@ -6,14 +6,7 @@
 "use strict";
 
 // Modules from files
-import {
-  TAuthor,
-  TEngine,
-  IGame,
-  TRating,
-  TStatus,
-  TCategory
-} from "../../interfaces";
+import { TAuthor, TEngine, IGame, TRating, TStatus, TCategory } from "../../interfaces";
 
 export default class Game implements IGame {
   //#region Properties

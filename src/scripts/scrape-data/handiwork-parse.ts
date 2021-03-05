@@ -11,23 +11,13 @@ import luxon from "luxon";
 // Modules from files
 import HandiWork from "../classes/handiwork/handiwork.js";
 import Thread from "../classes/mapping/thread.js";
-import {
-  IBasic,
-  TAuthor,
-  TEngine,
-  TExternalPlatform,
-  TStatus
-} from "../interfaces.js";
+import { IBasic, TAuthor, TEngine, TExternalPlatform, TStatus } from "../interfaces.js";
 import shared, { TPrefixDict } from "../shared.js";
 import { ILink, IPostElement } from "./post-parse.js";
 
-export async function getHandiworkInformation<T extends IBasic>(
-  url: string
-): Promise<T>;
+export async function getHandiworkInformation<T extends IBasic>(url: string): Promise<T>;
 
-export async function getHandiworkInformation<T extends IBasic>(
-  url: string
-): Promise<T>;
+export async function getHandiworkInformation<T extends IBasic>(url: string): Promise<T>;
 
 /**
  * Gets information of a particular handiwork from its thread.
@@ -175,8 +165,7 @@ function fillWithPrefixes(hw: HandiWork, prefixes: string[]) {
     const prefix = item.replace("[", "").replace("]", "");
 
     // Check what the prefix indicates
-    if (stringInDict(prefix, shared.prefixes["engines"]))
-      engine = prefix as TEngine;
+    if (stringInDict(prefix, shared.prefixes["engines"])) engine = prefix as TEngine;
     else if (stringInDict(prefix, shared.prefixes["statuses"]))
       status = prefix as TStatus;
     else if (stringInDict(prefix, fakeModDict)) mod = true;
@@ -212,10 +201,7 @@ function fillWithPostData(hw: HandiWork, elements: IPostElement[]) {
     ?.text?.split(",")
     .map((s) => s.trim());
   hw.version = getPostElementByName(elements, "version")?.text;
-  hw.installation = getPostElementByName(
-    elements,
-    "installation"
-  )?.content.shift()?.text;
+  hw.installation = getPostElementByName(elements, "installation")?.content.shift()?.text;
   hw.pages = getPostElementByName(elements, "pages")?.text;
   hw.resolution = getPostElementByName(elements, "resolution")
     ?.text?.split(",")
@@ -240,8 +226,7 @@ function fillWithPostData(hw: HandiWork, elements: IPostElement[]) {
 
   // Fill the dates
   const releaseDate = getPostElementByName(elements, "release date")?.text;
-  if (luxon.DateTime.fromISO(releaseDate).isValid)
-    hw.lastRelease = new Date(releaseDate);
+  if (luxon.DateTime.fromISO(releaseDate).isValid) hw.lastRelease = new Date(releaseDate);
 
   //#region Convert the author
   const authorElement =

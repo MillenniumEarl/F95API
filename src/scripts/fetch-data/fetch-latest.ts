@@ -24,10 +24,7 @@ export default async function fetchLatestHandiworkURLs(
   limit = 30
 ): Promise<string[]> {
   // Local variables
-  const shallowQuery: LatestSearchQuery = Object.assign(
-    new LatestSearchQuery(),
-    query
-  );
+  const shallowQuery: LatestSearchQuery = Object.assign(new LatestSearchQuery(), query);
   const resultURLs = [];
   let fetchedResults = 0;
   let noMorePages = false;
@@ -44,8 +41,7 @@ export default async function fetchLatestHandiworkURLs(
 
       data.map((e, idx) => {
         if (fetchedResults < limit) {
-          const gameURL = new URL(e.thread_id.toString(), urls.F95_THREADS)
-            .href;
+          const gameURL = new URL(e.thread_id.toString(), urls.F95_THREADS).href;
           resultURLs.push(gameURL);
 
           fetchedResults += 1;

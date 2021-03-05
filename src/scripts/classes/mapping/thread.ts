@@ -195,9 +195,7 @@ export default class Thread {
     }
 
     // Sorts the list of posts
-    return fetchedPosts.sort((a, b) =>
-      a.id > b.id ? 1 : b.id > a.id ? -1 : 0
-    );
+    return fetchedPosts.sort((a, b) => (a.id > b.id ? 1 : b.id > a.id ? -1 : 0));
   }
 
   /**
@@ -267,8 +265,7 @@ export default class Thread {
       this._category = JSONLD["articleSection"] as TCategory;
 
       // Validate the dates
-      if (luxon.DateTime.fromISO(modified).isValid)
-        this._modified = new Date(modified);
+      if (luxon.DateTime.fromISO(modified).isValid) this._modified = new Date(modified);
       if (luxon.DateTime.fromISO(published).isValid)
         this._publication = new Date(published);
     } else throw htmlResponse.value;
@@ -282,8 +279,7 @@ export default class Thread {
    */
   public async getPost(index: number): Promise<Post | null> {
     // Validate parameters
-    if (index < 1)
-      throw new ParameterError("Index must be greater or equal than 1");
+    if (index < 1) throw new ParameterError("Index must be greater or equal than 1");
 
     // Local variables
     let returnValue = null;

@@ -34,8 +34,7 @@ export default async function fetchThreadHandiworkURLs(
   const response = await query.execute();
 
   // Fetch the results from F95 and return the handiwork urls
-  if (response.isSuccess())
-    return fetchResultURLs(response.value.data as string, limit);
+  if (response.isSuccess()) return fetchResultURLs(response.value.data as string, limit);
   else throw response.value;
 }
 

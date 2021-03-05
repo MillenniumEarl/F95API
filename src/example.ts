@@ -74,8 +74,7 @@ async function main() {
   // Get user data
   console.log("Fetching user data...");
   const userdata = await getUserData();
-  const gameThreads = userdata.watched.filter((e) => e.forum === "Games")
-    .length;
+  const gameThreads = userdata.watched.filter((e) => e.forum === "Games").length;
   console.log(
     `${userdata.name} follows ${userdata.watched.length} threads of which ${gameThreads} are games\n`
   );
@@ -87,9 +86,7 @@ async function main() {
 
   const latestUpdates = await getLatestUpdates<Game>(latestQuery, 1);
   console.log(
-    `"${
-      latestUpdates.shift().name
-    }" was the last "3d game" tagged game to be updated\n`
+    `"${latestUpdates.shift().name}" was the last "3d game" tagged game to be updated\n`
   );
 
   // Get game data
@@ -114,8 +111,6 @@ async function main() {
     // Extract first game
     const gamedata = searchResult.shift();
     const authors = gamedata.authors.map((a, idx) => a.name).join(", ");
-    console.log(
-      `Found: ${gamedata.name} (${gamedata.version}) by ${authors}\n`
-    );
+    console.log(`Found: ${gamedata.name} (${gamedata.version}) by ${authors}\n`);
   }
 }

@@ -19,10 +19,7 @@ export default class PrefixParser {
    * @param {Any} value Value associated with the key
    * @returns {String|undefined} Key found or undefined
    */
-  private getKeyByValue(
-    object: TPrefixDict,
-    value: string
-  ): string | undefined {
+  private getKeyByValue(object: TPrefixDict, value: string): string | undefined {
     return Object.keys(object).find((key) => object[key] === value);
   }
 
@@ -54,9 +51,7 @@ export default class PrefixParser {
    * desired element and return the dictionary that contains it.
    * @param element Element to search in the prefixes as a key or as a value
    */
-  private searchElementInPrefixes(
-    element: string | number
-  ): TPrefixDict | null {
+  private searchElementInPrefixes(element: string | number): TPrefixDict | null {
     // Local variables
     let dictName = null;
 
@@ -64,13 +59,11 @@ export default class PrefixParser {
     for (const [key, subdict] of Object.entries(shared.prefixes)) {
       // Check if the element is a value in the sub-dict
       const valueInDict =
-        typeof element === "string" &&
-        this.valueInDict(subdict, element as string);
+        typeof element === "string" && this.valueInDict(subdict, element as string);
 
       // Check if the element is a key in the subdict
       const keyInDict =
-        typeof element === "number" &&
-        Object.keys(subdict).includes(element.toString());
+        typeof element === "number" && Object.keys(subdict).includes(element.toString());
 
       if (valueInDict || keyInDict) {
         dictName = key;

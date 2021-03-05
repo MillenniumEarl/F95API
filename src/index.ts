@@ -141,9 +141,7 @@ export async function login(
  *
  * You **must** be logged in to the portal before calling this method.
  */
-export async function checkIfHandiworkHasUpdate(
-  hw: HandiWork
-): Promise<boolean> {
+export async function checkIfHandiworkHasUpdate(hw: HandiWork): Promise<boolean> {
   // Local variables
   let hasUpdate = false;
 
@@ -186,9 +184,7 @@ export async function searchHandiwork<T extends IBasic>(
  *
  * You **must** be logged in to the portal before calling this method.
  */
-export async function getHandiworkFromURL<T extends IBasic>(
-  url: string
-): Promise<T> {
+export async function getHandiworkFromURL<T extends IBasic>(url: string): Promise<T> {
   // Check if the user is logged
   if (!shared.isLogged) throw new UserNotLogged(USER_NOT_LOGGED);
 

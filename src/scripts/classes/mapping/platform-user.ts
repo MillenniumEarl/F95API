@@ -180,12 +180,10 @@ export default class PlatformUser {
 
         // Parse date
         const joined = $(MEMBER.JOINED)?.attr("datetime");
-        if (luxon.DateTime.fromISO(joined).isValid)
-          this._joined = new Date(joined);
+        if (luxon.DateTime.fromISO(joined).isValid) this._joined = new Date(joined);
 
         const lastSeen = $(MEMBER.LAST_SEEN)?.attr("datetime");
-        if (luxon.DateTime.fromISO(lastSeen).isValid)
-          this._joined = new Date(lastSeen);
+        if (luxon.DateTime.fromISO(lastSeen).isValid) this._joined = new Date(lastSeen);
 
         // Parse donation
         const donation = $(MEMBER.AMOUNT_DONATED)?.text().replace("$", "");

@@ -173,8 +173,7 @@ function reducePostElement(element: IPostElement): IPostElement {
     const content = element.content[0] as IPostElement;
     const nullValues =
       (!element.name || !content.name) && (!element.text || !content.text);
-    const sameValues =
-      element.name === content.name || element.text === content.text;
+    const sameValues = element.name === content.name || element.text === content.text;
 
     if (nullValues || sameValues) {
       element.name = element.name || content.name;
@@ -245,10 +244,7 @@ function parseCheerioNode(
         const childElement = parseCheerioNode($, el);
 
         // If the children is valid (not empty) push it
-        if (
-          (childElement.text || childElement.content.length !== 0) &&
-          !isTextNode(el)
-        ) {
+        if ((childElement.text || childElement.content.length !== 0) && !isTextNode(el)) {
           content.content.push(childElement);
         }
       });

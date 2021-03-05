@@ -34,10 +34,7 @@ interface IWatchedThread {
 }
 
 // Types
-type TFetchResult = Result<
-  GenericAxiosError | UnexpectedResponseContentType,
-  string
->;
+type TFetchResult = Result<GenericAxiosError | UnexpectedResponseContentType, string>;
 
 /**
  * Class containing the data of the user currently connected to the F95Zone platform.
@@ -151,11 +148,7 @@ export default class UserProfile extends PlatformUser {
    * @param n Total number of pages
    * @param s Page to start from
    */
-  private async fetchPages(
-    url: URL,
-    n: number,
-    s = 1
-  ): Promise<TFetchResult[]> {
+  private async fetchPages(url: URL, n: number, s = 1): Promise<TFetchResult[]> {
     // Local variables
     const responsePromiseList: Promise<TFetchResult>[] = [];
 

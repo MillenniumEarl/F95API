@@ -35,13 +35,7 @@ import ThreadSearchQuery, { TThreadOrder } from "./thread-search-query.js";
  *
  * `views`: Order based on the number of visits. Replacement: `replies`.
  */
-type THandiworkOrder =
-  | "date"
-  | "likes"
-  | "relevance"
-  | "replies"
-  | "title"
-  | "views";
+type THandiworkOrder = "date" | "likes" | "relevance" | "replies" | "title" | "views";
 type TExecuteResult = Result<GenericAxiosError, AxiosResponse<any>>;
 
 export default class HandiworkSearchQuery implements IQuery {
@@ -118,20 +112,13 @@ export default class HandiworkSearchQuery implements IQuery {
 
     // Check if the query is valid
     if (!this.validate()) {
-      throw new Error(
-        `Invalid query: ${validator.validateSync(this).join("\n")}`
-      );
+      throw new Error(`Invalid query: ${validator.validateSync(this).join("\n")}`);
     }
 
     // Convert the query
     if (this.selectSearchType() === "latest")
-      response = await this.cast<LatestSearchQuery>(
-        "LatestSearchQuery"
-      ).execute();
-    else
-      response = await this.cast<ThreadSearchQuery>(
-        "ThreadSearchQuery"
-      ).execute();
+      response = await this.cast<LatestSearchQuery>("LatestSearchQuery").execute();
+    else response = await this.cast<ThreadSearchQuery>("ThreadSearchQuery").execute();
 
     return response;
   }

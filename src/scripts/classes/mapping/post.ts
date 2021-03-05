@@ -10,10 +10,7 @@ import cheerio from "cheerio";
 
 // Modules from file
 import PlatformUser from "./platform-user.js";
-import {
-  IPostElement,
-  parseF95ThreadPost
-} from "../../scrape-data/post-parse.js";
+import { IPostElement, parseF95ThreadPost } from "../../scrape-data/post-parse.js";
 import { POST, THREAD } from "../../constants/css-selector.js";
 import { urls } from "../../constants/url.js";
 import { fetchHTML } from "../../network-helper.js";
@@ -110,10 +107,7 @@ export default class Post {
         .toArray()
         .find((el, idx) => {
           // Fetch the ID and check if it is what we are searching
-          const sid: string = $(el)
-            .find(POST.ID)
-            .attr("id")
-            .replace("post-", "");
+          const sid: string = $(el).find(POST.ID).attr("id").replace("post-", "");
           const id = parseInt(sid, 10);
 
           if (id === this.id) return el;
@@ -128,10 +122,7 @@ export default class Post {
 
   //#region Private methods
 
-  private async parsePost(
-    $: cheerio.Root,
-    post: cheerio.Cheerio
-  ): Promise<void> {
+  private async parsePost($: cheerio.Root, post: cheerio.Cheerio): Promise<void> {
     // Find post's ID
     const sid: string = post.find(POST.ID).attr("id").replace("post-", "");
     this._id = parseInt(sid, 10);
@@ -149,10 +140,7 @@ export default class Post {
     this._lastEdit = new Date(sLastEdit);
 
     // Find post's owner
-    const sOwnerID: string = post
-      .find(POST.OWNER_ID)
-      .attr("data-user-id")
-      .trim();
+    const sOwnerID: string = post.find(POST.OWNER_ID).attr("data-user-id").trim();
     this._owner = new PlatformUser(parseInt(sOwnerID, 10));
     await this._owner.fetch();
 

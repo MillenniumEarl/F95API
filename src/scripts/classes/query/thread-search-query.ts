@@ -78,14 +78,10 @@ export default class ThreadSearchQuery implements IQuery {
     return validator.validateSync(this).length === 0;
   }
 
-  public async execute(): Promise<
-    Result<GenericAxiosError, AxiosResponse<any>>
-  > {
+  public async execute(): Promise<Result<GenericAxiosError, AxiosResponse<any>>> {
     // Check if the query is valid
     if (!this.validate()) {
-      throw new Error(
-        `Invalid query: ${validator.validateSync(this).join("\n")}`
-      );
+      throw new Error(`Invalid query: ${validator.validateSync(this).join("\n")}`);
     }
 
     // Define the POST parameters
@@ -131,8 +127,7 @@ export default class ThreadSearchQuery implements IQuery {
 
     // Set included and excluded tags (joined with a comma)
     if (this.includedTags) params["c[tags]"] = this.includedTags.join(",");
-    if (this.excludedTags)
-      params["c[excludeTags]"] = this.excludedTags.join(",");
+    if (this.excludedTags) params["c[excludeTags]"] = this.excludedTags.join(",");
 
     // Set minimum reply number
     if (this.minimumReplies > 0)

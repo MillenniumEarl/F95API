@@ -150,8 +150,7 @@ export async function send2faCode(
   // Prepare the parameters to send via POST request
   const params = {
     _xfRedirect: urls.F95_BASE_URL,
-    _xfRequestUri:
-      "/login/two-step?_xfRedirect=https%3A%2F%2Ff95zone.to%2F&remember=1",
+    _xfRequestUri: "/login/two-step?_xfRedirect=https%3A%2F%2Ff95zone.to%2F&remember=1",
     _xfResponseType: "json",
     _xfToken: token,
     _xfWithData: "1",
@@ -167,9 +166,7 @@ export async function send2faCode(
   return response.applyOnSuccess((r: AxiosResponse<any>) => {
     // r.data.status is 'ok' if the authentication is successful
     const result = r.data.status === "ok";
-    const message = result
-      ? "Authentication successful"
-      : r.data.errors.join(",");
+    const message = result ? "Authentication successful" : r.data.errors.join(",");
     const code = result
       ? LoginResult.AUTH_SUCCESSFUL_2FA
       : message ===
@@ -239,8 +236,7 @@ export async function fetchPOSTResponse(
 
   // Prepare the parameters for the POST request
   const urlParams = new URLSearchParams();
-  for (const [key, value] of Object.entries(params))
-    urlParams.append(key, value);
+  for (const [key, value] of Object.entries(params)) urlParams.append(key, value);
 
   // Shallow copy of the common configuration object
   commonConfig.jar = shared.session.cookieJar;
