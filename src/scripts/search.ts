@@ -9,7 +9,10 @@
 // Modules from file
 import { IBasic, IQuery } from "./interfaces";
 import getHandiworkInformation from "./scrape-data/handiwork-parse";
-import getURLsFromQuery from "./fetch-data/fetch-query";
+import { HandiworkSearchQuery, LatestSearchQuery, ThreadSearchQuery } from "..";
+import fetchHandiworkURLs from "./fetch-data/fetch-handiwork";
+import fetchLatestHandiworkURLs from "./fetch-data/fetch-latest";
+import fetchThreadHandiworkURLs from "./fetch-data/fetch-thread";
 
 /**
  * Gets the handiworks that match the passed parameters.
@@ -29,3 +32,25 @@ export default async function search<T extends IBasic>(
 
   return Promise.all(results);
 }
+
+//#region Private methods
+
+/**
+ * @param query Query used for the search
+ * @param limit Maximum number of items to get. Default: 30
+ * @returns URLs of the fetched games
+ */
+async function getURLsFromQuery(query: IQuery, limit = 30): Promise<string[]> {
+  switch (query.itype) {
+    case "HandiworkSearchQuery":
+      return fetchHandiworkURLs(query as HandiworkSearchQuery, limit);
+    case "LatestSearchQuery":
+      return fetchLatestHandiworkURLs(query as LatestSearchQuery, limit);
+    case "ThreadSearchQuery":
+      return fetchThreadHandiworkURLs(query as ThreadSearchQuery, limit);
+    default:
+      throw Error(`Invalid query type: ${query.itype}`);
+  }
+}
+
+//#endregion Private methods
