@@ -31,6 +31,8 @@ const USER_NOT_LOGGED = "User not authenticated, unable to continue";
 
 //#region Re-export classes
 
+export { default as PrefixParser } from "./scripts/classes/prefix-parser";
+
 export { default as Animation } from "./scripts/classes/handiwork/animation";
 export { default as Asset } from "./scripts/classes/handiwork/asset";
 export { default as Comic } from "./scripts/classes/handiwork/comic";
