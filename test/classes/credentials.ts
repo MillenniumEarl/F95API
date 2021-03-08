@@ -35,18 +35,16 @@ export function suite(): void {
 //#region Private methods
 
 /**
- * Check if a string is a number
- * @author Dan, Ben Aston
+ * Check if a string is a number.
+ * @author Jeremy
  * @see https://preview.tinyurl.com/y46jqwkt
  */
-function isNumeric(str: string): boolean {
-  // We only process strings!
-  if (typeof str != "string") return false;
+function isNumeric(num: any): boolean {
+  const isNan = isNaN(num as number);
+  const isNum = typeof num === "number";
+  const isValidString = typeof num === "string" && num.trim() !== "";
 
-  // Use type coercion to parse the _entirety_ of the string
-  // (`parseFloat` alone does not do this) and ensure strings
-  // of whitespace fail
-  return !isNaN(parseInt(str, 10)) && !isNaN(parseFloat(str));
+  return (isNum || isValidString) && !isNan;
 }
 
 //#endregion
