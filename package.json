@@ -1,10 +1,10 @@
 {
-  "main": "./app/index.js",
-  "type": "module",
+  "main": "./src/index.ts",
   "name": "f95api",
   "version": "1.9.9",
   "author": "Millennium Earl",
   "description": "Unofficial Node JS module for scraping F95Zone platform",
+  "types": "dist/index.d.ts",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/MillenniumEarl/F95API.git"
