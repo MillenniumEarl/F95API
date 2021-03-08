@@ -26,7 +26,6 @@
     "lint": "eslint . --ext .ts",
     "prettier-format": "prettier --config .prettierrc '**/*.ts' --write",
     "ts:compile": "tsc",
-    "ts:definitions": "tsc --declaration --outDir . --emitDeclarationOnly",
     "tests": "mocha --require ts-node/register test/**/*.ts",
     "publish": "npm publish",
     "run-example": "npm run ts:compile && node ./dist/example.js"
