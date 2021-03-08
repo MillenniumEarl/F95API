@@ -23,9 +23,8 @@ import {
 } from "./classes/errors.js";
 import Credentials from "./classes/credentials.js";
 
-// @ts-ignore
 // Configure axios to use the cookie jar
-axiosCookieJarSupport.default(axios);
+axiosCookieJarSupport(axios);
 
 // Global variables
 const userAgent =
