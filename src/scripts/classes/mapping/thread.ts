@@ -7,7 +7,7 @@
 
 // Public modules from npm
 import cheerio from "cheerio";
-import luxon from "luxon";
+import { DateTime } from "luxon";
 
 // Modules from files
 import Post from "./post.js";
@@ -265,9 +265,8 @@ export default class Thread {
       this._category = JSONLD["articleSection"] as TCategory;
 
       // Validate the dates
-      if (luxon.DateTime.fromISO(modified).isValid) this._modified = new Date(modified);
-      if (luxon.DateTime.fromISO(published).isValid)
-        this._publication = new Date(published);
+      if (DateTime.fromISO(modified).isValid) this._modified = new Date(modified);
+      if (DateTime.fromISO(published).isValid) this._publication = new Date(published);
     } else throw htmlResponse.value;
   }
 
