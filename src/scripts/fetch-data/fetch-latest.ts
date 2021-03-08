@@ -6,8 +6,8 @@
 "use strict";
 
 // Modules from file
-import LatestSearchQuery from "../classes/query/latest-search-query.js";
-import { urls } from "../constants/url.js";
+import LatestSearchQuery from "../classes/query/latest-search-query";
+import { urls } from "../constants/url";
 
 /**
  * Gets the URLs of the latest handiworks that match the passed parameters.

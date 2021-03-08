@@ -11,17 +11,17 @@ import cheerio from "cheerio";
 import axiosCookieJarSupport from "axios-cookiejar-support";
 
 // Modules from file
-import shared from "./shared.js";
-import { urls } from "./constants/url.js";
-import { GENERIC } from "./constants/css-selector.js";
-import LoginResult from "./classes/login-result.js";
-import { failure, Result, success } from "./classes/result.js";
+import shared from "./shared";
+import { urls } from "./constants/url";
+import { GENERIC } from "./constants/css-selector";
+import LoginResult from "./classes/login-result";
+import { failure, Result, success } from "./classes/result";
 import {
   GenericAxiosError,
   InvalidF95Token,
   UnexpectedResponseContentType
-} from "./classes/errors.js";
-import Credentials from "./classes/credentials.js";
+} from "./classes/errors";
+import Credentials from "./classes/credentials";
 
 // Configure axios to use the cookie jar
 axiosCookieJarSupport(axios);

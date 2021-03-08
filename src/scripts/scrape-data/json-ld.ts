@@ -9,8 +9,8 @@
 import cheerio from "cheerio";
 
 // Modules from file
-import shared from "../shared.js";
-import { THREAD } from "../constants/css-selector.js";
+import shared from "../shared";
+import { THREAD } from "../constants/css-selector";
 
 /**
  * Represents information contained in a JSON+LD tag.

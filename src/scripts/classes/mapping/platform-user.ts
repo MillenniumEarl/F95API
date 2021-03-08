@@ -10,9 +10,9 @@ import cheerio from "cheerio";
 import { DateTime } from "luxon";
 
 // Modules from files
-import { urls } from "../../constants/url.js";
-import { fetchHTML } from "../../network-helper.js";
-import { GENERIC, MEMBER } from "../../constants/css-selector.js";
+import { urls } from "../../constants/url";
+import { fetchHTML } from "../../network-helper";
+import { GENERIC, MEMBER } from "../../constants/css-selector";
 
 /**
  * Represents a generic user registered on the platform.

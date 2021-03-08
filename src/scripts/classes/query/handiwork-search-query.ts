@@ -10,11 +10,11 @@ import { IsInt, Min, validateSync } from "class-validator";
 import { AxiosResponse } from "axios";
 
 // Module from files
-import { IQuery, TCategory, TQueryInterface } from "../../interfaces.js";
-import { GenericAxiosError } from "../errors.js";
-import { Result } from "../result.js";
-import LatestSearchQuery, { TLatestOrder } from "./latest-search-query.js";
-import ThreadSearchQuery, { TThreadOrder } from "./thread-search-query.js";
+import { IQuery, TCategory, TQueryInterface } from "../../interfaces";
+import { GenericAxiosError } from "../errors";
+import { Result } from "../result";
+import LatestSearchQuery, { TLatestOrder } from "./latest-search-query";
+import ThreadSearchQuery, { TThreadOrder } from "./thread-search-query";
 
 // Type definitions
 /**

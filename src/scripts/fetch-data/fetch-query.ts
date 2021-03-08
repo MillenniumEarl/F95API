@@ -6,13 +6,13 @@
 "use strict";
 
 // Modules from files
-import fetchHandiworkURLs from "./fetch-handiwork.js";
-import fetchLatestHandiworkURLs from "./fetch-latest.js";
-import fetchThreadHandiworkURLs from "./fetch-thread.js";
-import HandiworkSearchQuery from "../classes/query/handiwork-search-query.js";
-import LatestSearchQuery from "../classes/query/latest-search-query.js";
-import ThreadSearchQuery from "../classes/query/thread-search-query.js";
-import { IQuery } from "../interfaces.js";
+import fetchHandiworkURLs from "./fetch-handiwork";
+import fetchLatestHandiworkURLs from "./fetch-latest";
+import fetchThreadHandiworkURLs from "./fetch-thread";
+import HandiworkSearchQuery from "../classes/query/handiwork-search-query";
+import LatestSearchQuery from "../classes/query/latest-search-query";
+import ThreadSearchQuery from "../classes/query/thread-search-query";
+import { IQuery } from "../interfaces";
 
 //#region Public methods
 

@@ -7,9 +7,9 @@
 "use strict";
 
 // Modules from file
-import { IBasic, IQuery } from "./interfaces.js";
-import getHandiworkInformation from "./scrape-data/handiwork-parse.js";
-import getURLsFromQuery from "./fetch-data/fetch-query.js";
+import { IBasic, IQuery } from "./interfaces";
+import getHandiworkInformation from "./scrape-data/handiwork-parse";
+import getURLsFromQuery from "./fetch-data/fetch-query";
 
 /**
  * Gets the handiworks that match the passed parameters.

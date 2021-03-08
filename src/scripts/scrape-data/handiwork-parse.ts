@@ -9,11 +9,11 @@
 import { DateTime } from "luxon";
 
 // Modules from files
-import HandiWork from "../classes/handiwork/handiwork.js";
-import Thread from "../classes/mapping/thread.js";
-import { IBasic, TAuthor, TEngine, TExternalPlatform, TStatus } from "../interfaces.js";
-import shared, { TPrefixDict } from "../shared.js";
-import { ILink, IPostElement } from "./post-parse.js";
+import HandiWork from "../classes/handiwork/handiwork";
+import Thread from "../classes/mapping/thread";
+import { IBasic, TAuthor, TEngine, TExternalPlatform, TStatus } from "../interfaces";
+import shared, { TPrefixDict } from "../shared";
+import { ILink, IPostElement } from "./post-parse";
 
 export async function getHandiworkInformation<T extends IBasic>(url: string): Promise<T>;
 

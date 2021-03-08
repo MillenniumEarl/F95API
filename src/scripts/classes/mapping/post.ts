@@ -9,11 +9,11 @@
 import cheerio from "cheerio";
 
 // Modules from file
-import PlatformUser from "./platform-user.js";
-import { IPostElement, parseF95ThreadPost } from "../../scrape-data/post-parse.js";
-import { POST, THREAD } from "../../constants/css-selector.js";
-import { urls } from "../../constants/url.js";
-import { fetchHTML } from "../../network-helper.js";
+import PlatformUser from "./platform-user";
+import { IPostElement, parseF95ThreadPost } from "../../scrape-data/post-parse";
+import { POST, THREAD } from "../../constants/css-selector";
+import { urls } from "../../constants/url";
+import { fetchHTML } from "../../network-helper";
 
 /**
  * Represents a post published by a user on the F95Zone platform.

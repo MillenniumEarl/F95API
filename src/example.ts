@@ -27,7 +27,7 @@ import {
   Game,
   searchHandiwork,
   HandiworkSearchQuery
-} from "./index.js";
+} from "./index";
 
 // Configure the .env reader
 dotenv.config();

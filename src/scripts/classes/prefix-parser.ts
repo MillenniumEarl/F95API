@@ -6,7 +6,7 @@
 "use strict";
 
 // Modules from file
-import shared, { TPrefixDict } from "../shared.js";
+import shared, { TPrefixDict } from "../shared";
 
 /**
  * Convert prefixes and platform tags from string to ID and vice versa.

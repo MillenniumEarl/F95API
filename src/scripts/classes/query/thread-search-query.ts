@@ -9,14 +9,14 @@
 import { IsInt, Min, validateSync } from "class-validator";
 
 // Module from files
-import { IQuery, TCategory, TQueryInterface } from "../../interfaces.js";
-import { urls } from "../../constants/url.js";
-import PrefixParser from "./../prefix-parser.js";
-import { fetchPOSTResponse } from "../../network-helper.js";
+import { IQuery, TCategory, TQueryInterface } from "../../interfaces";
+import { urls } from "../../constants/url";
+import PrefixParser from "./../prefix-parser";
+import { fetchPOSTResponse } from "../../network-helper";
 import { AxiosResponse } from "axios";
-import { GenericAxiosError } from "../errors.js";
-import { Result } from "../result.js";
-import Shared from "../../shared.js";
+import { GenericAxiosError } from "../errors";
+import { Result } from "../result";
+import Shared from "../../shared";
 
 // Type definitions
 export type TThreadOrder = "relevance" | "date" | "last_update" | "replies";

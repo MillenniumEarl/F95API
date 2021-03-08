@@ -12,10 +12,10 @@ import { readFileSync, writeFileSync, existsSync } from "fs";
 import cheerio from "cheerio";
 
 // Modules from file
-import shared, { TPrefixDict } from "../shared.js";
-import { urls as f95url } from "../constants/url.js";
-import { GENERIC } from "../constants/css-selector.js";
-import { fetchHTML } from "../network-helper.js";
+import shared, { TPrefixDict } from "../shared";
+import { urls as f95url } from "../constants/url";
+import { GENERIC } from "../constants/css-selector";
+import { fetchHTML } from "../network-helper";
 
 //#region Interface definitions
 

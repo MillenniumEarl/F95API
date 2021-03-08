@@ -9,13 +9,13 @@
 import { ArrayMaxSize, IsInt, Min, validateSync } from "class-validator";
 
 // Modules from file
-import { urls } from "../../constants/url.js";
-import PrefixParser from "../prefix-parser.js";
-import { IQuery, TCategory, TQueryInterface } from "../../interfaces.js";
-import { fetchGETResponse } from "../../network-helper.js";
+import { urls } from "../../constants/url";
+import PrefixParser from "../prefix-parser";
+import { IQuery, TCategory, TQueryInterface } from "../../interfaces";
+import { fetchGETResponse } from "../../network-helper";
 import { AxiosResponse } from "axios";
-import { GenericAxiosError } from "../errors.js";
-import { Result } from "../result.js";
+import { GenericAxiosError } from "../errors";
+import { Result } from "../result";
 
 // Type definitions
 export type TLatestOrder = "date" | "likes" | "views" | "title" | "rating";

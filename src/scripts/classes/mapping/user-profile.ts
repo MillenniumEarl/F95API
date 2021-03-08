@@ -9,13 +9,13 @@
 import cheerio from "cheerio";
 
 // Modules from files
-import Post from "./post.js";
-import PlatformUser from "./platform-user.js";
-import { urls } from "../../constants/url.js";
-import { GENERIC, WATCHED_THREAD } from "../../constants/css-selector.js";
-import { fetchHTML } from "../../network-helper.js";
-import { GenericAxiosError, UnexpectedResponseContentType } from "../errors.js";
-import { Result } from "../result.js";
+import Post from "./post";
+import PlatformUser from "./platform-user";
+import { urls } from "../../constants/url";
+import { GENERIC, WATCHED_THREAD } from "../../constants/css-selector";
+import { fetchHTML } from "../../network-helper";
+import { GenericAxiosError, UnexpectedResponseContentType } from "../errors";
+import { Result } from "../result";
 
 // Interfaces
 interface IWatchedThread {

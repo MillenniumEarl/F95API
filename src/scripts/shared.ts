@@ -14,7 +14,7 @@ import { join } from "path";
 import log4js from "log4js";
 
 // Modules from file
-import Session from "./classes/session.js";
+import Session from "./classes/session";
 
 // Types declaration
 export type TPrefixDict = { [n: number]: string };
