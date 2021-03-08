@@ -21,7 +21,7 @@ import { urls } from "../constants/url";
  */
 export default async function fetchLatestHandiworkURLs(
   query: LatestSearchQuery,
-  limit = 30
+  limit: number = 30
 ): Promise<string[]> {
   // Local variables
   const shallowQuery: LatestSearchQuery = Object.assign(new LatestSearchQuery(), query);
