@@ -24,11 +24,11 @@
   ],
   "scripts": {
     "lint": "eslint . --ext .ts",
-    "prettier-format": "prettier --config .prettierrc '**/*.ts' --write",
-    "ts:compile": "tsc",
-    "tests": "mocha --require ts-node/register test/**/*.ts",
+    "prettier-format": "prettier --config .prettierrc '{src,test}/**/*.ts' --write",
+    "compile": "tsc",
+    "test": "mocha --require ts-node/register test/**/*.ts",
     "publish": "npm publish",
-    "run-example": "npm run ts:compile && node ./dist/example.js"
+    "run-example": "npm run compile && node ./dist/example.js"
   },
   "engines": {
     "node": ">=10.0"
