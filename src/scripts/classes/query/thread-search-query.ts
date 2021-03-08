@@ -6,7 +6,7 @@
 "use strict";
 
 // Public modules from npm
-import validator from "class-validator";
+import { IsInt, Min, validateSync } from "class-validator";
 
 // Module from files
 import { IQuery, TCategory, TQueryInterface } from "../../interfaces.js";
@@ -61,10 +61,10 @@ export default class ThreadSearchQuery implements IQuery {
    * Results presentation order.
    */
   public order: TThreadOrder = "relevance";
-  @validator.IsInt({
+  @IsInt({
     message: "$property expect an integer, received $value"
   })
-  @validator.Min(ThreadSearchQuery.MIN_PAGE, {
+  @Min(ThreadSearchQuery.MIN_PAGE, {
     message: "The minimum $property value must be $constraint1, received $value"
   })
   public page = 1;
@@ -75,13 +75,13 @@ export default class ThreadSearchQuery implements IQuery {
   //#region Public methods
 
   public validate(): boolean {
-    return validator.validateSync(this).length === 0;
+    return validateSync(this).length === 0;
   }
 
   public async execute(): Promise<Result<GenericAxiosError, AxiosResponse<any>>> {
     // Check if the query is valid
     if (!this.validate()) {
-      throw new Error(`Invalid query: ${validator.validateSync(this).join("\n")}`);
+      throw new Error(`Invalid query: ${validateSync(this).join("\n")}`);
     }
 
     // Define the POST parameters

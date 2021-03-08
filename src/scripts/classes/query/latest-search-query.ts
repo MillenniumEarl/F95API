@@ -6,7 +6,7 @@
 "use strict";
 
 // Public modules from npm
-import validator from "class-validator";
+import { ArrayMaxSize, IsInt, Min, validateSync } from "class-validator";
 
 // Modules from file
 import { urls } from "../../constants/url.js";
@@ -49,16 +49,16 @@ export default class LatestSearchQuery implements IQuery {
    */
   public date: TDate = null;
 
-  @validator.ArrayMaxSize(LatestSearchQuery.MAX_TAGS, {
+  @ArrayMaxSize(LatestSearchQuery.MAX_TAGS, {
     message: "Too many tags: $value instead of $constraint1"
   })
   public includedTags: string[] = [];
   public includedPrefixes: string[] = [];
 
-  @validator.IsInt({
+  @IsInt({
     message: "$property expect an integer, received $value"
   })
-  @validator.Min(LatestSearchQuery.MIN_PAGE, {
+  @Min(LatestSearchQuery.MIN_PAGE, {
     message: "The minimum $property value must be $constraint1, received $value"
   })
   public page = LatestSearchQuery.MIN_PAGE;
@@ -69,13 +69,13 @@ export default class LatestSearchQuery implements IQuery {
   //#region Public methods
 
   public validate(): boolean {
-    return validator.validateSync(this).length === 0;
+    return validateSync(this).length === 0;
   }
 
   public async execute(): Promise<Result<GenericAxiosError, AxiosResponse<any>>> {
     // Check if the query is valid
     if (!this.validate()) {
-      throw new Error(`Invalid query: ${validator.validateSync(this).join("\n")}`);
+      throw new Error(`Invalid query: ${validateSync(this).join("\n")}`);
     }
 
     // Prepare the URL
