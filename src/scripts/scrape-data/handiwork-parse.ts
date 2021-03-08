@@ -6,7 +6,7 @@
 "use strict";
 
 // Public modules from npm
-import luxon from "luxon";
+import { DateTime } from "luxon";
 
 // Modules from files
 import HandiWork from "../classes/handiwork/handiwork.js";
@@ -226,7 +226,7 @@ function fillWithPostData(hw: HandiWork, elements: IPostElement[]) {
 
   // Fill the dates
   const releaseDate = getPostElementByName(elements, "release date")?.text;
-  if (luxon.DateTime.fromISO(releaseDate).isValid) hw.lastRelease = new Date(releaseDate);
+  if (DateTime.fromISO(releaseDate).isValid) hw.lastRelease = new Date(releaseDate);
 
   //#region Convert the author
   const authorElement =
