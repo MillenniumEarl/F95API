@@ -16,6 +16,7 @@ import fetchThreadHandiworkURLs from "./fetch-data/fetch-thread";
 
 /**
  * Gets the handiworks that match the passed parameters.
+ *
  * You *must* be logged.
  * @param {Number} limit
  * Maximum number of items to get. Default: 30
