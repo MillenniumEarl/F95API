@@ -15,10 +15,6 @@ import { IBasic, TAuthor, TEngine, TExternalPlatform, TStatus } from "../interfa
 import shared, { TPrefixDict } from "../shared";
 import { ILink, IPostElement } from "./post-parse";
 
-export async function getHandiworkInformation<T extends IBasic>(url: string): Promise<T>;
-
-export async function getHandiworkInformation<T extends IBasic>(url: Thread): Promise<T>;
-
 /**
  * Gets information of a particular handiwork from its thread.
  *
