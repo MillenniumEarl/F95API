@@ -26,7 +26,8 @@
     "lint": "eslint . --ext .ts",
     "prettier-format": "prettier --config .prettierrc '{src,test}/**/*.ts' --write",
     "compile": "tsc",
-    "test": "mocha --reporter spec --require ts-node/register test/index.ts",
+    "test": "nyc --reporter=text mocha --require ts-node/register test/index.ts",
+    "coverage": "nyc report --reporter=text-lcov > coverage.lcov && codecov -t 38ad72bf-a29d-4c2e-9827-96cbe037afd2",
     "publish": "npm publish",
     "run-example": "npm run compile && node ./dist/example.js"
   },
@@ -62,6 +63,7 @@
     "inquirer": "^8.0.0",
     "lint-staged": "^10.5.4",
     "mocha": "^8.3.1",
+    "nyc": "^15.1.0",
     "prettier": "^2.2.1",
     "ts-node": "^9.1.1",
     "typescript": "^4.2.3"
