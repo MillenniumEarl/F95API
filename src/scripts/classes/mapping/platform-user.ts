@@ -15,11 +15,12 @@ import { fetchHTML } from "../../network-helper";
 import { GENERIC, MEMBER } from "../../constants/css-selector";
 import shared from "../../shared";
 import { UserNotLogged, USER_NOT_LOGGED } from "../errors";
+import { ILazy } from "../../interfaces";
 
 /**
  * Represents a generic user registered on the platform.
  */
-export default class PlatformUser {
+export default class PlatformUser implements ILazy {
   //#region Fields
 
   private _id: number;

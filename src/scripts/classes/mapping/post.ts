@@ -16,11 +16,12 @@ import { urls } from "../../constants/url";
 import { fetchHTML } from "../../network-helper";
 import shared from "../../shared";
 import { UserNotLogged, USER_NOT_LOGGED } from "../errors";
+import { ILazy } from "../../interfaces";
 
 /**
  * Represents a post published by a user on the F95Zone platform.
  */
-export default class Post {
+export default class Post implements ILazy {
   //#region Fields
 
   private _id: number;

@@ -12,7 +12,7 @@ import { DateTime } from "luxon";
 // Modules from files
 import Post from "./post";
 import PlatformUser from "./platform-user";
-import { TCategory, TRating } from "../../interfaces";
+import { ILazy, TCategory, TRating } from "../../interfaces";
 import { urls } from "../../constants/url";
 import { POST, THREAD } from "../../constants/css-selector";
 import { fetchHTML, fetchPOSTResponse } from "../../network-helper";
@@ -31,7 +31,7 @@ import shared from "../../shared";
 /**
  * Represents a generic F95Zone platform thread.
  */
-export default class Thread {
+export default class Thread implements ILazy {
   //#region Fields
 
   private POST_FOR_PAGE = 20;
