@@ -58,18 +58,20 @@ export default async function fetchPlatformData(): Promise<void> {
   // Check if the data are cached
   if (!readCache(shared.cachePath)) {
     // Load the HTML
-    const html = await fetchHTML(f95url.LATEST_UPDATES);
+    const response = await fetchHTML(f95url.LATEST_UPDATES);
 
     // Parse data
-    if (html.isSuccess()) {
-      const data = parseLatestPlatformHTML(html.value);
+    const result = response.applyOnSuccess((html) => {
+      const data = parseLatestPlatformHTML(html);
 
       // Assign data
       assignLatestPlatformData(data);
 
       // Cache data
       saveCache(shared.cachePath);
-    } else throw html.value;
+    });
+
+    if (result.isFailure()) throw result.value;
   }
 }
 
@@ -140,12 +142,19 @@ function assignLatestPlatformData(data: ILatestResource): void {
       // Prepare the dict
       const dict: TPrefixDict = {};
 
-      for (const e of res.prefixes) {
-        dict[e.id] = e.name.replace("&#039;", "'");
-      }
+      // Assign values
+      res.prefixes.map((e) => (dict[e.id] = e.name.replace("&#039;", "'")));
 
-      // Save the property
-      scrapedData[res.name] = dict;
+      // Merge the dicts ("Other"/"Status" field)
+      if (scrapedData[res.name]) {
+        const newKeys = Object.keys(dict)
+          .map((k) => parseInt(k, 10))
+          .filter((k) => !scrapedData[res.name][k]);
+
+        newKeys.map((k) => (scrapedData[res.name][k] = dict[k]));
+      }
+      // Assign the property
+      else scrapedData[res.name] = dict;
     }
   }
 
