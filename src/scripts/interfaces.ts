@@ -316,3 +316,15 @@ export interface IQuery {
    */
   execute(): any;
 }
+
+/**
+ * It represents an object that obtains the data
+ * only on the explicit request of the user and
+ * only after its establishment.
+ */
+export interface ILazy {
+  /**
+   * Gets the data relating to the object.
+   */
+  fetch(): Promise<void>;
+}

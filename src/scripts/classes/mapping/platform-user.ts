@@ -7,17 +7,20 @@
 
 // Public modules from npm
 import cheerio from "cheerio";
-import luxon from "luxon";
+import { DateTime } from "luxon";
 
 // Modules from files
-import { urls } from "../../constants/url.js";
-import { fetchHTML } from "../../network-helper.js";
-import { GENERIC, MEMBER } from "../../constants/css-selector.js";
+import { urls } from "../../constants/url";
+import { fetchHTML } from "../../network-helper";
+import { GENERIC, MEMBER } from "../../constants/css-selector";
+import shared from "../../shared";
+import { InvalidID, INVALID_USER_ID, UserNotLogged, USER_NOT_LOGGED } from "../errors";
+import { ILazy } from "../../interfaces";
 
 /**
  * Represents a generic user registered on the platform.
  */
-export default class PlatformUser {
+export default class PlatformUser implements ILazy {
   //#region Fields
 
   private _id: number;
@@ -140,57 +143,73 @@ export default class PlatformUser {
   //#region Public methods
 
   public setID(id: number): void {
+    // Check ID
+    if (!id || id < 1) throw new InvalidID(INVALID_USER_ID);
+
     this._id = id;
   }
 
   public async fetch(): Promise<void> {
+    // Check login
+    if (!shared.isLogged) throw new UserNotLogged(USER_NOT_LOGGED);
+
     // Check ID
-    if (!this.id && this.id < 1) throw new Error("Invalid user ID");
+    if (!this.id || this.id < 1) throw new InvalidID(INVALID_USER_ID);
 
     // Prepare the URL
     const url = new URL(this.id.toString(), `${urls.MEMBERS}/`).toString();
 
     // Fetch the page
-    const htmlResponse = await fetchHTML(url);
-
-    if (htmlResponse.isSuccess()) {
-      // Prepare cheerio
-      const $ = cheerio.load(htmlResponse.value);
-
-      // Check if the profile is private
-      this._private =
-        $(GENERIC.ERROR_BANNER)?.text().trim() ===
-        "This member limits who may view their full profile.";
-
-      if (!this._private) {
-        // Parse the elements
-        this._name = $(MEMBER.NAME).text();
-        this._title = $(MEMBER.TITLE).text();
-        this._banners = $(MEMBER.BANNERS)
-          .toArray()
-          .map((el, idx) => $(el).text().trim())
-          .filter((el) => el);
-        this._avatar = $(MEMBER.AVATAR).attr("src");
-        this._followed = $(MEMBER.FOLLOWED).text() === "Unfollow";
-        this._ignored = $(MEMBER.IGNORED).text() === "Unignore";
-        this._messages = parseInt($(MEMBER.MESSAGES).text(), 10);
-        this._reactionScore = parseInt($(MEMBER.REACTION_SCORE).text(), 10);
-        this._points = parseInt($(MEMBER.POINTS).text(), 10);
-        this._ratingsReceived = parseInt($(MEMBER.RATINGS_RECEIVED).text(), 10);
-
-        // Parse date
-        const joined = $(MEMBER.JOINED)?.attr("datetime");
-        if (luxon.DateTime.fromISO(joined).isValid) this._joined = new Date(joined);
-
-        const lastSeen = $(MEMBER.LAST_SEEN)?.attr("datetime");
-        if (luxon.DateTime.fromISO(lastSeen).isValid) this._joined = new Date(lastSeen);
-
-        // Parse donation
-        const donation = $(MEMBER.AMOUNT_DONATED)?.text().replace("$", "");
-        this._amountDonated = donation ? parseInt(donation, 10) : 0;
-      }
-    } else throw htmlResponse.value;
+    const response = await fetchHTML(url);
+    const result = response.applyOnSuccess((html) => this.elaborateResponse(html));
+    if (result.isFailure()) throw response.value;
   }
 
-  //#endregion Public method
+  //#endregion Public methods
+
+  //#region Private methods
+
+  /**
+   * Process the HTML code received as
+   * an answer and gets the data contained in it.
+   */
+  private elaborateResponse(html: string): void {
+    // Prepare cheerio
+    const $ = cheerio.load(html);
+
+    // Check if the profile is private
+    this._private =
+      $(GENERIC.ERROR_BANNER)?.text().trim() ===
+      "This member limits who may view their full profile.";
+
+    if (!this._private) {
+      // Parse the elements
+      this._name = $(MEMBER.NAME).text();
+      this._title = $(MEMBER.TITLE).text();
+      this._banners = $(MEMBER.BANNERS)
+        .toArray()
+        .map((el, idx) => $(el).text().trim())
+        .filter((el) => el);
+      this._avatar = $(MEMBER.AVATAR).attr("src");
+      this._followed = $(MEMBER.FOLLOWED).text() === "Unfollow";
+      this._ignored = $(MEMBER.IGNORED).text() === "Unignore";
+      this._messages = parseInt($(MEMBER.MESSAGES).text(), 10);
+      this._reactionScore = parseInt($(MEMBER.REACTION_SCORE).text(), 10);
+      this._points = parseInt($(MEMBER.POINTS).text(), 10);
+      this._ratingsReceived = parseInt($(MEMBER.RATINGS_RECEIVED).text(), 10);
+
+      // Parse date
+      const joined = $(MEMBER.JOINED)?.attr("datetime");
+      if (DateTime.fromISO(joined).isValid) this._joined = new Date(joined);
+
+      const lastSeen = $(MEMBER.LAST_SEEN)?.attr("datetime");
+      if (DateTime.fromISO(lastSeen).isValid) this._joined = new Date(lastSeen);
+
+      // Parse donation
+      const donation = $(MEMBER.AMOUNT_DONATED)?.text().replace("$", "");
+      this._amountDonated = donation ? parseInt(donation, 10) : 0;
+    }
+  }
+
+  //#endregion Private methods
 }

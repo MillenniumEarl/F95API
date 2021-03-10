@@ -9,13 +9,19 @@
 import cheerio from "cheerio";
 
 // Modules from files
-import Post from "./post.js";
-import PlatformUser from "./platform-user.js";
-import { urls } from "../../constants/url.js";
-import { GENERIC, WATCHED_THREAD } from "../../constants/css-selector.js";
-import { fetchHTML } from "../../network-helper.js";
-import { GenericAxiosError, UnexpectedResponseContentType } from "../errors.js";
-import { Result } from "../result.js";
+import Post from "./post";
+import PlatformUser from "./platform-user";
+import { urls } from "../../constants/url";
+import { GENERIC, WATCHED_THREAD } from "../../constants/css-selector";
+import { fetchHTML } from "../../network-helper";
+import {
+  GenericAxiosError,
+  UnexpectedResponseContentType,
+  UserNotLogged,
+  USER_NOT_LOGGED
+} from "../errors";
+import { Result } from "../result";
+import shared from "../../shared";
 
 // Interfaces
 interface IWatchedThread {
@@ -88,6 +94,9 @@ export default class UserProfile extends PlatformUser {
   //#region Public methods
 
   public async fetch(): Promise<void> {
+    // Check login
+    if (!shared.isLogged) throw new UserNotLogged(USER_NOT_LOGGED);
+
     // First get the user ID and set it
     const id = await this.fetchUserID();
     super.setID(id);
@@ -103,31 +112,39 @@ export default class UserProfile extends PlatformUser {
 
   //#region Private methods
 
+  /**
+   * Gets the ID of the user currently logged.
+   */
   private async fetchUserID(): Promise<number> {
     // Local variables
     const url = new URL(urls.BASE).toString();
 
-    // fetch and parse page
-    const htmlResponse = await fetchHTML(url);
-    if (htmlResponse.isSuccess()) {
+    // Fetch and parse page
+    const response = await fetchHTML(url);
+    const result = response.applyOnSuccess((html) => {
       // Load page with cheerio
-      const $ = cheerio.load(htmlResponse.value);
+      const $ = cheerio.load(html);
 
       const sid = $(GENERIC.CURRENT_USER_ID).attr("data-user-id").trim();
       return parseInt(sid, 10);
-    } else throw htmlResponse.value;
+    });
+
+    if (result.isFailure()) throw result.value;
+    else return result.value;
   }
 
+  /**
+   * Gets the list of threads followed by the user currently logged.
+   */
   private async fetchWatchedThread(): Promise<IWatchedThread[]> {
     // Prepare and fetch URL
     const url = new URL(urls.WATCHED_THREADS);
     url.searchParams.set("unread", "0");
 
-    const htmlResponse = await fetchHTML(url.toString());
-
-    if (htmlResponse.isSuccess()) {
+    const response = await fetchHTML(url.toString());
+    const result = response.applyOnSuccess(async (html) => {
       // Load page in cheerio
-      const $ = cheerio.load(htmlResponse.value);
+      const $ = cheerio.load(html);
 
       // Fetch the pages
       const lastPage = parseInt($(WATCHED_THREAD.LAST_PAGE).text().trim(), 10);
@@ -139,7 +156,10 @@ export default class UserProfile extends PlatformUser {
       });
 
       return [].concat(...watchedThreads);
-    } else throw htmlResponse.value;
+    });
+
+    if (result.isFailure()) throw result.value;
+    else return result.value as Promise<IWatchedThread[]>;
   }
 
   /**

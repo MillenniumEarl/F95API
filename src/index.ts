@@ -6,50 +6,41 @@
 "use strict";
 
 // Modules from file
-import shared from "./scripts/shared.js";
-import search from "./scripts/search.js";
-import {
-  authenticate,
-  urlExists,
-  isF95URL,
-  send2faCode
-} from "./scripts/network-helper.js";
-import fetchLatestHandiworkURLs from "./scripts/fetch-data/fetch-latest.js";
-import fetchPlatformData from "./scripts/fetch-data/fetch-platform-data.js";
-import getHandiworkInformation from "./scripts/scrape-data/handiwork-parse.js";
-import { IBasic } from "./scripts/interfaces.js";
+import shared from "./scripts/shared";
+import search from "./scripts/search";
+import { authenticate, urlExists, isF95URL, send2faCode } from "./scripts/network-helper";
+import fetchLatestHandiworkURLs from "./scripts/fetch-data/fetch-latest";
+import fetchPlatformData from "./scripts/fetch-data/fetch-platform-data";
+import getHandiworkInformation from "./scripts/scrape-data/handiwork-parse";
+import { IBasic } from "./scripts/interfaces";
 
 // Classes from file
-import Credentials from "./scripts/classes/credentials.js";
-import LoginResult from "./scripts/classes/login-result.js";
-import UserProfile from "./scripts/classes/mapping/user-profile.js";
-import LatestSearchQuery from "./scripts/classes/query/latest-search-query.js";
-import HandiworkSearchQuery from "./scripts/classes/query/handiwork-search-query.js";
-import HandiWork from "./scripts/classes/handiwork/handiwork.js";
-import { UserNotLogged } from "./scripts/classes/errors.js";
-
-//#region Global variables
-
-const USER_NOT_LOGGED = "User not authenticated, unable to continue";
-
-//#endregion
+import Credentials from "./scripts/classes/credentials";
+import LoginResult from "./scripts/classes/login-result";
+import UserProfile from "./scripts/classes/mapping/user-profile";
+import LatestSearchQuery from "./scripts/classes/query/latest-search-query";
+import HandiworkSearchQuery from "./scripts/classes/query/handiwork-search-query";
+import HandiWork from "./scripts/classes/handiwork/handiwork";
+import { UserNotLogged, USER_NOT_LOGGED } from "./scripts/classes/errors";
 
 //#region Re-export classes
 
-export { default as Animation } from "./scripts/classes/handiwork/animation.js";
-export { default as Asset } from "./scripts/classes/handiwork/asset.js";
-export { default as Comic } from "./scripts/classes/handiwork/comic.js";
-export { default as Game } from "./scripts/classes/handiwork/game.js";
-export { default as Handiwork } from "./scripts/classes/handiwork/handiwork.js";
+export { default as PrefixParser } from "./scripts/classes/prefix-parser";
 
-export { default as PlatformUser } from "./scripts/classes/mapping/platform-user.js";
-export { default as Post } from "./scripts/classes/mapping/post.js";
-export { default as Thread } from "./scripts/classes/mapping/thread.js";
-export { default as UserProfile } from "./scripts/classes/mapping/user-profile.js";
+export { default as Animation } from "./scripts/classes/handiwork/animation";
+export { default as Asset } from "./scripts/classes/handiwork/asset";
+export { default as Comic } from "./scripts/classes/handiwork/comic";
+export { default as Game } from "./scripts/classes/handiwork/game";
+export { default as Handiwork } from "./scripts/classes/handiwork/handiwork";
 
-export { default as HandiworkSearchQuery } from "./scripts/classes/query/handiwork-search-query.js";
-export { default as LatestSearchQuery } from "./scripts/classes/query/latest-search-query.js";
-export { default as ThreadSearchQuery } from "./scripts/classes/query/thread-search-query.js";
+export { default as PlatformUser } from "./scripts/classes/mapping/platform-user";
+export { default as Post } from "./scripts/classes/mapping/post";
+export { default as Thread } from "./scripts/classes/mapping/thread";
+export { default as UserProfile } from "./scripts/classes/mapping/user-profile";
+
+export { default as HandiworkSearchQuery } from "./scripts/classes/query/handiwork-search-query";
+export { default as LatestSearchQuery } from "./scripts/classes/query/latest-search-query";
+export { default as ThreadSearchQuery } from "./scripts/classes/query/thread-search-query";
 
 //#endregion Re-export classes
 
@@ -134,6 +125,19 @@ export async function login(
   } else shared.logger.warn(`Error during authentication: ${result.message}`);
 
   return result;
+}
+
+/**
+ * Close the currently open session.
+ *
+ * You **must** be logged in to the portal before calling this method.
+ */
+export async function logout(): Promise<void> {
+  // Check if the user is logged
+  if (!shared.isLogged) throw new UserNotLogged(USER_NOT_LOGGED);
+
+  await shared.session.delete();
+  shared.setIsLogged(false);
 }
 
 /**

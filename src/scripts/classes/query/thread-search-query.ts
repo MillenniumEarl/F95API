@@ -6,17 +6,17 @@
 "use strict";
 
 // Public modules from npm
-import validator from "class-validator";
+import { IsInt, Min, validateSync } from "class-validator";
 
 // Module from files
-import { IQuery, TCategory, TQueryInterface } from "../../interfaces.js";
-import { urls } from "../../constants/url.js";
-import PrefixParser from "./../prefix-parser.js";
-import { fetchPOSTResponse } from "../../network-helper.js";
+import { IQuery, TCategory, TQueryInterface } from "../../interfaces";
+import { urls } from "../../constants/url";
+import PrefixParser from "./../prefix-parser";
+import { fetchPOSTResponse } from "../../network-helper";
 import { AxiosResponse } from "axios";
-import { GenericAxiosError } from "../errors.js";
-import { Result } from "../result.js";
-import Shared from "../../shared.js";
+import { GenericAxiosError } from "../errors";
+import { Result } from "../result";
+import Shared from "../../shared";
 
 // Type definitions
 export type TThreadOrder = "relevance" | "date" | "last_update" | "replies";
@@ -61,10 +61,10 @@ export default class ThreadSearchQuery implements IQuery {
    * Results presentation order.
    */
   public order: TThreadOrder = "relevance";
-  @validator.IsInt({
+  @IsInt({
     message: "$property expect an integer, received $value"
   })
-  @validator.Min(ThreadSearchQuery.MIN_PAGE, {
+  @Min(ThreadSearchQuery.MIN_PAGE, {
     message: "The minimum $property value must be $constraint1, received $value"
   })
   public page = 1;
@@ -75,13 +75,13 @@ export default class ThreadSearchQuery implements IQuery {
   //#region Public methods
 
   public validate(): boolean {
-    return validator.validateSync(this).length === 0;
+    return validateSync(this).length === 0;
   }
 
   public async execute(): Promise<Result<GenericAxiosError, AxiosResponse<any>>> {
     // Check if the query is valid
     if (!this.validate()) {
-      throw new Error(`Invalid query: ${validator.validateSync(this).join("\n")}`);
+      throw new Error(`Invalid query: ${validateSync(this).join("\n")}`);
     }
 
     // Define the POST parameters

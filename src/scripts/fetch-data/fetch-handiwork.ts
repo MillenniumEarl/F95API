@@ -9,8 +9,8 @@
 import HandiworkSearchQuery from "../classes/query/handiwork-search-query";
 import LatestSearchQuery from "../classes/query/latest-search-query";
 import ThreadSearchQuery from "../classes/query/thread-search-query";
-import fetchLatestHandiworkURLs from "./fetch-latest.js";
-import fetchThreadHandiworkURLs from "./fetch-thread.js";
+import fetchLatestHandiworkURLs from "./fetch-latest";
+import fetchThreadHandiworkURLs from "./fetch-thread";
 
 /**
  * Gets the URLs of the handiworks that match the passed parameters.

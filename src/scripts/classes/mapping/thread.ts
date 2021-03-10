@@ -7,28 +7,30 @@
 
 // Public modules from npm
 import cheerio from "cheerio";
-import luxon from "luxon";
+import { DateTime } from "luxon";
 
 // Modules from files
-import Post from "./post.js";
-import PlatformUser from "./platform-user.js";
-import { TCategory, TRating } from "../../interfaces.js";
-import { urls } from "../../constants/url.js";
-import { POST, THREAD } from "../../constants/css-selector.js";
-import { fetchHTML, fetchPOSTResponse } from "../../network-helper.js";
-import Shared from "../../shared.js";
+import Post from "./post";
+import PlatformUser from "./platform-user";
+import { ILazy, TCategory, TRating } from "../../interfaces";
+import { urls } from "../../constants/url";
+import { POST, THREAD } from "../../constants/css-selector";
+import { fetchHTML, fetchPOSTResponse } from "../../network-helper";
+import Shared from "../../shared";
 import {
-  GenericAxiosError,
+  InvalidID,
+  INVALID_THREAD_ID,
   ParameterError,
-  UnexpectedResponseContentType
-} from "../errors.js";
-import { Result } from "../result.js";
-import { getJSONLD, TJsonLD } from "../../scrape-data/json-ld.js";
+  UserNotLogged,
+  USER_NOT_LOGGED
+} from "../errors";
+import { getJSONLD, TJsonLD } from "../../scrape-data/json-ld";
+import shared from "../../shared";
 
 /**
  * Represents a generic F95Zone platform thread.
  */
-export default class Thread {
+export default class Thread implements ILazy {
   //#region Fields
 
   private POST_FOR_PAGE = 20;
@@ -163,42 +165,6 @@ export default class Thread {
   }
 
   /**
-   * Gets all posts in the thread.
-   */
-  private async fetchPosts(pages: number): Promise<Post[]> {
-    // Local variables
-    type TFetchResult = Promise<
-      Result<GenericAxiosError | UnexpectedResponseContentType, string>
-    >;
-    const htmlPromiseList: TFetchResult[] = [];
-    const fetchedPosts: Post[] = [];
-
-    // Fetch posts for every page in the thread
-    for (let i = 1; i <= pages; i++) {
-      // Prepare the URL
-      const url = new URL(`page-${i}`, `${this.url}/`).toString();
-
-      // Fetch the HTML source
-      const htmlResponse = fetchHTML(url);
-      htmlPromiseList.push(htmlResponse);
-    }
-
-    // Wait for all the pages to load
-    const responses = await Promise.all(htmlPromiseList);
-
-    // Scrape the pages
-    for (const response of responses) {
-      if (response.isSuccess()) {
-        const posts = this.parsePostsInPage(response.value);
-        fetchedPosts.push(...posts);
-      } else throw response.value;
-    }
-
-    // Sorts the list of posts
-    return fetchedPosts.sort((a, b) => (a.id > b.id ? 1 : b.id > a.id ? -1 : 0));
-  }
-
-  /**
    * It processes the rating of the thread
    * starting from the data contained in the JSON+LD tag.
    */
@@ -229,6 +195,36 @@ export default class Thread {
     return name.trim();
   }
 
+  /**
+   * Process the HTML code received as
+   * an answer and gets the data contained in it.
+   */
+  private async elaborateResponse(html: string) {
+    // Load the HTML
+    const $ = cheerio.load(html);
+
+    // Fetch data from selectors
+    const ownerID = $(THREAD.OWNER_ID).attr("data-user-id");
+    const tagArray = $(THREAD.TAGS).toArray();
+    const prefixArray = $(THREAD.PREFIXES).toArray();
+    const JSONLD = getJSONLD($("body"));
+    const published = JSONLD["datePublished"] as string;
+    const modified = JSONLD["dateModified"] as string;
+
+    // Parse the thread's data
+    this._title = this.cleanHeadline(JSONLD["headline"] as string);
+    this._tags = tagArray.map((el) => $(el).text().trim());
+    this._prefixes = prefixArray.map((el) => $(el).text().trim());
+    this._owner = new PlatformUser(parseInt(ownerID, 10));
+    await this._owner.fetch();
+    this._rating = this.parseRating(JSONLD);
+    this._category = JSONLD["articleSection"] as TCategory;
+
+    // Validate the dates
+    if (DateTime.fromISO(modified).isValid) this._modified = new Date(modified);
+    if (DateTime.fromISO(published).isValid) this._publication = new Date(published);
+  }
+
   //#endregion Private methods
 
   //#region Public methods
@@ -237,38 +233,19 @@ export default class Thread {
    * Gets information about this thread.
    */
   public async fetch(): Promise<void> {
+    // Check login
+    if (!shared.isLogged) throw new UserNotLogged(USER_NOT_LOGGED);
+
+    // Check ID
+    if (!this.id || this.id < 1) throw new InvalidID(INVALID_THREAD_ID);
+
     // Prepare the url
     this._url = new URL(this.id.toString(), urls.THREADS).toString();
 
     // Fetch the HTML source
-    const htmlResponse = await fetchHTML(this.url);
-
-    if (htmlResponse.isSuccess()) {
-      // Load the HTML
-      const $ = cheerio.load(htmlResponse.value);
-
-      // Fetch data from selectors
-      const ownerID = $(THREAD.OWNER_ID).attr("data-user-id");
-      const tagArray = $(THREAD.TAGS).toArray();
-      const prefixArray = $(THREAD.PREFIXES).toArray();
-      const JSONLD = getJSONLD($("body"));
-      const published = JSONLD["datePublished"] as string;
-      const modified = JSONLD["dateModified"] as string;
-
-      // Parse the thread's data
-      this._title = this.cleanHeadline(JSONLD["headline"] as string);
-      this._tags = tagArray.map((el) => $(el).text().trim());
-      this._prefixes = prefixArray.map((el) => $(el).text().trim());
-      this._owner = new PlatformUser(parseInt(ownerID, 10));
-      await this._owner.fetch();
-      this._rating = this.parseRating(JSONLD);
-      this._category = JSONLD["articleSection"] as TCategory;
-
-      // Validate the dates
-      if (luxon.DateTime.fromISO(modified).isValid) this._modified = new Date(modified);
-      if (luxon.DateTime.fromISO(published).isValid)
-        this._publication = new Date(published);
-    } else throw htmlResponse.value;
+    const response = await fetchHTML(this.url);
+    if (response.isSuccess()) await this.elaborateResponse(response.value);
+    else throw response.value;
   }
 
   /**

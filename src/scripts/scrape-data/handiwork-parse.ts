@@ -6,18 +6,14 @@
 "use strict";
 
 // Public modules from npm
-import luxon from "luxon";
+import { DateTime } from "luxon";
 
 // Modules from files
-import HandiWork from "../classes/handiwork/handiwork.js";
-import Thread from "../classes/mapping/thread.js";
-import { IBasic, TAuthor, TEngine, TExternalPlatform, TStatus } from "../interfaces.js";
-import shared, { TPrefixDict } from "../shared.js";
-import { ILink, IPostElement } from "./post-parse.js";
-
-export async function getHandiworkInformation<T extends IBasic>(url: string): Promise<T>;
-
-export async function getHandiworkInformation<T extends IBasic>(url: string): Promise<T>;
+import HandiWork from "../classes/handiwork/handiwork";
+import Thread from "../classes/mapping/thread";
+import { IBasic, TAuthor, TEngine, TExternalPlatform, TStatus } from "../interfaces";
+import shared, { TPrefixDict } from "../shared";
+import { ILink, IPostElement } from "./post-parse";
 
 /**
  * Gets information of a particular handiwork from its thread.
@@ -226,7 +222,7 @@ function fillWithPostData(hw: HandiWork, elements: IPostElement[]) {
 
   // Fill the dates
   const releaseDate = getPostElementByName(elements, "release date")?.text;
-  if (luxon.DateTime.fromISO(releaseDate).isValid) hw.lastRelease = new Date(releaseDate);
+  if (DateTime.fromISO(releaseDate).isValid) hw.lastRelease = new Date(releaseDate);
 
   //#region Convert the author
   const authorElement =

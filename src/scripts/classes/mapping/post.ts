@@ -9,16 +9,19 @@
 import cheerio from "cheerio";
 
 // Modules from file
-import PlatformUser from "./platform-user.js";
-import { IPostElement, parseF95ThreadPost } from "../../scrape-data/post-parse.js";
-import { POST, THREAD } from "../../constants/css-selector.js";
-import { urls } from "../../constants/url.js";
-import { fetchHTML } from "../../network-helper.js";
+import PlatformUser from "./platform-user";
+import { IPostElement, parseF95ThreadPost } from "../../scrape-data/post-parse";
+import { POST, THREAD } from "../../constants/css-selector";
+import { urls } from "../../constants/url";
+import { fetchHTML } from "../../network-helper";
+import shared from "../../shared";
+import { InvalidID, INVALID_POST_ID, UserNotLogged, USER_NOT_LOGGED } from "../errors";
+import { ILazy } from "../../interfaces";
 
 /**
  * Represents a post published by a user on the F95Zone platform.
  */
-export default class Post {
+export default class Post implements ILazy {
   //#region Fields
 
   private _id: number;
@@ -95,32 +98,45 @@ export default class Post {
    * Gets the post data starting from its unique ID for the entire platform.
    */
   public async fetch(): Promise<void> {
+    // Check login
+    if (!shared.isLogged) throw new UserNotLogged(USER_NOT_LOGGED);
+
+    // Check ID
+    if (!this.id || this.id < 1) throw new InvalidID(INVALID_POST_ID);
+
     // Fetch HTML page containing the post
     const url = new URL(this.id.toString(), urls.POSTS).toString();
-    const htmlResponse = await fetchHTML(url);
+    const response = await fetchHTML(url);
 
-    if (htmlResponse.isSuccess()) {
-      // Load cheerio and find post
-      const $ = cheerio.load(htmlResponse.value);
-
-      const post = $(THREAD.POSTS_IN_PAGE)
-        .toArray()
-        .find((el, idx) => {
-          // Fetch the ID and check if it is what we are searching
-          const sid: string = $(el).find(POST.ID).attr("id").replace("post-", "");
-          const id = parseInt(sid, 10);
-
-          if (id === this.id) return el;
-        });
-
-      // Finally parse the post
-      await this.parsePost($, $(post));
-    } else throw htmlResponse.value;
+    if (response.isSuccess()) await this.elaborateResponse(response.value);
+    else throw response.value;
   }
 
   //#endregion Public methods
 
   //#region Private methods
+
+  /**
+   * Process the HTML code received as
+   * an answer and gets the data contained in it.
+   */
+  private async elaborateResponse(html: string) {
+    // Load cheerio and find post
+    const $ = cheerio.load(html);
+
+    const post = $(THREAD.POSTS_IN_PAGE)
+      .toArray()
+      .find((el, idx) => {
+        // Fetch the ID and check if it is what we are searching
+        const sid: string = $(el).find(POST.ID).attr("id").replace("post-", "");
+        const id = parseInt(sid, 10);
+
+        if (id === this.id) return el;
+      });
+
+    // Finally parse the post
+    await this.parsePost($, $(post));
+  }
 
   private async parsePost($: cheerio.Root, post: cheerio.Cheerio): Promise<void> {
     // Find post's ID

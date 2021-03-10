@@ -6,8 +6,8 @@
 "use strict";
 
 // Modules from file
-import LatestSearchQuery from "../classes/query/latest-search-query.js";
-import { urls } from "../constants/url.js";
+import LatestSearchQuery from "../classes/query/latest-search-query";
+import { urls } from "../constants/url";
 
 /**
  * Gets the URLs of the latest handiworks that match the passed parameters.
@@ -21,7 +21,7 @@ import { urls } from "../constants/url.js";
  */
 export default async function fetchLatestHandiworkURLs(
   query: LatestSearchQuery,
-  limit = 30
+  limit: number = 30
 ): Promise<string[]> {
   // Local variables
   const shallowQuery: LatestSearchQuery = Object.assign(new LatestSearchQuery(), query);

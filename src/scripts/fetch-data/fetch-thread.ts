@@ -9,10 +9,10 @@
 import cheerio from "cheerio";
 
 // Modules from file
-import shared from "../shared.js";
-import { THREAD_SEARCH } from "../constants/css-selector.js";
-import { urls as f95urls } from "../constants/url.js";
-import ThreadSearchQuery from "../classes/query/thread-search-query.js";
+import shared from "../shared";
+import { THREAD_SEARCH } from "../constants/css-selector";
+import { urls as f95urls } from "../constants/url";
+import ThreadSearchQuery from "../classes/query/thread-search-query";
 
 //#region Public methods
 
