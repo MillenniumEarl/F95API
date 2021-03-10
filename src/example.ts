@@ -90,7 +90,7 @@ async function main() {
   );
 
   // Get game data
-  for (const gamename of gameList) {
+  gameList.map(async (gamename) => {
     console.log(`Searching '${gamename}'...`);
 
     // Prepare the query
@@ -103,14 +103,11 @@ async function main() {
     const searchResult = await searchHandiwork<Game>(query, 1);
 
     // No game found
-    if (searchResult.length === 0) {
-      console.log(`No data found for '${gamename}'\n`);
-      continue;
-    }
-
-    // Extract first game
-    const gamedata = searchResult.shift();
-    const authors = gamedata.authors.map((a, idx) => a.name).join(", ");
-    console.log(`Found: ${gamedata.name} (${gamedata.version}) by ${authors}\n`);
-  }
+    if (searchResult.length !== 0) {
+      // Extract first game
+      const gamedata = searchResult.shift();
+      const authors = gamedata.authors.map((a, idx) => a.name).join(", ");
+      console.log(`Found: ${gamedata.name} (${gamedata.version}) by ${authors}\n`);
+    } else console.log(`No data found for '${gamename}'\n`);
+  });
 }
