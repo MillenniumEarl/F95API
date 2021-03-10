@@ -14,8 +14,14 @@ import PlatformUser from "./platform-user";
 import { urls } from "../../constants/url";
 import { GENERIC, WATCHED_THREAD } from "../../constants/css-selector";
 import { fetchHTML } from "../../network-helper";
-import { GenericAxiosError, UnexpectedResponseContentType } from "../errors";
+import {
+  GenericAxiosError,
+  UnexpectedResponseContentType,
+  UserNotLogged,
+  USER_NOT_LOGGED
+} from "../errors";
 import { Result } from "../result";
+import shared from "../../shared";
 
 // Interfaces
 interface IWatchedThread {
@@ -88,6 +94,9 @@ export default class UserProfile extends PlatformUser {
   //#region Public methods
 
   public async fetch(): Promise<void> {
+    // Check login
+    if (!shared.isLogged) throw new UserNotLogged(USER_NOT_LOGGED);
+
     // First get the user ID and set it
     const id = await this.fetchUserID();
     super.setID(id);

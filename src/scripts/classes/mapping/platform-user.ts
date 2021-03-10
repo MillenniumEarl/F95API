@@ -13,6 +13,8 @@ import { DateTime } from "luxon";
 import { urls } from "../../constants/url";
 import { fetchHTML } from "../../network-helper";
 import { GENERIC, MEMBER } from "../../constants/css-selector";
+import shared from "../../shared";
+import { UserNotLogged, USER_NOT_LOGGED } from "../errors";
 
 /**
  * Represents a generic user registered on the platform.
@@ -144,6 +146,9 @@ export default class PlatformUser {
   }
 
   public async fetch(): Promise<void> {
+    // Check login
+    if (!shared.isLogged) throw new UserNotLogged(USER_NOT_LOGGED);
+
     // Check ID
     if (!this.id && this.id < 1) throw new Error("Invalid user ID");
 
@@ -152,45 +157,51 @@ export default class PlatformUser {
 
     // Fetch the page
     const htmlResponse = await fetchHTML(url);
-
-    if (htmlResponse.isSuccess()) {
-      // Prepare cheerio
-      const $ = cheerio.load(htmlResponse.value);
-
-      // Check if the profile is private
-      this._private =
-        $(GENERIC.ERROR_BANNER)?.text().trim() ===
-        "This member limits who may view their full profile.";
-
-      if (!this._private) {
-        // Parse the elements
-        this._name = $(MEMBER.NAME).text();
-        this._title = $(MEMBER.TITLE).text();
-        this._banners = $(MEMBER.BANNERS)
-          .toArray()
-          .map((el, idx) => $(el).text().trim())
-          .filter((el) => el);
-        this._avatar = $(MEMBER.AVATAR).attr("src");
-        this._followed = $(MEMBER.FOLLOWED).text() === "Unfollow";
-        this._ignored = $(MEMBER.IGNORED).text() === "Unignore";
-        this._messages = parseInt($(MEMBER.MESSAGES).text(), 10);
-        this._reactionScore = parseInt($(MEMBER.REACTION_SCORE).text(), 10);
-        this._points = parseInt($(MEMBER.POINTS).text(), 10);
-        this._ratingsReceived = parseInt($(MEMBER.RATINGS_RECEIVED).text(), 10);
-
-        // Parse date
-        const joined = $(MEMBER.JOINED)?.attr("datetime");
-        if (DateTime.fromISO(joined).isValid) this._joined = new Date(joined);
-
-        const lastSeen = $(MEMBER.LAST_SEEN)?.attr("datetime");
-        if (DateTime.fromISO(lastSeen).isValid) this._joined = new Date(lastSeen);
-
-        // Parse donation
-        const donation = $(MEMBER.AMOUNT_DONATED)?.text().replace("$", "");
-        this._amountDonated = donation ? parseInt(donation, 10) : 0;
-      }
-    } else throw htmlResponse.value;
+    const result = htmlResponse.applyOnSuccess(this.elaborateResponse);
+    if (result.isFailure()) throw htmlResponse.value;
   }
 
-  //#endregion Public method
+  //#endregion Public methods
+
+  //#region Private methods
+
+  private elaborateResponse(html: string): void {
+    // Prepare cheerio
+    const $ = cheerio.load(html);
+
+    // Check if the profile is private
+    this._private =
+      $(GENERIC.ERROR_BANNER)?.text().trim() ===
+      "This member limits who may view their full profile.";
+
+    if (!this._private) {
+      // Parse the elements
+      this._name = $(MEMBER.NAME).text();
+      this._title = $(MEMBER.TITLE).text();
+      this._banners = $(MEMBER.BANNERS)
+        .toArray()
+        .map((el, idx) => $(el).text().trim())
+        .filter((el) => el);
+      this._avatar = $(MEMBER.AVATAR).attr("src");
+      this._followed = $(MEMBER.FOLLOWED).text() === "Unfollow";
+      this._ignored = $(MEMBER.IGNORED).text() === "Unignore";
+      this._messages = parseInt($(MEMBER.MESSAGES).text(), 10);
+      this._reactionScore = parseInt($(MEMBER.REACTION_SCORE).text(), 10);
+      this._points = parseInt($(MEMBER.POINTS).text(), 10);
+      this._ratingsReceived = parseInt($(MEMBER.RATINGS_RECEIVED).text(), 10);
+
+      // Parse date
+      const joined = $(MEMBER.JOINED)?.attr("datetime");
+      if (DateTime.fromISO(joined).isValid) this._joined = new Date(joined);
+
+      const lastSeen = $(MEMBER.LAST_SEEN)?.attr("datetime");
+      if (DateTime.fromISO(lastSeen).isValid) this._joined = new Date(lastSeen);
+
+      // Parse donation
+      const donation = $(MEMBER.AMOUNT_DONATED)?.text().replace("$", "");
+      this._amountDonated = donation ? parseInt(donation, 10) : 0;
+    }
+  }
+
+  //#endregion Private methods
 }

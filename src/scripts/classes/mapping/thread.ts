@@ -20,10 +20,13 @@ import Shared from "../../shared";
 import {
   GenericAxiosError,
   ParameterError,
-  UnexpectedResponseContentType
+  UnexpectedResponseContentType,
+  UserNotLogged,
+  USER_NOT_LOGGED
 } from "../errors";
 import { Result } from "../result";
 import { getJSONLD, TJsonLD } from "../../scrape-data/json-ld";
+import shared from "../../shared";
 
 /**
  * Represents a generic F95Zone platform thread.
@@ -237,6 +240,9 @@ export default class Thread {
    * Gets information about this thread.
    */
   public async fetch(): Promise<void> {
+    // Check login
+    if (!shared.isLogged) throw new UserNotLogged(USER_NOT_LOGGED);
+
     // Prepare the url
     this._url = new URL(this.id.toString(), urls.THREADS).toString();
 

@@ -14,6 +14,8 @@ import { IPostElement, parseF95ThreadPost } from "../../scrape-data/post-parse";
 import { POST, THREAD } from "../../constants/css-selector";
 import { urls } from "../../constants/url";
 import { fetchHTML } from "../../network-helper";
+import shared from "../../shared";
+import { UserNotLogged, USER_NOT_LOGGED } from "../errors";
 
 /**
  * Represents a post published by a user on the F95Zone platform.
@@ -95,6 +97,9 @@ export default class Post {
    * Gets the post data starting from its unique ID for the entire platform.
    */
   public async fetch(): Promise<void> {
+    // Check login
+    if (!shared.isLogged) throw new UserNotLogged(USER_NOT_LOGGED);
+
     // Fetch HTML page containing the post
     const url = new URL(this.id.toString(), urls.POSTS).toString();
     const htmlResponse = await fetchHTML(url);
