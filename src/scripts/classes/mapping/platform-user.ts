@@ -151,7 +151,7 @@ export default class PlatformUser implements ILazy {
     if (!shared.isLogged) throw new UserNotLogged(USER_NOT_LOGGED);
 
     // Check ID
-    if (!this.id && this.id < 1) throw new InvalidID(INVALID_USER_ID);
+    if (!this.id || this.id < 1) throw new InvalidID(INVALID_USER_ID);
 
     // Prepare the URL
     const url = new URL(this.id.toString(), `${urls.MEMBERS}/`).toString();
