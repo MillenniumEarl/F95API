@@ -15,7 +15,7 @@ import { POST, THREAD } from "../../constants/css-selector";
 import { urls } from "../../constants/url";
 import { fetchHTML } from "../../network-helper";
 import shared from "../../shared";
-import { UserNotLogged, USER_NOT_LOGGED } from "../errors";
+import { InvalidID, INVALID_POST_ID, UserNotLogged, USER_NOT_LOGGED } from "../errors";
 import { ILazy } from "../../interfaces";
 
 /**
@@ -102,7 +102,7 @@ export default class Post implements ILazy {
     if (!shared.isLogged) throw new UserNotLogged(USER_NOT_LOGGED);
 
     // Check ID
-    if (!this.id && this.id < 1) throw new Error("Invalid post ID");
+    if (!this.id && this.id < 1) throw new InvalidID(INVALID_POST_ID);
 
     // Fetch HTML page containing the post
     const url = new URL(this.id.toString(), urls.POSTS).toString();

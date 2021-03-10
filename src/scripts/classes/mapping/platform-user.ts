@@ -14,7 +14,7 @@ import { urls } from "../../constants/url";
 import { fetchHTML } from "../../network-helper";
 import { GENERIC, MEMBER } from "../../constants/css-selector";
 import shared from "../../shared";
-import { UserNotLogged, USER_NOT_LOGGED } from "../errors";
+import { InvalidID, INVALID_USER_ID, UserNotLogged, USER_NOT_LOGGED } from "../errors";
 import { ILazy } from "../../interfaces";
 
 /**
@@ -151,7 +151,7 @@ export default class PlatformUser implements ILazy {
     if (!shared.isLogged) throw new UserNotLogged(USER_NOT_LOGGED);
 
     // Check ID
-    if (!this.id && this.id < 1) throw new Error("Invalid user ID");
+    if (!this.id && this.id < 1) throw new InvalidID(INVALID_USER_ID);
 
     // Prepare the URL
     const url = new URL(this.id.toString(), `${urls.MEMBERS}/`).toString();

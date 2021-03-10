@@ -17,7 +17,7 @@ import { urls } from "../../constants/url";
 import { POST, THREAD } from "../../constants/css-selector";
 import { fetchHTML, fetchPOSTResponse } from "../../network-helper";
 import Shared from "../../shared";
-import { ParameterError, UserNotLogged, USER_NOT_LOGGED } from "../errors";
+import { InvalidID, INVALID_THREAD_ID, ParameterError, UserNotLogged, USER_NOT_LOGGED } from "../errors";
 import { getJSONLD, TJsonLD } from "../../scrape-data/json-ld";
 import shared from "../../shared";
 
@@ -231,7 +231,7 @@ export default class Thread implements ILazy {
     if (!shared.isLogged) throw new UserNotLogged(USER_NOT_LOGGED);
 
     // Check ID
-    if (!this.id && this.id < 1) throw new Error("Invalid thread ID");
+    if (!this.id && this.id < 1) throw new InvalidID(INVALID_THREAD_ID);
 
     // Prepare the url
     this._url = new URL(this.id.toString(), urls.THREADS).toString();
