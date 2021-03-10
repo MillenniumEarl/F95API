@@ -90,7 +90,7 @@ async function main() {
   );
 
   // Get game data
-  gameList.map(async (gamename) => {
+  for (const gamename of gameList) {
     console.log(`Searching '${gamename}'...`);
 
     // Prepare the query
@@ -109,5 +109,5 @@ async function main() {
       const authors = gamedata.authors.map((a, idx) => a.name).join(", ");
       console.log(`Found: ${gamedata.name} (${gamedata.version}) by ${authors}\n`);
     } else console.log(`No data found for '${gamename}'\n`);
-  });
+  }
 }
