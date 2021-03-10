@@ -16,10 +16,6 @@ export function suite(): void {
   it("Set invalid ID", function setInvalidID() {
     const user = new PlatformUser();
     expect(user.setID(-1)).to.be.rejectedWith(INVALID_USER_ID);
-  });
-
-  it("Set null ID", function setNullID() {
-    const user = new PlatformUser();
     expect(user.setID(null)).to.be.rejectedWith(INVALID_USER_ID);
   });
 
