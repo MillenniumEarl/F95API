@@ -108,8 +108,8 @@ export default class Post implements ILazy {
     const url = new URL(this.id.toString(), urls.POSTS).toString();
     const response = await fetchHTML(url);
 
-    const result = response.applyOnSuccess(this.elaborateResponse);
-    if (result.isFailure()) throw response.value;
+    if (response.isSuccess()) await this.elaborateResponse(response.value);
+    else throw response.value;
   }
 
   //#endregion Public methods

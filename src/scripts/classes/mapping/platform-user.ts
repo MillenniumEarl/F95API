@@ -158,7 +158,7 @@ export default class PlatformUser implements ILazy {
 
     // Fetch the page
     const response = await fetchHTML(url);
-    const result = response.applyOnSuccess(this.elaborateResponse);
+    const result = response.applyOnSuccess((html) => this.elaborateResponse(html));
     if (result.isFailure()) throw response.value;
   }
 

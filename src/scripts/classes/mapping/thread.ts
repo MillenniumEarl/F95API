@@ -244,10 +244,8 @@ export default class Thread implements ILazy {
 
     // Fetch the HTML source
     const response = await fetchHTML(this.url);
-    const result = response.applyOnSuccess(
-      async (html) => await this.elaborateResponse(html)
-    );
-    if (result.isFailure()) throw result.value;
+    if (response.isSuccess()) await this.elaborateResponse(response.value);
+    else throw response.value;
   }
 
   /**
