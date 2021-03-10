@@ -3,7 +3,6 @@
 // Public module from npm
 import { expect } from "chai";
 import dotenv from "dotenv";
-import { isEqual } from "lodash";
 
 // Modules from file
 import { login, PrefixParser } from "../../src/index";
@@ -28,6 +27,8 @@ export function suite(): void {
     // Create a new parser
     const parser = new PrefixParser();
 
+    // Test values
+    const testIDs = [103, 225, 44, 13, 2, 7, 22];
     const testPrefixes = [
       "corruption",
       "pregnancy",
@@ -37,12 +38,13 @@ export function suite(): void {
       "Ren'Py",
       "Abandoned"
     ];
+
+    // Parse values
     const ids = parser.prefixesToIDs(testPrefixes);
     const tags = parser.idsToPrefixes(ids);
 
-    const tagsEquality = isEqual(testPrefixes, tags);
-    expect(tagsEquality, "The tags must be the same").to.be.true;
-    const idsEquality = isEqual([103, 225, 44, 13, 2, 7, 22], ids);
-    expect(idsEquality, "The IDs must be the same").to.be.true;
+    // Assert equality
+    expect(testPrefixes).to.be.deep.equal(tags, "The tags must be the same");
+    expect(testIDs).to.be.deep.equal(ids, "The IDs must be the same");
   });
 }
