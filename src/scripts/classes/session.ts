@@ -25,7 +25,7 @@ export default class Session {
   /**
    * Max number of days the session is valid.
    */
-  private readonly SESSION_TIME: number = 3;
+  private readonly SESSION_TIME: number = 1;
   private readonly COOKIEJAR_FILENAME: string = "f95cookiejar.json";
   private _path: string;
   private _isMapped: boolean;
@@ -106,7 +106,7 @@ export default class Session {
     const utc1 = Date.UTC(a.getFullYear(), a.getMonth(), a.getDate());
     const utc2 = Date.UTC(b.getFullYear(), b.getMonth(), b.getDate());
 
-    return Math.floor((utc2 - utc1) / MS_PER_DAY);
+    return Math.abs(Math.floor((utc2 - utc1) / MS_PER_DAY));
   }
 
   /**
