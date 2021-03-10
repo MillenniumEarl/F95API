@@ -17,14 +17,7 @@ import { urls } from "../../constants/url";
 import { POST, THREAD } from "../../constants/css-selector";
 import { fetchHTML, fetchPOSTResponse } from "../../network-helper";
 import Shared from "../../shared";
-import {
-  GenericAxiosError,
-  ParameterError,
-  UnexpectedResponseContentType,
-  UserNotLogged,
-  USER_NOT_LOGGED
-} from "../errors";
-import { Result } from "../result";
+import { ParameterError, UserNotLogged, USER_NOT_LOGGED } from "../errors";
 import { getJSONLD, TJsonLD } from "../../scrape-data/json-ld";
 import shared from "../../shared";
 
@@ -163,42 +156,6 @@ export default class Thread implements ILazy {
 
     // Wait for the post to be fetched
     return posts;
-  }
-
-  /**
-   * Gets all posts in the thread.
-   */
-  private async fetchPosts(pages: number): Promise<Post[]> {
-    // Local variables
-    type TFetchResult = Promise<
-      Result<GenericAxiosError | UnexpectedResponseContentType, string>
-    >;
-    const htmlPromiseList: TFetchResult[] = [];
-    const fetchedPosts: Post[] = [];
-
-    // Fetch posts for every page in the thread
-    for (let i = 1; i <= pages; i++) {
-      // Prepare the URL
-      const url = new URL(`page-${i}`, `${this.url}/`).toString();
-
-      // Fetch the HTML source
-      const htmlResponse = fetchHTML(url);
-      htmlPromiseList.push(htmlResponse);
-    }
-
-    // Wait for all the pages to load
-    const responses = await Promise.all(htmlPromiseList);
-
-    // Scrape the pages
-    for (const response of responses) {
-      if (response.isSuccess()) {
-        const posts = this.parsePostsInPage(response.value);
-        fetchedPosts.push(...posts);
-      } else throw response.value;
-    }
-
-    // Sorts the list of posts
-    return fetchedPosts.sort((a, b) => (a.id > b.id ? 1 : b.id > a.id ? -1 : 0));
   }
 
   /**
