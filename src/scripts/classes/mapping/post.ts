@@ -101,6 +101,9 @@ export default class Post implements ILazy {
     // Check login
     if (!shared.isLogged) throw new UserNotLogged(USER_NOT_LOGGED);
 
+    // Check ID
+    if (!this.id && this.id < 1) throw new Error("Invalid post ID");
+
     // Fetch HTML page containing the post
     const url = new URL(this.id.toString(), urls.POSTS).toString();
     const response = await fetchHTML(url);

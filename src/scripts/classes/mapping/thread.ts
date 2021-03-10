@@ -230,6 +230,9 @@ export default class Thread implements ILazy {
     // Check login
     if (!shared.isLogged) throw new UserNotLogged(USER_NOT_LOGGED);
 
+    // Check ID
+    if (!this.id && this.id < 1) throw new Error("Invalid thread ID");
+
     // Prepare the url
     this._url = new URL(this.id.toString(), urls.THREADS).toString();
 
