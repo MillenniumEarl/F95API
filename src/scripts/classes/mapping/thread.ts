@@ -17,7 +17,13 @@ import { urls } from "../../constants/url";
 import { POST, THREAD } from "../../constants/css-selector";
 import { fetchHTML, fetchPOSTResponse } from "../../network-helper";
 import Shared from "../../shared";
-import { InvalidID, INVALID_THREAD_ID, ParameterError, UserNotLogged, USER_NOT_LOGGED } from "../errors";
+import {
+  InvalidID,
+  INVALID_THREAD_ID,
+  ParameterError,
+  UserNotLogged,
+  USER_NOT_LOGGED
+} from "../errors";
 import { getJSONLD, TJsonLD } from "../../scrape-data/json-ld";
 import shared from "../../shared";
 
@@ -238,7 +244,9 @@ export default class Thread implements ILazy {
 
     // Fetch the HTML source
     const response = await fetchHTML(this.url);
-    const result = response.applyOnSuccess(this.elaborateResponse);
+    const result = response.applyOnSuccess(
+      async (html) => await this.elaborateResponse(html)
+    );
     if (result.isFailure()) throw result.value;
   }
 
