@@ -38,7 +38,7 @@ interface ICategoryResource {
 }
 
 /**
- * Represents the set of tags present on the platform-
+ * Represents the set of tags present on the platform.
  */
 interface ILatestResource {
   prefixes: { [s: string]: ICategoryResource[] };
