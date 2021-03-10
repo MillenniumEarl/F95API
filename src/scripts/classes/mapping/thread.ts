@@ -189,6 +189,36 @@ export default class Thread implements ILazy {
     return name.trim();
   }
 
+  /**
+   * Process the HTML code received as
+   * an answer and gets the data contained in it.
+   */
+  private async elaborateResponse(html: string) {
+    // Load the HTML
+    const $ = cheerio.load(html);
+
+    // Fetch data from selectors
+    const ownerID = $(THREAD.OWNER_ID).attr("data-user-id");
+    const tagArray = $(THREAD.TAGS).toArray();
+    const prefixArray = $(THREAD.PREFIXES).toArray();
+    const JSONLD = getJSONLD($("body"));
+    const published = JSONLD["datePublished"] as string;
+    const modified = JSONLD["dateModified"] as string;
+
+    // Parse the thread's data
+    this._title = this.cleanHeadline(JSONLD["headline"] as string);
+    this._tags = tagArray.map((el) => $(el).text().trim());
+    this._prefixes = prefixArray.map((el) => $(el).text().trim());
+    this._owner = new PlatformUser(parseInt(ownerID, 10));
+    await this._owner.fetch();
+    this._rating = this.parseRating(JSONLD);
+    this._category = JSONLD["articleSection"] as TCategory;
+
+    // Validate the dates
+    if (DateTime.fromISO(modified).isValid) this._modified = new Date(modified);
+    if (DateTime.fromISO(published).isValid) this._publication = new Date(published);
+  }
+
   //#endregion Private methods
 
   //#region Public methods
@@ -204,33 +234,9 @@ export default class Thread implements ILazy {
     this._url = new URL(this.id.toString(), urls.THREADS).toString();
 
     // Fetch the HTML source
-    const htmlResponse = await fetchHTML(this.url);
-
-    if (htmlResponse.isSuccess()) {
-      // Load the HTML
-      const $ = cheerio.load(htmlResponse.value);
-
-      // Fetch data from selectors
-      const ownerID = $(THREAD.OWNER_ID).attr("data-user-id");
-      const tagArray = $(THREAD.TAGS).toArray();
-      const prefixArray = $(THREAD.PREFIXES).toArray();
-      const JSONLD = getJSONLD($("body"));
-      const published = JSONLD["datePublished"] as string;
-      const modified = JSONLD["dateModified"] as string;
-
-      // Parse the thread's data
-      this._title = this.cleanHeadline(JSONLD["headline"] as string);
-      this._tags = tagArray.map((el) => $(el).text().trim());
-      this._prefixes = prefixArray.map((el) => $(el).text().trim());
-      this._owner = new PlatformUser(parseInt(ownerID, 10));
-      await this._owner.fetch();
-      this._rating = this.parseRating(JSONLD);
-      this._category = JSONLD["articleSection"] as TCategory;
-
-      // Validate the dates
-      if (DateTime.fromISO(modified).isValid) this._modified = new Date(modified);
-      if (DateTime.fromISO(published).isValid) this._publication = new Date(published);
-    } else throw htmlResponse.value;
+    const response = await fetchHTML(this.url);
+    const result = response.applyOnSuccess(this.elaborateResponse);
+    if (result.isFailure()) throw result.value;
   }
 
   /**

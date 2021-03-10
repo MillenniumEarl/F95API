@@ -112,31 +112,39 @@ export default class UserProfile extends PlatformUser {
 
   //#region Private methods
 
+  /**
+   * Gets the ID of the user currently logged.
+   */
   private async fetchUserID(): Promise<number> {
     // Local variables
     const url = new URL(urls.BASE).toString();
 
-    // fetch and parse page
-    const htmlResponse = await fetchHTML(url);
-    if (htmlResponse.isSuccess()) {
+    // Fetch and parse page
+    const response = await fetchHTML(url);
+    const result = response.applyOnSuccess((html) => {
       // Load page with cheerio
-      const $ = cheerio.load(htmlResponse.value);
+      const $ = cheerio.load(html);
 
       const sid = $(GENERIC.CURRENT_USER_ID).attr("data-user-id").trim();
       return parseInt(sid, 10);
-    } else throw htmlResponse.value;
+    });
+
+    if (result.isFailure()) throw result.value;
+    else return result.value;
   }
 
+  /**
+   * Gets the list of threads followed by the user currently logged.
+   */
   private async fetchWatchedThread(): Promise<IWatchedThread[]> {
     // Prepare and fetch URL
     const url = new URL(urls.WATCHED_THREADS);
     url.searchParams.set("unread", "0");
 
-    const htmlResponse = await fetchHTML(url.toString());
-
-    if (htmlResponse.isSuccess()) {
+    const response = await fetchHTML(url.toString());
+    const result = response.applyOnSuccess(async (html) => {
       // Load page in cheerio
-      const $ = cheerio.load(htmlResponse.value);
+      const $ = cheerio.load(html);
 
       // Fetch the pages
       const lastPage = parseInt($(WATCHED_THREAD.LAST_PAGE).text().trim(), 10);
@@ -148,7 +156,10 @@ export default class UserProfile extends PlatformUser {
       });
 
       return [].concat(...watchedThreads);
-    } else throw htmlResponse.value;
+    });
+
+    if (result.isFailure()) throw result.value;
+    else return result.value as Promise<IWatchedThread[]>;
   }
 
   /**

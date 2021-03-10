@@ -103,30 +103,37 @@ export default class Post implements ILazy {
 
     // Fetch HTML page containing the post
     const url = new URL(this.id.toString(), urls.POSTS).toString();
-    const htmlResponse = await fetchHTML(url);
+    const response = await fetchHTML(url);
 
-    if (htmlResponse.isSuccess()) {
-      // Load cheerio and find post
-      const $ = cheerio.load(htmlResponse.value);
-
-      const post = $(THREAD.POSTS_IN_PAGE)
-        .toArray()
-        .find((el, idx) => {
-          // Fetch the ID and check if it is what we are searching
-          const sid: string = $(el).find(POST.ID).attr("id").replace("post-", "");
-          const id = parseInt(sid, 10);
-
-          if (id === this.id) return el;
-        });
-
-      // Finally parse the post
-      await this.parsePost($, $(post));
-    } else throw htmlResponse.value;
+    const result = response.applyOnSuccess(this.elaborateResponse);
+    if (result.isFailure()) throw response.value;
   }
 
   //#endregion Public methods
 
   //#region Private methods
+
+  /**
+   * Process the HTML code received as
+   * an answer and gets the data contained in it.
+   */
+  private async elaborateResponse(html: string) {
+    // Load cheerio and find post
+    const $ = cheerio.load(html);
+
+    const post = $(THREAD.POSTS_IN_PAGE)
+      .toArray()
+      .find((el, idx) => {
+        // Fetch the ID and check if it is what we are searching
+        const sid: string = $(el).find(POST.ID).attr("id").replace("post-", "");
+        const id = parseInt(sid, 10);
+
+        if (id === this.id) return el;
+      });
+
+    // Finally parse the post
+    await this.parsePost($, $(post));
+  }
 
   private async parsePost($: cheerio.Root, post: cheerio.Cheerio): Promise<void> {
     // Find post's ID

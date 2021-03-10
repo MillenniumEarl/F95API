@@ -157,15 +157,19 @@ export default class PlatformUser implements ILazy {
     const url = new URL(this.id.toString(), `${urls.MEMBERS}/`).toString();
 
     // Fetch the page
-    const htmlResponse = await fetchHTML(url);
-    const result = htmlResponse.applyOnSuccess(this.elaborateResponse);
-    if (result.isFailure()) throw htmlResponse.value;
+    const response = await fetchHTML(url);
+    const result = response.applyOnSuccess(this.elaborateResponse);
+    if (result.isFailure()) throw response.value;
   }
 
   //#endregion Public methods
 
   //#region Private methods
 
+  /**
+   * Process the HTML code received as
+   * an answer and gets the data contained in it.
+   */
   private elaborateResponse(html: string): void {
     // Prepare cheerio
     const $ = cheerio.load(html);
