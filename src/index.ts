@@ -128,6 +128,19 @@ export async function login(
 }
 
 /**
+ * Close the currently open session.
+ *
+ * You **must** be logged in to the portal before calling this method.
+ */
+export async function logout(): Promise<void> {
+  // Check if the user is logged
+  if (!shared.isLogged) throw new UserNotLogged(USER_NOT_LOGGED);
+
+  await shared.session.delete();
+  shared.setIsLogged(false);
+}
+
+/**
  * Chek if exists a new version of the handiwork.
  *
  * You **must** be logged in to the portal before calling this method.
