@@ -20,6 +20,8 @@ interface IBaseError {
   error: Error;
 }
 
+export const USER_NOT_LOGGED = "User not authenticated, unable to continue";
+
 export class GenericAxiosError extends Error implements IBaseError {
   id: number;
   message: string;

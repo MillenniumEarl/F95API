@@ -21,13 +21,7 @@ import UserProfile from "./scripts/classes/mapping/user-profile";
 import LatestSearchQuery from "./scripts/classes/query/latest-search-query";
 import HandiworkSearchQuery from "./scripts/classes/query/handiwork-search-query";
 import HandiWork from "./scripts/classes/handiwork/handiwork";
-import { UserNotLogged } from "./scripts/classes/errors";
-
-//#region Global variables
-
-const USER_NOT_LOGGED = "User not authenticated, unable to continue";
-
-//#endregion
+import { UserNotLogged, USER_NOT_LOGGED } from "./scripts/classes/errors";
 
 //#region Re-export classes
 
