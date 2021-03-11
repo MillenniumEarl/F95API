@@ -3,6 +3,8 @@
 // This software is released under the MIT License.
 // https://opensource.org/licenses/MIT
 
+/* istanbul ignore file */
+
 export type Result<L, A> = Failure<L, A> | Success<L, A>;
 
 export class Failure<L, A> {
