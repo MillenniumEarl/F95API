@@ -106,7 +106,7 @@ export async function login(
   shared.setIsLogged(result.success);
 
   // 2FA Authentication is required, fetch OTP
-  if (result.message === "Two-factor authentication is needed to continue") {
+  if (result.code === LoginResult.REQUIRE_2FA) {
     const code = await cb2fa();
     const response2fa = await send2faCode(code, creds.token);
     if (response2fa.isSuccess()) result = response2fa.value;
@@ -124,6 +124,7 @@ export async function login(
     shared.logger.info("User logged in through the platform");
   } else shared.logger.warn(`Error during authentication: ${result.message}`);
 
+  shared.setIsLogged(result.success);
   return result;
 }
 
