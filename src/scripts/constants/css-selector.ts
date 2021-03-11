@@ -154,7 +154,16 @@ export const POST = {
    *
    * For use within a `THREAD.POSTS_IN_PAGE` selector.
    */
-  BOOKMARKED: '* ul.message-attribution-opposite >li > a[title="Bookmark"].is-bookmarked'
+  BOOKMARKED: '* ul.message-attribution-opposite >li > a[title="Bookmark"].is-bookmarked',
+  /**
+   * Button used to hide/show a spoiler element of a post.
+   */
+  SPOILER_BUTTON: "button.bbCodeSpoiler-button",
+  /**
+   * Contents of a spoiler element in a post.
+   */
+  SPOILER_CONTENT:
+    "div.bbCodeSpoiler-content > div.bbCodeBlock--spoiler > div.bbCodeBlock-content"
 };
 
 export const MEMBER = {
