@@ -26,10 +26,20 @@ import Credentials from "./classes/credentials";
 // Configure axios to use the cookie jar
 axiosCookieJarSupport(axios);
 
+// Types
+type LookupMapCodeT = {
+  code: number;
+  message: string;
+};
+
 // Global variables
-const userAgent =
+const USER_AGENT =
   "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15) " +
   "AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0 Safari/605.1.15";
+const AUTH_SUCCESSFUL_MESSAGE = "Authentication successful";
+const INVALID_2FA_CODE_MESSAGE =
+  "The two-step verification value could not be confirmed. Please try again";
+const INCORRECT_CREDENTIALS_MESSAGE = "Incorrect password. Please try again.";
 
 /**
  * Common configuration used to send request via Axios.
@@ -39,7 +49,7 @@ const commonConfig = {
    * Headers to add to the request.
    */
   headers: {
-    "User-Agent": userAgent,
+    "User-Agent": USER_AGENT,
     Connection: "keep-alive"
   },
   /**
@@ -114,24 +124,19 @@ export async function authenticate(
 
   // Try to log-in
   let authResult: LoginResult = null;
-  try {
-    // Fetch the response to the login request
-    const response = await fetchPOSTResponse(urls.LOGIN, params, force);
 
-    // Parse the response
-    const result = response.applyOnSuccess((r) => manageLoginPOSTResponse(r));
-    if (result.isSuccess()) authResult = result.value;
-    else throw response.value;
-  } catch (e) {
-    shared.logger.error(
-      `Error ${e.message} occurred while authenticating to ${secureURL}`
-    );
-    authResult = new LoginResult(
-      false,
-      LoginResult.UNKNOWN_ERROR,
-      `Error ${e.message} while authenticating`
-    );
-  }
+  // Fetch the response to the login request
+  const response = await fetchPOSTResponse(secureURL, params, force);
+
+  // Parse the response
+  const result = response.applyOnSuccess((r) => manageLoginPOSTResponse(r));
+
+  // Manage result
+  if (result.isFailure()) {
+    const message = `Error ${result.value.message} occurred while authenticating`;
+    shared.logger.error(message);
+    authResult = new LoginResult(false, LoginResult.UNKNOWN_ERROR, message);
+  } else authResult = result.value;
   return authResult;
 }
 
@@ -165,14 +170,9 @@ export async function send2faCode(
   return response.applyOnSuccess((r: AxiosResponse<any>) => {
     // r.data.status is 'ok' if the authentication is successful
     const result = r.data.status === "ok";
-    const message = result ? "Authentication successful" : r.data.errors.join(",");
-    const code = result
-      ? LoginResult.AUTH_SUCCESSFUL_2FA
-      : message ===
-        "The two-step verification value could not be confirmed. Please try again"
-      ? LoginResult.INCORRECT_2FA_CODE
-      : LoginResult.UNKNOWN_ERROR;
-    return new LoginResult(result, code, message as string);
+    const message: string = result ? AUTH_SUCCESSFUL_MESSAGE : r.data.errors.join(",");
+    const code = messageToCode(message);
+    return new LoginResult(result, code, message);
   });
 }
 
@@ -249,12 +249,11 @@ export async function fetchPOSTResponse(
     const response = await axios.post(secureURL, urlParams, config);
     return success(response);
   } catch (e) {
-    shared.logger.error(
-      `(POST) Error ${e.message} occurred while trying to fetch ${secureURL}`
-    );
+    const message = `(POST) Error ${e.message} occurred while trying to fetch ${secureURL}`;
+    shared.logger.error(message);
     const genericError = new GenericAxiosError({
       id: 3,
-      message: `(POST) Error ${e.message} occurred while trying to fetch ${secureURL}`,
+      message: message,
       error: e
     });
     return failure(genericError);
@@ -375,13 +374,33 @@ function manageLoginPOSTResponse(response: AxiosResponse<any>) {
 
   // Return the result of the authentication
   const result = errorMessage.trim() === "";
-  const message = result ? "Authentication successful" : errorMessage;
-  const code = result
-    ? LoginResult.AUTH_SUCCESSFUL
-    : message === "Incorrect password. Please try again."
-    ? LoginResult.INCORRECT_CREDENTIALS
-    : LoginResult.UNKNOWN_ERROR;
+  const message = result ? AUTH_SUCCESSFUL_MESSAGE : errorMessage;
+  const code = messageToCode(message);
   return new LoginResult(result, code, message);
+}
+
+/**
+ * Given the login message response of the
+ * platform, return the login result code.
+ */
+function messageToCode(message: string): number {
+  // Prepare the lookup dict
+  const mapDict: LookupMapCodeT[] = [];
+  mapDict.push({
+    code: LoginResult.AUTH_SUCCESSFUL,
+    message: AUTH_SUCCESSFUL_MESSAGE
+  });
+  mapDict.push({
+    code: LoginResult.INCORRECT_CREDENTIALS,
+    message: INCORRECT_CREDENTIALS_MESSAGE
+  });
+  mapDict.push({
+    code: LoginResult.INCORRECT_2FA_CODE,
+    message: INVALID_2FA_CODE_MESSAGE
+  });
+
+  const result = mapDict.find((e) => e.message === message);
+  return result ? result.code : LoginResult.UNKNOWN_ERROR;
 }
 
 //#endregion
