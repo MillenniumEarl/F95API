@@ -40,13 +40,8 @@ export function parseF95ThreadPost(
   const elements = post
     .contents()
     .toArray()
-    .map((el) => {
-      const node = parseCheerioNode($, el);
-      if (node.name || node.text || node.content.length != 0) {
-        return node;
-      }
-    })
-    .filter((el) => el);
+    .map((el) => parseCheerioNode($, el))
+    .filter((node) => node.name || node.text || node.content.length != 0);
 
   // ... then parse the elements to create the pairs of title/data
   return parsePostElements(elements);
