@@ -273,12 +273,15 @@ export function enforceHttpsUrl(url: string): string {
  * Check if the url belongs to the domain of the F95 platform.
  */
 export function isF95URL(url: string): boolean {
-  return url.toString().startsWith(urls.BASE);
+  return url.startsWith(urls.BASE);
 }
 
 /**
  * Checks if the string passed by parameter has a
  * properly formatted and valid path to a URL (HTTP/HTTPS).
+ *
+ * @author Daveo
+ * @see https://preview.tinyurl.com/y2f2e2pc
  */
 export function isStringAValidURL(url: string): boolean {
   // Many thanks to Daveo at StackOverflow (https://preview.tinyurl.com/y2f2e2pc)
@@ -291,9 +294,8 @@ export function isStringAValidURL(url: string): boolean {
  * Check if a particular URL is valid and reachable on the web.
  * @param {string} url URL to check
  * @param {boolean} [checkRedirect]
- * If true, the function will consider redirects a violation and return false.
- * Default: false
- * @returns {Promise<Boolean>} true if the URL exists, false otherwise
+ * If `true`, the function will consider redirects a violation and return `false`.
+ * Default: `false`
  */
 export async function urlExists(
   url: string,
