@@ -32,6 +32,8 @@ type LookupMapCodeT = {
   message: string;
 };
 
+type ProviderT = "auto" | "totp" | "email";
+
 // Global variables
 const USER_AGENT =
   "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15) " +
@@ -144,11 +146,13 @@ export async function authenticate(
  * Send an OTP code if the login procedure requires it.
  * @param code OTP code.
  * @param token Unique token for the session associated with the credentials in use.
+ * @param provider Provider used to generate the access code.
  * @param trustedDevice If the device in use is trusted, 2FA authentication is not required for 30 days.
  */
 export async function send2faCode(
   code: number,
   token: string,
+  provider: ProviderT = "auto",
   trustedDevice: boolean = false
 ): Promise<Result<GenericAxiosError, LoginResult>> {
   // Prepare the parameters to send via POST request
@@ -160,20 +164,25 @@ export async function send2faCode(
     _xfWithData: "1",
     code: code.toString(),
     confirm: "1",
-    provider: "totp",
+    provider: provider,
     remember: "1",
     trust: trustedDevice ? "1" : "0"
   };
 
   // Send 2FA params
   const response = await fetchPOSTResponse(urls.LOGIN_2FA, params);
-  return response.applyOnSuccess((r: AxiosResponse<any>) => {
-    // r.data.status is 'ok' if the authentication is successful
-    const result = r.data.status === "ok";
-    const message: string = result ? AUTH_SUCCESSFUL_MESSAGE : r.data.errors.join(",");
-    const code = messageToCode(message);
-    return new LoginResult(result, code, message);
-  });
+
+  // Check if the authentication is valid
+  const validAuth = response.applyOnSuccess((r) => manage2faResponse(r));
+
+  if (validAuth.isSuccess() && validAuth.value.isSuccess()) {
+    // Valid login
+    return success(validAuth.value.value);
+  } else if (validAuth.isSuccess() && validAuth.value.isFailure()) {
+    // Wrong provider, try with another
+    const expectedProvider = validAuth.value.value;
+    return await send2faCode(code, token, expectedProvider, trustedDevice);
+  } else failure(validAuth.value);
 }
 
 /**
@@ -401,6 +410,27 @@ function messageToCode(message: string): number {
 
   const result = mapDict.find((e) => e.message === message);
   return result ? result.code : LoginResult.UNKNOWN_ERROR;
+}
+
+/**
+ * Manage the response given by the platform when the 2FA is required.
+ */
+function manage2faResponse(r: AxiosResponse<any>): Result<ProviderT, LoginResult> {
+  // The html property exists only if the provider is wrong
+  const rightProvider = !("html" in r.data);
+
+  // Wrong provider!
+  if (!rightProvider) {
+    const $ = cheerio.load(r.data.html.content);
+    const expectedProvider = $(GENERIC.EXPECTED_2FA_PROVIDER).attr("value");
+    return failure(expectedProvider as ProviderT);
+  }
+
+  // r.data.status is 'ok' if the authentication is successful
+  const result = r.data.status === "ok";
+  const message: string = result ? AUTH_SUCCESSFUL_MESSAGE : r.data.errors.join(",");
+  const loginCode = messageToCode(message);
+  return success(new LoginResult(result, loginCode, message));
 }
 
 //#endregion

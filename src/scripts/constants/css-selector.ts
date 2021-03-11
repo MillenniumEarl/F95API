@@ -14,6 +14,10 @@ export const GENERIC = {
    */
   ERROR_BANNER: "div.p-body-pageContent > div.blockMessage",
   /**
+   * Provider that the platform expects to use to verify the code for two-factor authentication.
+   */
+  EXPECTED_2FA_PROVIDER: 'input[name="provider"]',
+  /**
    * Locate the token used for the session.
    */
   GET_REQUEST_TOKEN: 'input[name="_xfToken"]',
