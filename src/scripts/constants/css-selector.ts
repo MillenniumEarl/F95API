@@ -154,7 +154,15 @@ export const POST = {
    *
    * For use within a `THREAD.POSTS_IN_PAGE` selector.
    */
-  BOOKMARKED: '* ul.message-attribution-opposite >li > a[title="Bookmark"].is-bookmarked'
+  BOOKMARKED: '* ul.message-attribution-opposite >li > a[title="Bookmark"].is-bookmarked',
+  /**
+   * Button used to hide/show a spoiler element of a post.
+   */
+  SPOILER_BUTTON: "button.bbCodeSpoiler-button",
+  /**
+   * Contents of a spoiler element in a post.
+   */
+  SPOILER_CONTENT: "div.bbCodeSpoiler-content > div.bbCodeBlock--spoiler > div.bbCodeBlock-content"
 };
 
 export const MEMBER = {
@@ -205,8 +213,7 @@ export const MEMBER = {
    * If the text is `Unfollow` then the user is followed.
    * If the text is `Follow` then the user is not followed.
    */
-  FOLLOWED:
-    "div.memberHeader-buttons > div.buttonGroup:first-child > a[data-sk-follow] > span",
+  FOLLOWED: "div.memberHeader-buttons > div.buttonGroup:first-child > a[data-sk-follow] > span",
   /**
    * Button used to ignore/unignore the user.
    *

@@ -130,8 +130,7 @@ export default class ThreadSearchQuery implements IQuery {
     if (this.excludedTags) params["c[excludeTags]"] = this.excludedTags.join(",");
 
     // Set minimum reply number
-    if (this.minimumReplies > 0)
-      params["c[min_reply_count]"] = this.minimumReplies.toString();
+    if (this.minimumReplies > 0) params["c[min_reply_count]"] = this.minimumReplies.toString();
 
     // Add prefixes
     const parser = new PrefixParser();

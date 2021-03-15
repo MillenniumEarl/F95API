@@ -59,9 +59,7 @@ function parseJSONLD(element: cheerio.Element): TJsonLD {
   const html = cheerio(element).html().trim();
 
   // Obtain the JSON-LD
-  const data = html
-    .replace('<script type="application/ld+json">', "")
-    .replace("</script>", "");
+  const data = html.replace('<script type="application/ld+json">', "").replace("</script>", "");
 
   // Convert the string to an object
   return JSON.parse(data);

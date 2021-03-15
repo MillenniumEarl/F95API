@@ -96,8 +96,7 @@ export default class HandiworkSearchQuery implements IQuery {
     // If the keywords are set or the number
     // of included tags is greather than 5,
     // we must perform a thread search
-    if (this.keywords || this.includedTags.length > MAX_TAGS_LATEST_SEARCH)
-      return "thread";
+    if (this.keywords || this.includedTags.length > MAX_TAGS_LATEST_SEARCH) return "thread";
 
     return DEFAULT_SEARCH_TYPE;
   }
