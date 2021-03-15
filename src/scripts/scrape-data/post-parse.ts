@@ -29,10 +29,7 @@ export interface ILink extends IPostElement {
 /**
  * Given a post of a thread page it extracts the information contained in the body.
  */
-export function parseF95ThreadPost(
-  $: cheerio.Root,
-  post: cheerio.Cheerio
-): IPostElement[] {
+export function parseF95ThreadPost($: cheerio.Root, post: cheerio.Cheerio): IPostElement[] {
   // The data is divided between "tag" and "text" elements.
   // Simple data is composed of a "tag" element followed
   // by a "text" element, while more complex data (contained
@@ -293,9 +290,7 @@ function reducePostElement(element: IPostElement, recursive = true): IPostElemen
       .map((e) => (e.content.length > 0 ? e.content : e));
 
     // Remove the empty elements
-    shallowCopy.content = shallowCopy.content.filter(
-      (e) => !unknownChildrens.includes(e)
-    );
+    shallowCopy.content = shallowCopy.content.filter((e) => !unknownChildrens.includes(e));
 
     // Merge the non-empty children of this node with
     // the content of the empty children of this node
@@ -319,8 +314,7 @@ function parseCheerioNode($: cheerio.Root, node: cheerio.Element): IPostElement 
 
   // Parse the node
   if (!isNoScriptNode(node)) {
-    if (isTextNode(node) && !isFormattingNode(node))
-      post = parseCheerioTextNode(cheerioNode);
+    if (isTextNode(node) && !isFormattingNode(node)) post = parseCheerioTextNode(cheerioNode);
     else if (isSpoilerNode(cheerioNode)) post = parseCheerioSpoilerNode($, cheerioNode);
     else if (isLinkNode(node)) post = parseCheerioLinkNode(cheerioNode);
 
