@@ -34,8 +34,6 @@ export function suite(): void {
   it("Fetch post with invalid ID", async function fetchWithInvalidID() {
     Shared.setIsLogged(true);
     const thread = new Thread(-1);
-    await expect(thread.getPost(0)).to.be.rejectedWith(
-      "Index must be greater or equal than 1"
-    );
+    await expect(thread.getPost(0)).to.be.rejectedWith("Index must be greater or equal than 1");
   });
 }

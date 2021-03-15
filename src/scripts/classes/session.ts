@@ -210,8 +210,8 @@ export default class Session {
 
     // Search for expired cookies
     const jarValid =
-      this._cookieJar.getCookiesSync("https://f95zone.to").filter((el) => el.TTL() === 0)
-        .length === 0;
+      this._cookieJar.getCookiesSync("https://f95zone.to").filter((el) => el.TTL() === 0).length ===
+      0;
 
     return dateValid && hashValid && jarValid;
   }

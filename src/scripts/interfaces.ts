@@ -83,10 +83,7 @@ export type TCategory = "games" | "mods" | "comics" | "animations" | "assets";
 /**
  * Valid names of classes that implement the IQuery interface.
  */
-export type TQueryInterface =
-  | "LatestSearchQuery"
-  | "ThreadSearchQuery"
-  | "HandiworkSearchQuery";
+export type TQueryInterface = "LatestSearchQuery" | "ThreadSearchQuery" | "HandiworkSearchQuery";
 
 /**
  * Collection of values defined for each

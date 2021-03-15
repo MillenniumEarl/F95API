@@ -86,9 +86,7 @@ export async function fetchHTML(
       error: null
     });
 
-    return isHTML
-      ? success(response.value.data as string)
-      : failure(unexpectedResponseError);
+    return isHTML ? success(response.value.data as string) : failure(unexpectedResponseError);
   } else return failure(response.value as GenericAxiosError);
 }
 
@@ -105,8 +103,7 @@ export async function authenticate(
   force: boolean = false
 ): Promise<LoginResult> {
   shared.logger.info(`Authenticating with user ${credentials.username}`);
-  if (!credentials.token)
-    throw new InvalidF95Token(`Invalid token for auth: ${credentials.token}`);
+  if (!credentials.token) throw new InvalidF95Token(`Invalid token for auth: ${credentials.token}`);
 
   // Secure the URL
   const secureURL = enforceHttpsUrl(urls.LOGIN);
@@ -216,9 +213,7 @@ export async function fetchGETResponse(
     const response = await axios.get(secureURL, commonConfig);
     return success(response);
   } catch (e) {
-    shared.logger.error(
-      `(GET) Error ${e.message} occurred while trying to fetch ${secureURL}`
-    );
+    shared.logger.error(`(GET) Error ${e.message} occurred while trying to fetch ${secureURL}`);
     const genericError = new GenericAxiosError({
       id: 1,
       message: `(GET) Error ${e.message} occurred while trying to fetch ${secureURL}`,
@@ -305,10 +300,7 @@ export function isStringAValidURL(url: string): boolean {
  * If `true`, the function will consider redirects a violation and return `false`.
  * Default: `false`
  */
-export async function urlExists(
-  url: string,
-  checkRedirect: boolean = false
-): Promise<boolean> {
+export async function urlExists(url: string, checkRedirect: boolean = false): Promise<boolean> {
   // Local variables
   let valid = false;
 
@@ -376,10 +368,7 @@ function manageLoginPOSTResponse(response: AxiosResponse<any>) {
   }
 
   // Get the error message (if any) and remove the new line chars
-  const errorMessage = $("body")
-    .find(GENERIC.LOGIN_MESSAGE_ERROR)
-    .text()
-    .replace(/\n/g, "");
+  const errorMessage = $("body").find(GENERIC.LOGIN_MESSAGE_ERROR).text().replace(/\n/g, "");
 
   // Return the result of the authentication
   const result = errorMessage.trim() === "";

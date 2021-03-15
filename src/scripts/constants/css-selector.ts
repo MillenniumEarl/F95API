@@ -162,8 +162,7 @@ export const POST = {
   /**
    * Contents of a spoiler element in a post.
    */
-  SPOILER_CONTENT:
-    "div.bbCodeSpoiler-content > div.bbCodeBlock--spoiler > div.bbCodeBlock-content"
+  SPOILER_CONTENT: "div.bbCodeSpoiler-content > div.bbCodeBlock--spoiler > div.bbCodeBlock-content"
 };
 
 export const MEMBER = {
@@ -214,8 +213,7 @@ export const MEMBER = {
    * If the text is `Unfollow` then the user is followed.
    * If the text is `Follow` then the user is not followed.
    */
-  FOLLOWED:
-    "div.memberHeader-buttons > div.buttonGroup:first-child > a[data-sk-follow] > span",
+  FOLLOWED: "div.memberHeader-buttons > div.buttonGroup:first-child > a[data-sk-follow] > span",
   /**
    * Button used to ignore/unignore the user.
    *

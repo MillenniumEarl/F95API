@@ -6,14 +6,7 @@
 "use strict";
 
 // Modules from files
-import {
-  TAuthor,
-  TRating,
-  IHandiwork,
-  TEngine,
-  TCategory,
-  TStatus
-} from "../../interfaces";
+import { TAuthor, TRating, IHandiwork, TEngine, TCategory, TStatus } from "../../interfaces";
 
 /**
  * It represents a generic work, be it a game, a comic, an animation or an asset.
