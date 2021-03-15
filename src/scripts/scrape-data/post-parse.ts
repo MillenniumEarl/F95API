@@ -5,6 +5,9 @@
 
 "use strict";
 
+// Import from files
+import { POST } from "../constants/css-selector";
+
 //#region Interfaces
 
 export interface IPostElement {
@@ -22,6 +25,7 @@ export interface ILink extends IPostElement {
 //#endregion Interfaces
 
 //#region Public methods
+
 /**
  * Given a post of a thread page it extracts the information contained in the body.
  */
@@ -40,34 +44,81 @@ export function parseF95ThreadPost(
   const elements = post
     .contents()
     .toArray()
-    .map((el) => parseCheerioNode($, el))
-    .filter((node) => node.name || node.text || node.content.length != 0);
+    .map((el) => parseCheerioNode($, el)) // Parse the nodes
+    .filter((el) => !isPostElementEmpty(el)) // Ignore the empty nodes
+    .map((el) => reducePostElement(el)); // Compress the nodes
 
   // ... then parse the elements to create the pairs of title/data
-  return parsePostElements(elements);
+  return associateElementsWithName(elements);
 }
+
 //#endregion Public methods
 
 //#region Private methods
+
+//#region Node type
+
+/**
+ * Check if the node passed as a parameter is a formatting one (i.e. `<b>`).
+ */
+function isFormattingNode(node: cheerio.Element): boolean {
+  const formattedTags = ["b", "i"];
+  return node.type === "tag" && formattedTags.includes(node.name);
+}
+
+/**
+ * Check if the node passed as a parameter is of text type.
+ */
+function isTextNode(node: cheerio.Element): boolean {
+  return node.type === "text";
+}
+
+/**
+ * Check if the node is a spoiler.
+ */
+function isSpoilerNode(node: cheerio.Cheerio): boolean {
+  return node.attr("class") === "bbCodeSpoiler";
+}
+
+/**
+ * Check if the node is a link or a image.
+ */
+function isLinkNode(node: cheerio.Element): boolean {
+  // Local variables
+  let valid = false;
+
+  // The node is a valid DOM element
+  if (node.type === "tag") {
+    const el = node as cheerio.TagElement;
+    valid = el.name === "a" || el.name === "img";
+  }
+
+  return valid;
+}
+
+/**
+ * Check if the node is a `noscript` tag.
+ */
+function isNoScriptNode(node: cheerio.Element): boolean {
+  return node.type === "tag" && node.name === "noscript";
+}
+
+//#endregion Node Type
+
+//#region Parse Cheerio node
 
 /**
  * Process a spoiler element by getting its text broken
  * down by any other spoiler elements present.
  */
-function parseCheerioSpoilerNode(
-  $: cheerio.Root,
-  spoiler: cheerio.Cheerio
-): IPostElement {
+function parseCheerioSpoilerNode($: cheerio.Root, node: cheerio.Cheerio): IPostElement {
   // A spoiler block is composed of a div with class "bbCodeSpoiler",
   // containing a div "bbCodeSpoiler-content" containing, in cascade,
   // a div with class "bbCodeBlock--spoiler" and a div with class "bbCodeBlock-content".
   // This last tag contains the required data.
 
   // Local variables
-  const BUTTON_CLASS = "button.bbCodeSpoiler-button";
-  const SPOILER_CONTENT_CLASS =
-    "div.bbCodeSpoiler-content > div.bbCodeBlock--spoiler > div.bbCodeBlock-content";
-  const content: IPostElement = {
+  const spoiler: IPostElement = {
     type: "Spoiler",
     name: "",
     text: "",
@@ -75,185 +126,222 @@ function parseCheerioSpoilerNode(
   };
 
   // Find the title of the spoiler (contained in the button)
-  const button = spoiler.find(BUTTON_CLASS).toArray().shift();
-  content.name = $(button).text().trim();
+  spoiler.name = node.find(POST.SPOILER_BUTTON).first().text().trim();
 
   // Parse the content of the spoiler
-  spoiler
-    .find(SPOILER_CONTENT_CLASS)
+  spoiler.content = node
+    .find(POST.SPOILER_CONTENT)
     .contents()
-    .map((idx, el) => {
-      // Convert the element
-      const element = $(el);
-
-      // Parse nested spoiler
-      if (element.attr("class") === "bbCodeSpoiler") {
-        const spoiler = parseCheerioSpoilerNode($, element);
-        content.content.push(spoiler);
-      } else if (el.type === "text") {
-        // Append text
-        content.text += element.text();
-      }
-    });
+    .toArray()
+    .map((el) => parseCheerioNode($, el));
 
   // Clean text
-  content.text = content.text.replace(/\s\s+/g, " ").trim();
-  return content;
+  spoiler.text = spoiler.text.replace(/\s\s+/g, " ").trim();
+  return spoiler;
 }
 
 /**
- * Check if the node passed as a parameter is of text type.
- * This also includes formatted nodes (i.e. `<b>`).
+ * Process a node that contains a link or image.
  */
-function isTextNode(node: cheerio.Element): boolean {
-  const formattedTags = ["b", "i"];
-  const isText = node.type === "text";
-  const isFormatted = node.type === "tag" && formattedTags.includes(node.name);
+function parseCheerioLinkNode(element: cheerio.Cheerio): ILink {
+  // Local variable
+  const link: ILink = {
+    type: "Link",
+    name: "",
+    text: "",
+    href: "",
+    content: []
+  };
 
-  return isText || isFormatted;
+  if (element.is("img")) {
+    link.type = "Image";
+    link.text = element.attr("alt");
+    link.href = element.attr("data-src");
+  } else if (element.is("a")) {
+    link.type = "Link";
+    link.text = element.text().replace(/\s\s+/g, " ").trim();
+    link.href = element.attr("href");
+  }
+
+  return link;
 }
+
+/**
+ * Process a text only node.
+ */
+function parseCheerioTextNode(node: cheerio.Cheerio): IPostElement {
+  const content: IPostElement = {
+    type: "Text",
+    name: "",
+    text: getCheerioNonChildrenText(node),
+    content: []
+  };
+  return content;
+}
+
+//#endregion Parse Cheerio node
+
+//#region IPostElement utility
+
+/**
+ * Check if the node has non empty `name` and `text`.
+ */
+function isPostElementUnknown(node: IPostElement): boolean {
+  return node.name.trim() === "" && node.text.trim() === "";
+}
+
+/**
+ * Check if the node has a non empty property
+ * between `name`, `text` and `content`.
+ */
+function isPostElementEmpty(node: IPostElement): boolean {
+  return node.content.length === 0 && isPostElementUnknown(node);
+}
+
+/**
+ * Create a `IPostElement` without name, text or content.
+ */
+function createEmptyElement(): IPostElement {
+  return {
+    type: "Empty",
+    name: "",
+    text: "",
+    content: []
+  };
+}
+
+/**
+ * Check if the element contains the overview of a thread (post #1).
+ */
+function elementIsOverview(element: IPostElement): boolean {
+  // Search the text element that start with "overview"
+  const result = element.content
+    .filter((e) => e.type === "Text")
+    .find((e) => e.text.toUpperCase().startsWith("OVERVIEW"));
+  return result !== undefined;
+}
+
+/**
+ * If the element contains the overview of a thread, parse it.
+ */
+function getOverviewFromElement(element: IPostElement): string {
+  // Local variables
+  const alphanumericRegex = new RegExp("[a-zA-Z0-9]+");
+
+  // Get all the text values of the overview
+  const textes = element.content
+    .filter((e) => e.type === "Text")
+    .filter((e) => {
+      const cleanValue = e.text.toUpperCase().replace("OVERVIEW", "").trim();
+      const isAlphanumeric = alphanumericRegex.test(cleanValue);
+
+      return cleanValue !== "" && isAlphanumeric;
+    })
+    .map((e) => e.text);
+
+  // Joins the textes
+  return textes.join(" ");
+}
+
+//#endregion IPostElement utility
 
 /**
  * Gets the text of the node only, excluding child nodes.
  * Also includes formatted text elements (i.e. `<b>`).
  */
 function getCheerioNonChildrenText(node: cheerio.Cheerio): string {
-  // Find all the text nodes in the node
-  const text = node
-    .first()
-    .contents()
-    .filter((idx, el) => {
-      return isTextNode(el);
-    })
-    .text();
+  // Local variable
+  let text = "";
+
+  // If the node has no children, return the node's text
+  if (node.contents().length === 1) {
+    // @todo Remove IF after cheerio RC6
+    text = node.text();
+  } else {
+    // Find all the text nodes in the node
+    text = node
+      .first()
+      .contents() // @todo Change to children() after cheerio RC6
+      .filter((idx, el) => isTextNode(el))
+      .text();
+  }
 
   // Clean and return the text
   return text.replace(/\s\s+/g, " ").trim();
 }
 
 /**
- * Process a node and see if it contains a
- * link or image. If not, it returns `null`.
- */
-function parseCheerioLinkNode(element: cheerio.Cheerio): ILink | null {
-  //@ts-ignore
-  const name = element[0]?.name;
-  const link: ILink = {
-    name: "",
-    type: "Link",
-    text: "",
-    href: "",
-    content: []
-  };
-
-  if (name === "img") {
-    link.type = "Image";
-    link.text = element.attr("alt");
-    link.href = element.attr("data-src");
-  } else if (name === "a") {
-    link.type = "Link";
-    link.text = element.text().replace(/\s\s+/g, " ").trim();
-    link.href = element.attr("href");
-  }
-
-  return link.href ? link : null;
-}
-
-/**
  * Collapse an `IPostElement` element with a single subnode
  * in the `Content` field in case it has no information.
  */
-function reducePostElement(element: IPostElement): IPostElement {
-  if (element.content.length === 1) {
-    const content = element.content[0] as IPostElement;
-    const nullValues =
-      (!element.name || !content.name) && (!element.text || !content.text);
-    const sameValues = element.name === content.name || element.text === content.text;
+function reducePostElement(element: IPostElement, recursive = true): IPostElement {
+  // Local variables
+  const shallowCopy = Object.assign({}, element);
 
-    if (nullValues || sameValues) {
-      element.name = element.name || content.name;
-      element.text = element.text || content.text;
-      element.content.push(...content.content);
-      element.type = content.type;
-
-      // If the content is a link, add the HREF to the element
-      const contentILink = content as ILink;
-      const elementILink = element as ILink;
-      if (contentILink.href) elementILink.href = contentILink.href;
-    }
+  // Find the posts without name and text
+  const unknownChildrens = shallowCopy.content.filter((e) => isPostElementUnknown(e));
+  if (recursive) {
+    const recursiveUnknownChildrens = unknownChildrens.map((e) => reducePostElement(e));
+    unknownChildrens.push(...recursiveUnknownChildrens);
   }
 
-  return element;
+  // Eliminate non-useful child nodes
+  if (isPostElementUnknown(shallowCopy) && unknownChildrens.length > 0) {
+    // Find the valid elements to add to the node
+    const childContents = unknownChildrens
+      .filter((e) => !shallowCopy.content.includes(e))
+      .map((e) => (e.content.length > 0 ? e.content : e));
+
+    // Remove the empty elements
+    shallowCopy.content = shallowCopy.content.filter(
+      (e) => !unknownChildrens.includes(e)
+    );
+
+    // Merge the non-empty children of this node with
+    // the content of the empty children of this node
+    const newContent = [].concat(...childContents);
+    shallowCopy.content.push(...newContent);
+  }
+  // If the node has only one child, return it
+  else if (isPostElementUnknown(shallowCopy) && shallowCopy.content.length === 1) {
+    return shallowCopy.content[0];
+  }
+  return shallowCopy;
 }
 
 /**
  * Transform a `cheerio.Cheerio` node into an `IPostElement` element with its subnodes.
- * @param reduce Compress subsequent subnodes if they contain no information. Default: `true`.
  */
-function parseCheerioNode(
-  $: cheerio.Root,
-  node: cheerio.Element,
-  reduce = true
-): IPostElement {
+function parseCheerioNode($: cheerio.Root, node: cheerio.Element): IPostElement {
   // Local variables
-  const content: IPostElement = {
-    type: "Empty",
-    name: "",
-    text: "",
-    content: []
-  };
+  let post: IPostElement = createEmptyElement();
   const cheerioNode = $(node);
 
-  if (isTextNode(node)) {
-    content.text = cheerioNode.text().replace(/\s\s+/g, " ").trim();
-    content.type = "Text";
-  } else {
-    // Get the number of children that the element own
-    const nChildren = cheerioNode.children().length;
+  // Parse the node
+  if (!isNoScriptNode(node)) {
+    if (isTextNode(node) && !isFormattingNode(node))
+      post = parseCheerioTextNode(cheerioNode);
+    else if (isSpoilerNode(cheerioNode)) post = parseCheerioSpoilerNode($, cheerioNode);
+    else if (isLinkNode(node)) post = parseCheerioLinkNode(cheerioNode);
 
-    // Get the text of the element without childrens
-    content.text = getCheerioNonChildrenText(cheerioNode);
-
-    // Parse spoilers
-    if (cheerioNode.attr("class") === "bbCodeSpoiler") {
-      const spoiler = parseCheerioSpoilerNode($, cheerioNode);
-
-      // Add element if not null
-      if (spoiler) {
-        content.content.push(spoiler);
-        content.type = "Spoiler";
-      }
-    }
-    // Parse links
-    else if (nChildren === 0 && cheerioNode.length != 0) {
-      const link = parseCheerioLinkNode(cheerioNode);
-
-      // Add element if not null
-      if (link) {
-        content.content.push(link);
-        content.type = "Link";
-      }
-    } else {
-      cheerioNode.children().map((idx, el) => {
-        // Parse the children of the element passed as parameter
-        const childElement = parseCheerioNode($, el);
-
-        // If the children is valid (not empty) push it
-        if ((childElement.text || childElement.content.length !== 0) && !isTextNode(el)) {
-          content.content.push(childElement);
-        }
-      });
-    }
+    // Parse the node's childrens
+    const childPosts = cheerioNode
+      .contents() // @todo Change to children() after cheerio RC6
+      .toArray()
+      .filter((el) => el) // Ignore undefined elements
+      .map((el) => parseCheerioNode($, el))
+      .filter((el) => !isPostElementEmpty(el));
+    post.content.push(...childPosts);
   }
 
-  return reduce ? reducePostElement(content) : content;
+  return post;
 }
 
 /**
  * It simplifies the `IPostElement` elements by associating
  * the corresponding value to each characterizing element (i.e. author).
  */
-function parsePostElements(elements: IPostElement[]): IPostElement[] {
+function associateElementsWithName(elements: IPostElement[]): IPostElement[] {
   // Local variables
   const pairs: IPostElement[] = [];
   const specialCharsRegex = /^[-!$%^&*()_+|~=`{}[\]:";'<>?,./]/;
@@ -275,11 +363,11 @@ function parsePostElements(elements: IPostElement[]): IPostElement[] {
       lastPair.content.push(...elements[i].content);
     }
     // This is a special case
-    else if (elements[i].text.startsWith("Overview:\n")) {
+    else if (elementIsOverview(elements[i])) {
       // We add the overview to the pairs as a text element
       elements[i].type = "Text";
       elements[i].name = "Overview";
-      elements[i].text = elements[i].text.replace("Overview:\n", "");
+      elements[i].text = getOverviewFromElement(elements[i]);
       pairs.push(elements[i]);
     }
     // We have an element referred to the previous "title"
