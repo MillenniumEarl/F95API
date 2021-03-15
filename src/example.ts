@@ -60,11 +60,7 @@ async function main() {
 
   // Log in the platform
   console.log("Authenticating...");
-  const result = await login(
-    process.env.F95_USERNAME,
-    process.env.F95_PASSWORD,
-    insert2faCode
-  );
+  const result = await login(process.env.F95_USERNAME, process.env.F95_PASSWORD, insert2faCode);
   console.log(`Authentication result: ${result.message}\n`);
 
   // Manage failed login
@@ -87,9 +83,7 @@ async function main() {
   latestQuery.includedTags = ["3d game"];
 
   const latestUpdates = await getLatestUpdates<Game>(latestQuery, 1);
-  console.log(
-    `"${latestUpdates.shift().name}" was the last "3d game" tagged game to be updated\n`
-  );
+  console.log(`"${latestUpdates.shift().name}" was the last "3d game" tagged game to be updated\n`);
 
   // Get game data
   for (const gamename of gameList) {
