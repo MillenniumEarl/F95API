@@ -28,7 +28,9 @@ import {
   LatestSearchQuery,
   Game,
   searchHandiwork,
-  HandiworkSearchQuery
+  HandiworkSearchQuery,
+  Asset,
+  getHandiworkFromURL
 } from "./index";
 
 // Configure the .env reader
