@@ -64,7 +64,8 @@ const commonConfig = {
   jar: shared.session.cookieJar,
   validateStatus: function (status: number) {
     return status < 500; // Resolve only if the status code is less than 500
-  }
+  },
+  timeout: 5000
 };
 
 /**
@@ -322,7 +323,8 @@ export async function urlExists(url: string, checkRedirect: boolean = false): Pr
  * @returns {Promise<String>} Redirect URL or the passed URL
  */
 export async function getUrlRedirect(url: string): Promise<string> {
-  const response = await axios.head(url);
+  commonConfig.jar = shared.session.cookieJar;
+  const response = await axios.head(url, commonConfig);
   return response.config.url;
 }
 
@@ -339,9 +341,8 @@ async function axiosUrlExists(url: string): Promise<boolean> {
   let valid = false;
 
   try {
-    const response = await axios.head(url, {
-      timeout: 3000
-    });
+    commonConfig.jar = shared.session.cookieJar;
+    const response = await axios.head(url, commonConfig);
     valid = response && !/4\d\d/.test(response.status.toString());
   } catch (error) {
     // Throw error only if the error is unknown
