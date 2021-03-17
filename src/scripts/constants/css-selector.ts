@@ -156,9 +156,9 @@ export const POST = {
    */
   BOOKMARKED: '* ul.message-attribution-opposite >li > a[title="Bookmark"].is-bookmarked',
   /**
-   * Button used to hide/show a spoiler element of a post.
+   * Name visualized on the button used to hide/show a spoiler element of a post.
    */
-  SPOILER_BUTTON: "button.bbCodeSpoiler-button",
+  SPOILER_NAME: "button.bbCodeSpoiler-button > * span.bbCodeSpoiler-button-title",
   /**
    * Contents of a spoiler element in a post.
    */
