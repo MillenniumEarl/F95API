@@ -195,7 +195,7 @@ export async function getHandiworkFromURL<T extends IBasic>(url: string): Promis
 
   // Check URL validity
   const exists = await urlExists(url);
-  if (!exists) throw new URIError(`${url} is not a valid URL`);
+  if (!exists) throw new URIError(`${url} does not exists`);
   if (!isF95URL(url)) throw new Error(`${url} is not a valid F95Zone URL`);
 
   // Get game data
