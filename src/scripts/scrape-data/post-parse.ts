@@ -41,9 +41,9 @@ export function parseF95ThreadPost($: cheerio.Root, post: cheerio.Cheerio): IPos
   const elements = post
     .contents()
     .toArray()
-    .map((el) => parseCheerioNode($, el)) // Parse the nodes
-    .filter((el) => !isPostElementEmpty(el)) // Ignore the empty nodes
-    .map((el) => reducePostElement(el)); // Compress the nodes
+    .map((e) => parseCheerioNode($, e)) // Parse the nodes
+    .filter((e) => !isPostElementEmpty(e)) // Ignore the empty nodes
+    .map((e) => reducePostElement(e)); // Compress the nodes
 
   // ... then parse the elements to create the pairs of title/data
   return associateElementsWithName(elements);
@@ -123,7 +123,8 @@ function parseCheerioSpoilerNode($: cheerio.Root, node: cheerio.Cheerio): IPostE
   };
 
   // Find the title of the spoiler (contained in the button)
-  spoiler.name = node.find(POST.SPOILER_BUTTON).first().text().trim();
+  const name = node.find(POST.SPOILER_NAME)?.first();
+  spoiler.name = name ? name.text().trim() : "";
 
   // Parse the content of the spoiler
   spoiler.content = node
@@ -278,8 +279,17 @@ function reducePostElement(element: IPostElement, recursive = true): IPostElemen
   // Find the posts without name and text
   const unknownChildrens = shallowCopy.content.filter((e) => isPostElementUnknown(e));
   if (recursive) {
-    const recursiveUnknownChildrens = unknownChildrens.map((e) => reducePostElement(e));
-    unknownChildrens.push(...recursiveUnknownChildrens);
+    // Copy the array of children
+    const copy = [...unknownChildrens];
+
+    copy.map((e) => {
+      // Reduce the element
+      const reduced = reducePostElement(e);
+
+      // Replace the element
+      const index = unknownChildrens.indexOf(e);
+      unknownChildrens[index] = reduced;
+    });
   }
 
   // Eliminate non-useful child nodes
@@ -289,7 +299,7 @@ function reducePostElement(element: IPostElement, recursive = true): IPostElemen
       .filter((e) => !shallowCopy.content.includes(e))
       .map((e) => (e.content.length > 0 ? e.content : e));
 
-    // Remove the empty elements
+    // Save the elements NOT IN unknownChildren
     shallowCopy.content = shallowCopy.content.filter((e) => !unknownChildrens.includes(e));
 
     // Merge the non-empty children of this node with
@@ -302,6 +312,27 @@ function reducePostElement(element: IPostElement, recursive = true): IPostElemen
     return shallowCopy.content[0];
   }
   return shallowCopy;
+}
+
+function removeEmptyElement(element: IPostElement): IPostElement {
+  // Create a copy of the content
+  const contentCopy = [...element.content];
+
+  contentCopy.map((e) => {
+    // Find the non-empty nodes
+    const validNodes = e.content.filter((e) => !isPostElementEmpty(e));
+
+    // Clean this element children
+    const cleanNodes = validNodes.map((e) => removeEmptyElement(e));
+
+    // Assign the nodes
+    e.content = cleanNodes;
+  });
+
+  const copy: IPostElement = Object.assign({}, element);
+  copy.content = contentCopy;
+
+  return copy;
 }
 
 /**
