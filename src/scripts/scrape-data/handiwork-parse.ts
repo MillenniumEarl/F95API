@@ -207,7 +207,10 @@ function fillWithPostData(hw: HandiWork, elements: IPostElement[]) {
 
   // Get the genres
   const genre = getPostElementByName(elements, "genre")?.content.shift()?.text;
-  hw.genre = genre?.split(",").map((s) => s.trim());
+  hw.genre = genre
+    ?.split(",")
+    .map((s) => s.trim())
+    .filter((s) => s !== "");
 
   // Get the cover
   const cover = getPostElementByName(elements, "overview")?.content.find(
@@ -245,15 +248,17 @@ function fillWithPostData(hw: HandiWork, elements: IPostElement[]) {
   hw.changelog = [];
   const changelogElement =
     getPostElementByName(elements, "changelog") || getPostElementByName(elements, "change-log");
-  if (changelogElement) {
-    const changelogSpoiler = changelogElement?.content.find((el) => {
-      return el.type === "Spoiler" && el.content.length > 0;
-    });
+
+  if (changelogElement?.content) {
+    const changelogSpoiler = changelogElement.content.find(
+      (el) => el.type === "Spoiler" && el.content.length > 0
+    );
 
     // Add to the changelog the single spoilers
-    changelogSpoiler?.content.forEach((el) => {
-      if (el.text.trim()) hw.changelog.push(el.text);
-    });
+    const spoilers = changelogSpoiler.content
+      .filter((e) => e.text.trim() !== "")
+      .map((e) => e.text);
+    hw.changelog.push(...spoilers);
 
     // Add at the end also the text of the "changelog" element
     hw.changelog.push(changelogSpoiler.text);
