@@ -161,7 +161,7 @@ function parseCheerioLinkNode(element: cheerio.Cheerio): ILink {
 
   if (element.is("img")) {
     link.type = "Image";
-    link.text = element.attr("alt");
+    link.text = element.attr("alt") ?? "";
     link.href = element.attr("data-src");
   } else if (element.is("a")) {
     link.type = "Link";
