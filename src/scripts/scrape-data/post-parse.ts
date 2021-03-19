@@ -11,7 +11,7 @@ import { POST } from "../constants/css-selector";
 //#region Interfaces
 
 export interface IPostElement {
-  type: "Empty" | "Text" | "Link" | "Image" | "Spoiler";
+  type: "Generic" | "Text" | "Link" | "Image" | "Spoiler";
   name: string;
   text: string;
   content: IPostElement[];
@@ -41,12 +41,20 @@ export function parseF95ThreadPost($: cheerio.Root, post: cheerio.Cheerio): IPos
   const elements = post
     .contents()
     .toArray()
-    .map((e) => parseCheerioNode($, e)) // Parse the nodes
-    .filter((e) => !isPostElementEmpty(e)) // Ignore the empty nodes
-    .map((e) => reducePostElement(e)); // Compress the nodes
+    .map((e) => parseCheerioNode($, e)); // Parse the nodes
 
-  // ... then parse the elements to create the pairs of title/data
-  return associateElementsWithName(elements);
+  // Create a supernode
+  let supernode = createGenericElement();
+  supernode.content = elements;
+
+  // Reduce the nodes
+  supernode = reducePostElement(supernode);
+
+  // Remove the empty nodes
+  supernode = removeEmptyContentFromElement(supernode);
+
+  // Finally parse the elements to create the pairs of title/data
+  return associateNameToElements(supernode.content);
 }
 
 //#endregion Public methods
@@ -185,6 +193,8 @@ function parseCheerioTextNode(node: cheerio.Cheerio): IPostElement {
  * Check if the node has non empty `name` and `text`.
  */
 function isPostElementUnknown(node: IPostElement): boolean {
+  // @todo For some strange reason, if the node IS empty but
+  // node.type === "Text" the 2nd statement return false.
   return node.name.trim() === "" && node.text.trim() === "";
 }
 
@@ -199,9 +209,9 @@ function isPostElementEmpty(node: IPostElement): boolean {
 /**
  * Create a `IPostElement` without name, text or content.
  */
-function createEmptyElement(): IPostElement {
+function createGenericElement(): IPostElement {
   return {
-    type: "Empty",
+    type: "Generic",
     name: "",
     text: "",
     content: []
@@ -272,65 +282,36 @@ function getCheerioNonChildrenText(node: cheerio.Cheerio): string {
  * Collapse an `IPostElement` element with a single subnode
  * in the `Content` field in case it has no information.
  */
-function reducePostElement(element: IPostElement, recursive = true): IPostElement {
+function reducePostElement(element: IPostElement): IPostElement {
   // Local variables
   const shallowCopy = Object.assign({}, element);
 
-  // Find the posts without name and text
-  const unknownChildrens = shallowCopy.content.filter((e) => isPostElementUnknown(e));
-  if (recursive) {
-    // Copy the array of children
-    const copy = [...unknownChildrens];
-
-    copy.map((e) => {
-      // Reduce the element
-      const reduced = reducePostElement(e);
-
-      // Replace the element
-      const index = unknownChildrens.indexOf(e);
-      unknownChildrens[index] = reduced;
-    });
-  }
-
-  // Eliminate non-useful child nodes
-  if (isPostElementUnknown(shallowCopy) && unknownChildrens.length > 0) {
-    // Find the valid elements to add to the node
-    const childContents = unknownChildrens
-      .filter((e) => !shallowCopy.content.includes(e))
-      .map((e) => (e.content.length > 0 ? e.content : e));
-
-    // Save the elements NOT IN unknownChildren
-    shallowCopy.content = shallowCopy.content.filter((e) => !unknownChildrens.includes(e));
-
-    // Merge the non-empty children of this node with
-    // the content of the empty children of this node
-    const newContent = [].concat(...childContents);
-    shallowCopy.content.push(...newContent);
-  }
   // If the node has only one child, return it
-  else if (isPostElementUnknown(shallowCopy) && shallowCopy.content.length === 1) {
-    return shallowCopy.content[0];
+  if (isPostElementUnknown(shallowCopy) && shallowCopy.content.length === 1) {
+    return reducePostElement(shallowCopy.content[0]);
   }
+
+  // Reduce element's childs
+  shallowCopy.content = shallowCopy.content.map((e) => reducePostElement(e));
+
   return shallowCopy;
 }
 
-function removeEmptyElement(element: IPostElement): IPostElement {
-  // Create a copy of the content
-  const contentCopy = [...element.content];
+/**
+ * Remove all empty children elements of the elements for parameter.
+ */
+function removeEmptyContentFromElement(element: IPostElement, recursive = true): IPostElement {
+  // Create a copy of the element
+  const copy = Object.assign({}, element);
 
-  contentCopy.map((e) => {
-    // Find the non-empty nodes
-    const validNodes = e.content.filter((e) => !isPostElementEmpty(e));
+  // Find the non-empty nodes
+  const validNodes = copy.content.filter((e) => !isPostElementEmpty(e));
 
-    // Clean this element children
-    const cleanNodes = validNodes.map((e) => removeEmptyElement(e));
+  // Reduce nested contents if recursive
+  if (recursive) validNodes.forEach((e) => removeEmptyContentFromElement(e));
 
-    // Assign the nodes
-    e.content = cleanNodes;
-  });
-
-  const copy: IPostElement = Object.assign({}, element);
-  copy.content = contentCopy;
+  // Assign the nodes
+  copy.content = validNodes;
 
   return copy;
 }
@@ -340,7 +321,7 @@ function removeEmptyElement(element: IPostElement): IPostElement {
  */
 function parseCheerioNode($: cheerio.Root, node: cheerio.Element): IPostElement {
   // Local variables
-  let post: IPostElement = createEmptyElement();
+  let post: IPostElement = createGenericElement();
   const cheerioNode = $(node);
 
   // Parse the node
@@ -349,14 +330,17 @@ function parseCheerioNode($: cheerio.Root, node: cheerio.Element): IPostElement 
     else if (isSpoilerNode(cheerioNode)) post = parseCheerioSpoilerNode($, cheerioNode);
     else if (isLinkNode(node)) post = parseCheerioLinkNode(cheerioNode);
 
-    // Parse the node's childrens
-    const childPosts = cheerioNode
-      .contents() // @todo Change to children() after cheerio RC6
-      .toArray()
-      .filter((el) => el) // Ignore undefined elements
-      .map((el) => parseCheerioNode($, el))
-      .filter((el) => !isPostElementEmpty(el));
-    post.content.push(...childPosts);
+    // Avoid duplication of link name
+    if (!isLinkNode(node)) {
+      // Parse the node's childrens
+      const childPosts = cheerioNode
+        .contents() // @todo Change to children() after cheerio RC6
+        .toArray()
+        .filter((el) => el) // Ignore undefined elements
+        .map((el) => parseCheerioNode($, el))
+        .filter((el) => !isPostElementEmpty(el));
+      post.content.push(...childPosts);
+    }
   }
 
   return post;
@@ -366,7 +350,7 @@ function parseCheerioNode($: cheerio.Root, node: cheerio.Element): IPostElement 
  * It simplifies the `IPostElement` elements by associating
  * the corresponding value to each characterizing element (i.e. author).
  */
-function associateElementsWithName(elements: IPostElement[]): IPostElement[] {
+function associateNameToElements(elements: IPostElement[]): IPostElement[] {
   // Local variables
   const pairs: IPostElement[] = [];
   const specialCharsRegex = /^[-!$%^&*()_+|~=`{}[\]:";'<>?,./]/;
