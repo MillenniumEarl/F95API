@@ -104,7 +104,7 @@ async function main() {
     if (searchResult.length !== 0) {
       // Extract first game
       const gamedata = searchResult.shift();
-      const authors = gamedata.authors.map((a, idx) => a.name).join(", ");
+      const authors = gamedata.authors.map((a) => a.name).join(", ");
       console.log(`Found: ${gamedata.name} (${gamedata.version}) by ${authors}\n`);
     } else console.log(`No data found for '${gamename}'\n`);
   }
