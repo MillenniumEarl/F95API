@@ -28,15 +28,11 @@ import {
   LatestSearchQuery,
   Game,
   searchHandiwork,
-  HandiworkSearchQuery,
-  Asset,
-  getHandiworkFromURL
+  HandiworkSearchQuery
 } from "./index";
 
 // Configure the .env reader
 dotenv.config();
-
-main();
 
 /**
  * Ask the user to enter the OTP code
@@ -56,39 +52,52 @@ async function insert2faCode(): Promise<number> {
   return answers.code as number;
 }
 
-async function main() {
-  // Local variables
-  const gameList = ["City of broken dreamers", "Seeds of chaos", "MIST"];
-
+/**
+ * Authenticate on the platform.
+ */
+async function authenticate(): Promise<boolean> {
   // Log in the platform
   console.log("Authenticating...");
   const result = await login(process.env.F95_USERNAME, process.env.F95_PASSWORD, insert2faCode);
   console.log(`Authentication result: ${result.message}\n`);
 
-  // Manage failed login
-  if (!result.success) {
-    console.log("Failed authentication, impossible to continue");
-    return;
-  }
+  return result.success;
+}
 
-  // Get user data
+/**
+ * Fetch and show data of the current logger user.
+ */
+async function fetchUserData(): Promise<void> {
   console.log("Fetching user data...");
-  const userdata = await getUserData();
-  const gameThreads = userdata.watched.filter((e) => e.forum === "Games").length;
-  console.log(
-    `${userdata.name} follows ${userdata.watched.length} threads of which ${gameThreads} are games\n`
-  );
 
-  // Get latest game update
+  const userdata = await getUserData();
+
+  const gameThreads = userdata.watched.filter((e) => e.forum === "Games");
+  const unread = gameThreads.filter((e) => e.unread).length;
+
+  console.log(`User: ${userdata.name}`);
+  console.log(`Threads followed: ${userdata.watched.length}`);
+  console.log(`Games followed: ${gameThreads.length}`);
+  console.log(`Unread game threads: ${unread}\n`);
+}
+
+/**
+ * Fetch the data of the latest `3D game` updated.
+ */
+async function fetchLatestGameInfo(): Promise<void> {
   const latestQuery: LatestSearchQuery = new LatestSearchQuery();
   latestQuery.category = "games";
   latestQuery.includedTags = ["3d game"];
 
   const latestUpdates = await getLatestUpdates<Game>(latestQuery, 1);
   console.log(`"${latestUpdates.shift().name}" was the last "3d game" tagged game to be updated\n`);
+}
 
-  // Get game data
-  for (const gamename of gameList) {
+/**
+ * Fetch data of the games given theirs names.
+ */
+async function fetchGameData(games: string[]): Promise<void> {
+  for (const gamename of games) {
     console.log(`Searching '${gamename}'...`);
 
     // Prepare the query
@@ -109,3 +118,19 @@ async function main() {
     } else console.log(`No data found for '${gamename}'\n`);
   }
 }
+
+async function main() {
+  if (await authenticate()) {
+    // Fetch and log user data
+    await fetchUserData();
+
+    // Get latest `3D GAME` game updated
+    await fetchLatestGameInfo();
+
+    // Get game data
+    const gameList = ["City of broken dreamers", "Seeds of chaos", "MIST"];
+    await fetchGameData(gameList);
+  } else console.log("Failed authentication, impossible to continue");
+}
+
+main();
