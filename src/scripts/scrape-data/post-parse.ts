@@ -10,15 +10,36 @@ import { POST } from "../constants/css-selector";
 
 //#region Interfaces
 
+/**
+ * Represents an element contained in the post.
+ */
 export interface IPostElement {
+  /**
+   * Type of element.
+   */
   type: "Generic" | "Text" | "Link" | "Image" | "Spoiler";
+  /**
+   * Name associated with the element.
+   */
   name: string;
+  /**
+   * Text of the content of the element excluding any children.
+   */
   text: string;
+  /**
+   * Children elements contained in this element.
+   */
   content: IPostElement[];
 }
 
+/**
+ * Represents a link type link in the post.
+ */
 export interface ILink extends IPostElement {
   type: "Image" | "Link";
+  /**
+   * Link to the resource.
+   */
   href: string;
 }
 
