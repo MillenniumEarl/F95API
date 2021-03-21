@@ -206,7 +206,7 @@ function fillWithPostData(hw: HandiWork, elements: IPostElement[]) {
   if (censored) hw.censored = stringToBoolean(censored.text);
 
   // Get the genres
-  const genre = getPostElementByName(elements, "genre")?.content.shift()?.text;
+  const genre = getPostElementByName(elements, "genre")?.text;
   hw.genre = genre
     ?.split(",")
     .map((s) => s.trim())
