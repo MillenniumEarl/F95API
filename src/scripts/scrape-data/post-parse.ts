@@ -118,8 +118,8 @@ function isLinkNode(node: cheerio.Element): boolean {
 
   // The node is a valid DOM element
   if (node.type === "tag") {
-    const el = node as cheerio.TagElement;
-    valid = el.name === "a" || el.name === "img";
+    const e = node as cheerio.TagElement;
+    valid = e.name === "a" || e.name === "img";
   }
 
   return valid;
@@ -189,7 +189,7 @@ function parseCheerioSpoilerNode($: cheerio.Root, node: cheerio.Cheerio): IPostE
     .find(POST.SPOILER_CONTENT)
     .contents()
     .toArray()
-    .map((el) => parseCheerioNode($, el));
+    .map((e) => parseCheerioNode($, e));
 
   // Clean text (Spoiler has no text) @todo
   // spoiler.text = spoiler.text.replace(/\s\s+/g, " ").trim();
@@ -320,7 +320,7 @@ function getCheerioNonChildrenText(node: cheerio.Cheerio): string {
     text = node
       .first()
       .contents() // @todo Change to children() after cheerio RC6
-      .filter((idx, el) => isTextNode(el))
+      .filter((idx, e) => isTextNode(e))
       .text();
   }
 
