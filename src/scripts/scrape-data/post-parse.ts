@@ -494,6 +494,13 @@ function pairUp(elements: IPostElement[]): IPostElement[] {
   return data;
 }
 
+/**
+ * Associate the relative values to a title.
+ * @param start Title index in the `elements` array
+ * @param index `start` index in `indexes`
+ * @param indexes List of titles indices in the `elements` array
+ * @param elements Array of elements to group
+ */
 function parseGroupData(
   start: number,
   index: number,
