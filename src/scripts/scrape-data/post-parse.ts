@@ -325,11 +325,13 @@ function removeEmptyContentFromElement(element: IPostElement, recursive = true):
   // Create a copy of the element
   const copy = Object.assign({}, element);
 
-  // Find the non-empty nodes
-  const validNodes = copy.content.filter((e) => !isPostElementEmpty(e));
-
   // Reduce nested contents if recursive
-  if (recursive) validNodes.forEach((e) => removeEmptyContentFromElement(e));
+  const recursiveResult = recursive
+    ? element.content.map((e) => removeEmptyContentFromElement(e))
+    : copy.content;
+
+  // Find the non-empty nodes
+  const validNodes = recursiveResult.filter((e) => !isPostElementEmpty(e));
 
   // Assign the nodes
   copy.content = validNodes;
@@ -351,8 +353,10 @@ function parseCheerioNode($: cheerio.Root, node: cheerio.Element): IPostElement 
     else if (isSpoilerNode(cheerioNode)) post = parseCheerioSpoilerNode($, cheerioNode);
     else if (isLinkNode(node)) post = parseCheerioLinkNode(cheerioNode);
 
-    // Avoid duplication of link name
-    if (!isLinkNode(node)) {
+    // Check for childrens only if the node is a <b>/<i> element.
+    // For the link in unnecessary while for the spoilers is
+    // already done in parseCheerioSpoilerNode
+    if (isFormattingNode(node)) {
       // Parse the node's childrens
       const childPosts = cheerioNode
         .contents() // @todo Change to children() after cheerio RC6
@@ -479,7 +483,8 @@ function parseGroupData(
         .replace(endsWithSpecialCharsRegex, "") // Remove any special chars at the end
         .trim()
     )
-    .join(" "); // Join with space
+    .join(" ") // Join with space
+    .trim();
 
   // Append all the content of non-text elements.
   group
