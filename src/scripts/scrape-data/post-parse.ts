@@ -419,7 +419,7 @@ function associateNameToElements(elements: IPostElement[]): IPostElement[] {
     }
   }
 
-  return pairs;
+  return pairUp(elements);
 }
 
 function pairUp(elements: IPostElement[]): IPostElement[] {
@@ -463,7 +463,7 @@ function parseGroupData(
   elements: IPostElement[]
 ): IPostElement {
   // Local variables
-  const endsWithSpecialCharsRegex = /[-!$%^&*()_+|~=`{}[\]:";'<>?,./]$/;
+  const endsWithSpecialCharsRegex = /[-]$/;
   const startsWithDoublePointsRegex = /^[:]/;
 
   // Find all the elements (title + data) of the same data group
