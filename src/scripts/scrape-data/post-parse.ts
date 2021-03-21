@@ -390,10 +390,11 @@ function parseCheerioNode($: cheerio.Root, node: cheerio.Element): IPostElement 
     ? functionMap[type]($(node))
     : createGenericElement();
 
-  // Parse the childrens only if the node is a <b>/<i> element
-  // or a list element. For the link in unnecessary while for
-  // the spoilers is already done in parseCheerioSpoilerNode
-  if (type === "Formatted" || type === "List") {
+  // Parse the childrens only if the node is a <b>/<i> element, a list
+  // or a unknown element. For the link in unnecessary while for the
+  // spoilers is already done in parseCheerioSpoilerNode
+  const includeTypes: NodeTypeT[] = ["Formatted", "List", "Unknown"];
+  if (includeTypes.includes(type)) {
     const childPosts = cheerioNode
       .contents() // @todo Change to children() after cheerio RC6
       .toArray()
@@ -411,37 +412,66 @@ function parseCheerioNode($: cheerio.Root, node: cheerio.Element): IPostElement 
  * the corresponding value to each characterizing element (i.e. author).
  */
 function pairUpElements(elements: IPostElement[]): IPostElement[] {
-  // First ignore the "Generic" type elements, because
-  // they usually are containers for other data, like
-  // overview or download links.
-  const validElements = elements.filter((e) => e.type !== "Generic");
+  // Local variables
+  const shallow = [...elements];
+
+  // Parse all the generic elements that
+  // act as "container" for other information
+  shallow
+    .filter((e) => e.type === "Generic")
+    .map((e) => ({
+      element: e,
+      pairs: pairUpElements(e.content)
+    }))
+    .forEach((e) => {
+      // Find the index of the elements
+      const index = shallow.indexOf(e.element);
+
+      // Remove that elements
+      shallow.splice(index, 1);
+
+      // Add the pairs at the index of the deleted element
+      e.pairs.forEach((e, i) => shallow.splice(index + i, 0, e));
+    });
+
+  // Ignore the "Generic" elements that we have already parsed
+  //const validElements = shallow.filter((e) => e.type !== "Generic");
 
   // Than we find all the IDs of "Text" elements where the
   // text doesn't starts with double points. This means
   // that we find all the IDs of "title" elements.
-  const indexes = validElements
-    .filter(
-      (e, i) =>
-        e.type === "Text" && // This element must be a text
-        ((e.text.endsWith(":") && e.text !== ":") || // This element's text must ends with ":"
-          validElements[i + 1]?.text.startsWith(":")) // The next element's text must start with ":"
-    )
-    .map((e) => validElements.indexOf(e));
+  const indexes = shallow
+    .filter((e, i) => filterValidElements(e, i, shallow))
+    .map((e) => shallow.indexOf(e));
 
   // Now we find all the elements between indexes and
   // associate them with the previous "title" element
-  const data = indexes.map((i, j) => parseGroupData(i, j, indexes, validElements));
-
-  // Now parse all the "invalid" elements,
-  // so all the elements with "Generic" type
-  const genericElementsPairs = elements
-    .filter((e) => e.type === "Generic")
-    .map((e) => pairUpElements(e.content));
-
-  const flatten: IPostElement[] = [].concat(...genericElementsPairs);
-  data.push(...flatten);
+  const data = indexes.map((i, j) => parseGroupData(i, j, indexes, shallow));
 
   return data;
+}
+
+function filterValidElements(element: IPostElement, index: number, array: IPostElement[]): boolean {
+  // Check if this element is a "title" checking also the next element
+  const isPostfixDoublePoints = element.text.endsWith(":") && element.text !== ":";
+  const nextElementIsValue = array[index + 1]?.text.startsWith(":");
+  const elementIsTextTitle =
+    element.type === "Text" && (isPostfixDoublePoints || nextElementIsValue);
+
+  // Special values tha must be set has "title"
+  const specialValues = ["DOWNLOAD"];
+  const specialTypes = ["Image"];
+
+  // Used to ignore already merged elements with name (ignore spoilers)
+  // because they have as name the content of the spoiler button
+  const hasName = element.name !== "" && element.type !== "Spoiler";
+
+  return (
+    elementIsTextTitle ||
+    specialTypes.includes(element.type) ||
+    specialValues.includes(element.text.toUpperCase()) ||
+    hasName
+  );
 }
 
 /**
@@ -458,7 +488,7 @@ function parseGroupData(
   elements: IPostElement[]
 ): IPostElement {
   // Local variables
-  const endsWithSpecialCharsRegex = /[-]$/;
+  const endsWithSpecialCharsRegex = /[-:]$/;
   const startsWithDoublePointsRegex = /^[:]/;
 
   // Find all the elements (title + data) of the same data group
@@ -467,6 +497,10 @@ function parseGroupData(
 
   // Extract the title
   const title = group.shift();
+
+  // If the title is already named (beacuse it was
+  // previously elaborated) return it witout
+  if (title.name !== "" && title.type !== "Spoiler") return title;
 
   // Assign name and text of the title
   title.name = title.text.replace(endsWithSpecialCharsRegex, "").trim();
@@ -481,15 +515,13 @@ function parseGroupData(
     .join(" ") // Join with space
     .trim();
 
-  // Append all the content of non-text elements.
-  group
-    .filter((e) => e.type !== "Text")
-    .forEach(
-      (e) =>
-        e.type === "Spoiler"
-          ? title.content.push(...e.content) // Add all the content fo the spoiler
-          : title.content.push(e) // Add the element itself
-    );
+  // Append all the content of the elements.
+  group.forEach(
+    (e) =>
+      e.type === "Spoiler"
+        ? title.content.push(...e.content) // Add all the content fo the spoiler
+        : title.content.push(e) // Add the element itself
+  );
 
   return title;
 }
