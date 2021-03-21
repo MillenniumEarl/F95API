@@ -193,7 +193,7 @@ function fillWithPostData(hw: HandiWork, elements: IPostElement[]) {
     ?.text?.split(",")
     .map((s) => s.trim());
   hw.version = getPostElementByName(elements, "version")?.text;
-  hw.installation = getPostElementByName(elements, "installation")?.content.shift()?.text;
+  hw.installation = getPostElementByName(elements, "installation")?.text;
   hw.pages = getPostElementByName(elements, "pages")?.text;
   hw.resolution = getPostElementByName(elements, "resolution")
     ?.text?.split(",")
