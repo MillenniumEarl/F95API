@@ -213,9 +213,7 @@ function fillWithPostData(hw: HandiWork, elements: IPostElement[]) {
     .filter((s) => s !== "");
 
   // Get the cover
-  const cover = getPostElementByName(elements, "overview")?.content.find(
-    (el) => el.type === "Image"
-  ) as ILink;
+  const cover = elements.find((e) => e.type === "Image") as ILink;
   hw.cover = cover?.href;
 
   // Fill the dates
