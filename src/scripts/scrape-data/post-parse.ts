@@ -162,8 +162,8 @@ function parseCheerioSpoilerNode($: cheerio.Root, node: cheerio.Cheerio): IPostE
     .toArray()
     .map((el) => parseCheerioNode($, el));
 
-  // Clean text
-  spoiler.text = spoiler.text.replace(/\s\s+/g, " ").trim();
+  // Clean text (Spoiler has no text) @todo
+  // spoiler.text = spoiler.text.replace(/\s\s+/g, " ").trim();
   return spoiler;
 }
 
@@ -307,7 +307,7 @@ function reducePostElement(element: IPostElement): IPostElement {
   // Local variables
   const shallowCopy = Object.assign({}, element);
 
-  // If the node has only one child, return it
+  // If the node has only one child, reduce and return it
   if (isPostElementUnknown(shallowCopy) && shallowCopy.content.length === 1) {
     return reducePostElement(shallowCopy.content[0]);
   }
