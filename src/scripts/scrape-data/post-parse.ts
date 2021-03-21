@@ -446,9 +446,7 @@ function pairUpElements(elements: IPostElement[]): IPostElement[] {
 
   // Now we find all the elements between indexes and
   // associate them with the previous "title" element
-  const data = indexes.map((i, j) => parseGroupData(i, j, indexes, shallow));
-
-  return data;
+  return indexes.map((i, j) => parseGroupData(i, j, indexes, shallow));
 }
 
 function filterValidElements(element: IPostElement, index: number, array: IPostElement[]): boolean {
