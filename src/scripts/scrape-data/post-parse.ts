@@ -78,7 +78,7 @@ export function parseF95ThreadPost($: cheerio.Root, post: cheerio.Cheerio): IPos
   supernode = removeEmptyContentFromElement(supernode);
 
   // Finally parse the elements to create the pairs of title/data
-  return associateNameToElements(supernode.content);
+  return pairUpElements(supernode.content);
 }
 
 //#endregion Public methods
@@ -410,57 +410,7 @@ function parseCheerioNode($: cheerio.Root, node: cheerio.Element): IPostElement 
  * It simplifies the `IPostElement` elements by associating
  * the corresponding value to each characterizing element (i.e. author).
  */
-function associateNameToElements(elements: IPostElement[]): IPostElement[] {
-  // Local variables
-  const pairs: IPostElement[] = [];
-  const specialCharsRegex = /^[-!$%^&*()_+|~=`{}[\]:";'<>?,./]/;
-  const specialRegex = new RegExp(specialCharsRegex);
-
-  for (let i = 0; i < elements.length; i++) {
-    // If the text starts with a special char, clean it
-    const startWithSpecial = specialRegex.test(elements[i].text);
-
-    // Get the latest IPostElement in "pairs"
-    const lastIndex = pairs.length - 1;
-    const lastPair = pairs[lastIndex];
-
-    // If this statement is valid, we have a "data"
-    if (elements[i].type === "Text" && startWithSpecial && pairs.length > 0) {
-      // We merge this element with the last element appended to 'pairs'
-      const cleanText = elements[i].text.replace(specialCharsRegex, "").trim();
-      lastPair.text = lastPair.text || cleanText;
-      lastPair.content.push(...elements[i].content);
-    }
-    // This is a special case
-    else if (elementIsOverview(elements[i])) {
-      // We add the overview to the pairs as a text element
-      elements[i].type = "Text";
-      elements[i].name = "Overview";
-      elements[i].text = getOverviewFromElement(elements[i]);
-      pairs.push(elements[i]);
-    }
-    // We have an element referred to the previous "title"
-    else if (elements[i].type != "Text" && pairs.length > 0) {
-      // We append this element to the content of the last title
-      lastPair.content.push(elements[i]);
-    }
-    // ... else we have a "title" (we need to swap the text to the name because it is a title)
-    else {
-      const swap: IPostElement = Object.assign({}, elements[i]);
-      swap.name = elements[i].text;
-      swap.text = "";
-      pairs.push(swap);
-    }
-  }
-
-  return pairUp(elements);
-}
-
-/**
- * It simplifies the `IPostElement` elements by associating
- * the corresponding value to each characterizing element (i.e. author).
- */
-function pairUp(elements: IPostElement[]): IPostElement[] {
+function pairUpElements(elements: IPostElement[]): IPostElement[] {
   // First ignore the "Generic" type elements, because
   // they usually are containers for other data, like
   // overview or download links.
@@ -486,7 +436,7 @@ function pairUp(elements: IPostElement[]): IPostElement[] {
   // so all the elements with "Generic" type
   const genericElementsPairs = elements
     .filter((e) => e.type === "Generic")
-    .map((e) => pairUp(e.content));
+    .map((e) => pairUpElements(e.content));
 
   const flatten: IPostElement[] = [].concat(...genericElementsPairs);
   data.push(...flatten);
