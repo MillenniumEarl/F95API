@@ -129,6 +129,13 @@ function isNoScriptNode(node: cheerio.Element): boolean {
   return node.type === "tag" && node.name === "noscript";
 }
 
+/**
+ * Check if the node is a list element, i.e. `<li>` or `<ul>` tag.
+ */
+function isListNode(node: cheerio.Element): boolean {
+  return node.type === "tag" && (node.name === "ul" || node.name === "li");
+}
+
 //#endregion Node Type
 
 //#region Parse Cheerio node
@@ -353,10 +360,10 @@ function parseCheerioNode($: cheerio.Root, node: cheerio.Element): IPostElement 
     else if (isSpoilerNode(cheerioNode)) post = parseCheerioSpoilerNode($, cheerioNode);
     else if (isLinkNode(node)) post = parseCheerioLinkNode(cheerioNode);
 
-    // Check for childrens only if the node is a <b>/<i> element.
-    // For the link in unnecessary while for the spoilers is
-    // already done in parseCheerioSpoilerNode
-    if (isFormattingNode(node)) {
+    // Check for childrens only if the node is a <b>/<i> element
+    // or a list element. For the link in unnecessary while for
+    // the spoilers is already done in parseCheerioSpoilerNode
+    if (isFormattingNode(node) || isListNode(node)) {
       // Parse the node's childrens
       const childPosts = cheerioNode
         .contents() // @todo Change to children() after cheerio RC6
@@ -380,7 +387,6 @@ function associateNameToElements(elements: IPostElement[]): IPostElement[] {
   const pairs: IPostElement[] = [];
   const specialCharsRegex = /^[-!$%^&*()_+|~=`{}[\]:";'<>?,./]/;
   const specialRegex = new RegExp(specialCharsRegex);
-  const x = pairUp(elements);
 
   for (let i = 0; i < elements.length; i++) {
     // If the text starts with a special char, clean it
