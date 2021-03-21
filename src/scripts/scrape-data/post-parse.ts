@@ -8,6 +8,9 @@
 // Import from files
 import { POST } from "../constants/css-selector";
 
+// Types
+type NodeTypeT = "Text" | "Formatted" | "Spoiler" | "Link" | "List" | "Noscript" | "Unknown";
+
 //#region Interfaces
 
 /**
@@ -134,6 +137,25 @@ function isNoScriptNode(node: cheerio.Element): boolean {
  */
 function isListNode(node: cheerio.Element): boolean {
   return node.type === "tag" && (node.name === "ul" || node.name === "li");
+}
+
+/**
+ * Idetnify the type of node passed by parameter.
+ */
+function nodeType($: cheerio.Root, node: cheerio.Element): NodeTypeT {
+  // Function map
+  const functionMap = {
+    Text: (node: cheerio.Element) => isTextNode(node) && !isFormattingNode(node),
+    Formatted: (node: cheerio.Element) => isFormattingNode(node),
+    Spoiler: (node: cheerio.Element) => isSpoilerNode($(node)),
+    Link: (node: cheerio.Element) => isLinkNode(node),
+    List: (node: cheerio.Element) => isListNode(node),
+    Noscript: (node: cheerio.Element) => isNoScriptNode(node)
+  };
+
+  // Parse and return the type of the node
+  const result = Object.keys(functionMap).find((e) => functionMap[e](node));
+  return result ? (result as NodeTypeT) : "Unknown";
 }
 
 //#endregion Node Type
@@ -351,28 +373,34 @@ function removeEmptyContentFromElement(element: IPostElement, recursive = true):
  */
 function parseCheerioNode($: cheerio.Root, node: cheerio.Element): IPostElement {
   // Local variables
-  let post: IPostElement = createGenericElement();
   const cheerioNode = $(node);
 
-  // Parse the node
-  if (!isNoScriptNode(node)) {
-    if (isTextNode(node) && !isFormattingNode(node)) post = parseCheerioTextNode(cheerioNode);
-    else if (isSpoilerNode(cheerioNode)) post = parseCheerioSpoilerNode($, cheerioNode);
-    else if (isLinkNode(node)) post = parseCheerioLinkNode(cheerioNode);
+  // Function mapping
+  const functionMap = {
+    Text: (node: cheerio.Cheerio) => parseCheerioTextNode(node),
+    Spoiler: (node: cheerio.Cheerio) => parseCheerioSpoilerNode($, node),
+    Link: (node: cheerio.Cheerio) => parseCheerioLinkNode(node)
+  };
 
-    // Check for childrens only if the node is a <b>/<i> element
-    // or a list element. For the link in unnecessary while for
-    // the spoilers is already done in parseCheerioSpoilerNode
-    if (isFormattingNode(node) || isListNode(node)) {
-      // Parse the node's childrens
-      const childPosts = cheerioNode
-        .contents() // @todo Change to children() after cheerio RC6
-        .toArray()
-        .filter((el) => el) // Ignore undefined elements
-        .map((el) => parseCheerioNode($, el))
-        .filter((el) => !isPostElementEmpty(el));
-      post.content.push(...childPosts);
-    }
+  // Get the type of node
+  const type = nodeType($, node);
+
+  // Get the post based on the type of node
+  const post = Object.keys(functionMap).includes(type)
+    ? functionMap[type]($(node))
+    : createGenericElement();
+
+  // Parse the childrens only if the node is a <b>/<i> element
+  // or a list element. For the link in unnecessary while for
+  // the spoilers is already done in parseCheerioSpoilerNode
+  if (type === "Formatted" || type === "List") {
+    const childPosts = cheerioNode
+      .contents() // @todo Change to children() after cheerio RC6
+      .toArray()
+      .filter((e) => e) // Ignore undefined elements
+      .map((e) => parseCheerioNode($, e))
+      .filter((e) => !isPostElementEmpty(e));
+    post.content.push(...childPosts);
   }
 
   return post;
@@ -428,6 +456,10 @@ function associateNameToElements(elements: IPostElement[]): IPostElement[] {
   return pairUp(elements);
 }
 
+/**
+ * It simplifies the `IPostElement` elements by associating
+ * the corresponding value to each characterizing element (i.e. author).
+ */
 function pairUp(elements: IPostElement[]): IPostElement[] {
   // First ignore the "Generic" type elements, because
   // they usually are containers for other data, like
