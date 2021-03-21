@@ -376,6 +376,7 @@ function associateNameToElements(elements: IPostElement[]): IPostElement[] {
   const pairs: IPostElement[] = [];
   const specialCharsRegex = /^[-!$%^&*()_+|~=`{}[\]:";'<>?,./]/;
   const specialRegex = new RegExp(specialCharsRegex);
+  const x = pairUp(elements);
 
   for (let i = 0; i < elements.length; i++) {
     // If the text starts with a special char, clean it
@@ -415,6 +416,82 @@ function associateNameToElements(elements: IPostElement[]): IPostElement[] {
   }
 
   return pairs;
+}
+
+function pairUp(elements: IPostElement[]): IPostElement[] {
+  // First ignore the "Generic" type elements, because
+  // they usually are containers for other data, like
+  // overview or download links.
+  const validElements = elements.filter((e) => e.type !== "Generic");
+
+  // Than we find all the IDs of "Text" elements where the
+  // text doesn't starts with double points. This means
+  // that we find all the IDs of "title" elements.
+  const indexes = validElements
+    .filter(
+      (e, i) =>
+        e.type === "Text" && // This element must be a text
+        ((e.text.endsWith(":") && e.text !== ":") || // This element's text must ends with ":"
+          validElements[i + 1]?.text.startsWith(":")) // The next element's text must start with ":"
+    )
+    .map((e) => validElements.indexOf(e));
+
+  // Now we find all the elements between indexes and
+  // associate them with the previous "title" element
+  const data = indexes.map((i, j) => parseGroupData(i, j, indexes, validElements));
+
+  // Now parse all the "invalid" elements,
+  // so all the elements with "Generic" type
+  const genericElementsPairs = elements
+    .filter((e) => e.type === "Generic")
+    .map((e) => pairUp(e.content));
+
+  const flatten: IPostElement[] = [].concat(...genericElementsPairs);
+  data.push(...flatten);
+
+  return data;
+}
+
+function parseGroupData(
+  start: number,
+  index: number,
+  indexes: number[],
+  elements: IPostElement[]
+): IPostElement {
+  // Local variables
+  const endsWithSpecialCharsRegex = /[-!$%^&*()_+|~=`{}[\]:";'<>?,./]$/;
+  const startsWithDoublePointsRegex = /^[:]/;
+
+  // Find all the elements (title + data) of the same data group
+  const nextIndex = indexes[index + 1] ?? elements.length;
+  const group = elements.slice(start, nextIndex);
+
+  // Extract the title
+  const title = group.shift();
+
+  // Assign name and text of the title
+  title.name = title.text.replace(endsWithSpecialCharsRegex, "").trim();
+  title.text = group
+    .filter((e) => e.type === "Text")
+    .map((e) =>
+      e.text
+        .replace(startsWithDoublePointsRegex, "") // Remove the starting ":" from the element's text
+        .replace(endsWithSpecialCharsRegex, "") // Remove any special chars at the end
+        .trim()
+    )
+    .join(" "); // Join with space
+
+  // Append all the content of non-text elements.
+  group
+    .filter((e) => e.type !== "Text")
+    .forEach(
+      (e) =>
+        e.type === "Spoiler"
+          ? title.content.push(...e.content) // Add all the content fo the spoiler
+          : title.content.push(e) // Add the element itself
+    );
+
+  return title;
 }
 
 //#endregion Private methods
