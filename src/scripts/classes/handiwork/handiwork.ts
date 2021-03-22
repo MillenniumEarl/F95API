@@ -6,7 +6,15 @@
 "use strict";
 
 // Modules from files
-import { TAuthor, TRating, IHandiwork, TEngine, TCategory, TStatus } from "../../interfaces";
+import {
+  TAuthor,
+  TRating,
+  IHandiwork,
+  TEngine,
+  TCategory,
+  TStatus,
+  TChangelog
+} from "../../interfaces";
 
 /**
  * It represents a generic work, be it a game, a comic, an animation or an asset.
@@ -25,7 +33,7 @@ export default class HandiWork implements IHandiwork {
   version: string;
   authors: TAuthor[];
   category: TCategory;
-  changelog: string[];
+  changelog: TChangelog[];
   cover: string;
   id: number;
   lastThreadUpdate: Date;

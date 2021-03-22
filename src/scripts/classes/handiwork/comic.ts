@@ -6,7 +6,7 @@
 "use strict";
 
 // Modules from files
-import { TAuthor, IComic, TRating, TCategory } from "../../interfaces";
+import { TAuthor, IComic, TRating, TCategory, TChangelog } from "../../interfaces";
 
 export default class Comic implements IComic {
   //#region Properties
@@ -15,7 +15,7 @@ export default class Comic implements IComic {
   resolution: string[];
   authors: TAuthor[];
   category: TCategory;
-  changelog: string[];
+  changelog: TChangelog[];
   cover: string;
   id: number;
   lastThreadUpdate: Date;
