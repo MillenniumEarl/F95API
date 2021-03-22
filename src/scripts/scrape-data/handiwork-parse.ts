@@ -220,34 +220,15 @@ function fillWithPostData(hw: HandiWork, elements: IPostElement[]) {
   const releaseDate = getPostElementByName(elements, "release date")?.text;
   if (DateTime.fromISO(releaseDate).isValid) hw.lastRelease = new Date(releaseDate);
 
-  //#region Convert the author
-  const authorElement =
-    getPostElementByName(elements, "developer") ||
-    getPostElementByName(elements, "developer/publisher") ||
-    getPostElementByName(elements, "artist");
-  const author: TAuthor = {
-    name: authorElement?.text,
-    platforms: []
-  };
-
-  // Add the found platforms
-  authorElement?.content.forEach((el: ILink, idx) => {
-    const platform: TExternalPlatform = {
-      name: el.text,
-      link: el.href
-    };
-
-    author.platforms.push(platform);
-  });
-  hw.authors = [author];
-  //#endregion Convert the author
+  // Get the author
+  hw.authors = parseAuthor(elements);
 
   //#region Get the changelog
   hw.changelog = [];
   const changelogElement =
     getPostElementByName(elements, "changelog") || getPostElementByName(elements, "change-log");
 
-  if (changelogElement?.content) {
+  if (false && changelogElement?.content) {
     const changelogSpoiler = changelogElement.content.find(
       (el) => el.type === "Spoiler" && el.content.length > 0
     );
@@ -262,6 +243,44 @@ function fillWithPostData(hw: HandiWork, elements: IPostElement[]) {
     hw.changelog.push(changelogSpoiler.text);
   }
   //#endregion Get the changelog
+}
+
+/**
+ * Parse the author from the post's data.
+ */
+function parseAuthor(elements: IPostElement[]): TAuthor[] {
+  // Local variables
+  const author: TAuthor = {
+    name: "",
+    platforms: []
+  };
+
+  // Fetch the authors from the post data
+  const authorElement =
+    getPostElementByName(elements, "developer") ||
+    getPostElementByName(elements, "developer/publisher") ||
+    getPostElementByName(elements, "artist");
+
+  if (authorElement) {
+    // Set the author name
+    author.name = authorElement.text;
+
+    // Add the found platforms
+    authorElement.content.forEach((e: ILink) => {
+      // Ignore invalid links
+      if (e.href) {
+        // Create and push the new platform
+        const platform: TExternalPlatform = {
+          name: e.text,
+          link: e.href
+        };
+
+        author.platforms.push(platform);
+      }
+    });
+  }
+
+  return [author];
 }
 
 //#endregion Private methods
