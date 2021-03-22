@@ -293,6 +293,29 @@ function createGenericElement(): IPostElement {
   };
 }
 
+/**
+ * Clean the element `name` and `text` removing initial and final special characters.
+ */
+function cleanElement(element: IPostElement): IPostElement {
+  // Local variables
+  const shallow = Object.assign({}, element);
+  const specialCharSet = /[-!$%^&*()_+|~=`{}[\]:";'<>?,./]/;
+  const startsWithSpecialCharsRegex = new RegExp("^" + specialCharSet.source);
+  const endsWithSpecialCharsRegex = new RegExp(specialCharSet.source + "$");
+
+  shallow.name = shallow.name
+    .replace(startsWithSpecialCharsRegex, "")
+    .replace(endsWithSpecialCharsRegex, "")
+    .trim();
+
+  shallow.text = shallow.text
+    .replace(startsWithSpecialCharsRegex, "")
+    .replace(endsWithSpecialCharsRegex, "")
+    .trim();
+
+  return shallow;
+}
+
 //#endregion IPostElement utility
 
 /**
@@ -327,7 +350,9 @@ function removeEmptyContentFromElement(element: IPostElement, recursive = true):
     : copy.content;
 
   // Find the non-empty nodes
-  const validNodes = recursiveResult.filter((e) => !isPostElementEmpty(e));
+  const validNodes = recursiveResult
+    .filter((e) => !isPostElementEmpty(e)) // Remove the empty nodes
+    .filter((e) => !isPostElementEmpty(cleanElement(e))); // Remove the useless nodes
 
   // Assign the nodes
   copy.content = validNodes;
@@ -402,11 +427,11 @@ function pairUpElements(elements: IPostElement[]): IPostElement[] {
     });
 
   // Than we find all the IDs of the elements that are "titles".
-  let indexes = shallow
+  const indexes = shallow
     .filter((e, i) => isValidTitleElement(e, i, shallow))
     .map((e) => shallow.indexOf(e));
 
-  if (indexes.length === 0) indexes = shallow.map((e, i) => i);
+  //if (indexes.length === 0) indexes = shallow.map((e, i) => i);
 
   // Now we find all the elements between indexes and
   // associate them with the previous "title" element
