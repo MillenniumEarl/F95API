@@ -52,6 +52,20 @@ export type TRating = {
 };
 
 /**
+ * Information about a single version of the product.
+ */
+export type TChangelog = {
+  /**
+   * Product version.
+   */
+  version: string;
+  /**
+   * Version information.
+   */
+  information: string[];
+};
+
+/**
  * List of possible graphics engines used for game development.
  */
 export type TEngine =
@@ -101,7 +115,7 @@ export interface IBasic {
   /**
    * List of changes of the work for each version.
    */
-  changelog: string[];
+  changelog: TChangelog[];
   /**
    * link to the cover image of the work.
    */

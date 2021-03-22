@@ -6,7 +6,7 @@
 "use strict";
 
 // Modules from files
-import { TAuthor, IAsset, TRating, TCategory } from "../../interfaces";
+import { TAuthor, IAsset, TRating, TCategory, TChangelog } from "../../interfaces";
 
 export default class Asset implements IAsset {
   //#region Properties
@@ -18,7 +18,7 @@ export default class Asset implements IAsset {
   sku: string;
   authors: TAuthor[];
   category: TCategory;
-  changelog: string[];
+  changelog: TChangelog[];
   cover: string;
   id: number;
   lastThreadUpdate: Date;
