@@ -431,8 +431,6 @@ function pairUpElements(elements: IPostElement[]): IPostElement[] {
     .filter((e, i) => isValidTitleElement(e, i, shallow))
     .map((e) => shallow.indexOf(e));
 
-  //if (indexes.length === 0) indexes = shallow.map((e, i) => i);
-
   // Now we find all the elements between indexes and
   // associate them with the previous "title" element
   return indexes.map((i, j) => parseGroupData(i, j, indexes, shallow));
@@ -452,7 +450,7 @@ function isValidTitleElement(element: IPostElement, index: number, array: IPostE
     element.type === "Text" && (isPostfixDoublePoints || nextElementIsValue);
 
   // Special values tha must be set has "title"
-  const specialValues = ["DOWNLOAD"];
+  const specialValues = ["DOWNLOAD", "CHANGELOG", "CHANGE-LOG", "GENRE"];
   const specialTypes = ["Image"];
 
   // Used to ignore already merged elements with name (ignore spoilers)
