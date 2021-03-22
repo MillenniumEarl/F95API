@@ -11,7 +11,7 @@ import { DateTime } from "luxon";
 // Modules from files
 import HandiWork from "../classes/handiwork/handiwork";
 import Thread from "../classes/mapping/thread";
-import { IBasic, TAuthor, TEngine, TExternalPlatform, TStatus } from "../interfaces";
+import { IBasic, TAuthor, TChangelog, TEngine, TExternalPlatform, TStatus } from "../interfaces";
 import shared, { TPrefixDict } from "../shared";
 import { ILink, IPostElement } from "./post-parse";
 
@@ -223,26 +223,8 @@ function fillWithPostData(hw: HandiWork, elements: IPostElement[]) {
   // Get the author
   hw.authors = parseAuthor(elements);
 
-  //#region Get the changelog
-  hw.changelog = [];
-  const changelogElement =
-    getPostElementByName(elements, "changelog") || getPostElementByName(elements, "change-log");
-
-  if (false && changelogElement?.content) {
-    const changelogSpoiler = changelogElement.content.find(
-      (el) => el.type === "Spoiler" && el.content.length > 0
-    );
-
-    // Add to the changelog the single spoilers
-    const spoilers = changelogSpoiler.content
-      .filter((e) => e.text.trim() !== "")
-      .map((e) => e.text);
-    hw.changelog.push(...spoilers);
-
-    // Add at the end also the text of the "changelog" element
-    hw.changelog.push(changelogSpoiler.text);
-  }
-  //#endregion Get the changelog
+  // Get the changelog
+  hw.changelog = parseChangelog(elements);
 }
 
 /**
@@ -281,6 +263,55 @@ function parseAuthor(elements: IPostElement[]): TAuthor[] {
   }
 
   return [author];
+}
+
+/**
+ * Parse the changelog from the post's data.
+ */
+function parseChangelog(elements: IPostElement[]): TChangelog[] {
+  // Local variables
+  const changelog = [];
+  const changelogElement =
+    getPostElementByName(elements, "changelog") || getPostElementByName(elements, "change-log");
+
+  if (changelogElement) {
+    // regex used to match version tags
+    const versionRegex = /^v[0-9]+\.[0-9]+.*/;
+
+    // Get the indexes of the version tags
+    const indexesVersion = changelogElement.content
+      .filter((e) => e.type === "Text" && versionRegex.test(e.text))
+      .map((e) => changelogElement.content.indexOf(e));
+
+    const results = indexesVersion.map((i, j) => {
+      // In-loop variable
+      const versionChangelog: TChangelog = {
+        version: "",
+        information: []
+      };
+
+      // Get the difference in indexes between this and the next version tag
+      const diff = indexesVersion[j + 1] ?? changelogElement.content.length;
+
+      // fetch the group of data of this version tag
+      const group = changelogElement.content.slice(i, diff);
+      versionChangelog.version = group.shift().text.replace("v", "").trim();
+
+      // parse the data
+      group.forEach((e) => {
+        if (e.type === "Generic" || e.type === "Spoiler") {
+          const textes = e.content.map((c) => c.text);
+          versionChangelog.information.push(...textes);
+        } else versionChangelog.information.push(e.text);
+      });
+
+      return versionChangelog;
+    });
+
+    changelog.push(...results);
+  }
+
+  return changelog;
 }
 
 //#endregion Private methods
