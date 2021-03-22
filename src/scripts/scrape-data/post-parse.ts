@@ -9,7 +9,7 @@
 import { POST } from "../constants/css-selector";
 
 // Types
-type NodeTypeT = "Text" | "Formatted" | "Spoiler" | "Link" | "List" | "Noscript" | "Unknown";
+type TNodeType = "Text" | "Formatted" | "Spoiler" | "Link" | "List" | "Noscript" | "Unknown";
 
 //#region Interfaces
 
@@ -142,7 +142,7 @@ function isListNode(node: cheerio.Element): boolean {
 /**
  * Idetnify the type of node passed by parameter.
  */
-function nodeType($: cheerio.Root, node: cheerio.Element): NodeTypeT {
+function nodeType($: cheerio.Root, node: cheerio.Element): TNodeType {
   // Function map
   const functionMap = {
     Text: (node: cheerio.Element) => isTextNode(node) && !isFormattingNode(node),
@@ -155,7 +155,7 @@ function nodeType($: cheerio.Root, node: cheerio.Element): NodeTypeT {
 
   // Parse and return the type of the node
   const result = Object.keys(functionMap).find((e) => functionMap[e](node));
-  return result ? (result as NodeTypeT) : "Unknown";
+  return result ? (result as TNodeType) : "Unknown";
 }
 
 //#endregion Node Type
@@ -360,7 +360,7 @@ function parseCheerioNode($: cheerio.Root, node: cheerio.Element): IPostElement 
   // Parse the childrens only if the node is a <b>/<i> element, a list
   // or a unknown element. For the link in unnecessary while for the
   // spoilers is already done in parseCheerioSpoilerNode
-  const includeTypes: NodeTypeT[] = ["Formatted", "List", "Unknown"];
+  const includeTypes: TNodeType[] = ["Formatted", "List", "Unknown"];
   if (includeTypes.includes(type)) {
     const childPosts = cheerioNode
       .contents() // @todo Change to children() after cheerio RC6
@@ -402,9 +402,11 @@ function pairUpElements(elements: IPostElement[]): IPostElement[] {
     });
 
   // Than we find all the IDs of the elements that are "titles".
-  const indexes = shallow
+  let indexes = shallow
     .filter((e, i) => isValidTitleElement(e, i, shallow))
     .map((e) => shallow.indexOf(e));
+
+  if (indexes.length === 0) indexes = shallow.map((e, i) => i);
 
   // Now we find all the elements between indexes and
   // associate them with the previous "title" element
