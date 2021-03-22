@@ -235,6 +235,31 @@ function parseCheerioTextNode(node: cheerio.Cheerio): IPostElement {
   return content;
 }
 
+/**
+ * Gets the text of the node only, excluding child nodes.
+ * Also includes formatted text elements (i.e. `<b>`).
+ */
+function getCheerioNonChildrenText(node: cheerio.Cheerio): string {
+  // Local variable
+  let text = "";
+
+  // If the node has no children, return the node's text
+  if (node.contents().length === 1) {
+    // @todo Remove IF after cheerio RC6
+    text = node.text();
+  } else {
+    // Find all the text nodes in the node
+    text = node
+      .first()
+      .contents() // @todo Change to children() after cheerio RC6
+      .filter((idx, e) => isTextNode(e))
+      .text();
+  }
+
+  // Clean and return the text
+  return text.replace(/\s\s+/g, " ").trim();
+}
+
 //#endregion Parse Cheerio node
 
 //#region IPostElement utility
@@ -268,65 +293,7 @@ function createGenericElement(): IPostElement {
   };
 }
 
-/**
- * Check if the element contains the overview of a thread (post #1).
- */
-function elementIsOverview(element: IPostElement): boolean {
-  // Search the text element that start with "overview"
-  const result = element.content
-    .filter((e) => e.type === "Text")
-    .find((e) => e.text.toUpperCase().startsWith("OVERVIEW"));
-  return result !== undefined;
-}
-
-/**
- * If the element contains the overview of a thread, parse it.
- */
-function getOverviewFromElement(element: IPostElement): string {
-  // Local variables
-  const alphanumericRegex = new RegExp("[a-zA-Z0-9]+");
-
-  // Get all the text values of the overview
-  const textes = element.content
-    .filter((e) => e.type === "Text")
-    .filter((e) => {
-      const cleanValue = e.text.toUpperCase().replace("OVERVIEW", "").trim();
-      const isAlphanumeric = alphanumericRegex.test(cleanValue);
-
-      return cleanValue !== "" && isAlphanumeric;
-    })
-    .map((e) => e.text);
-
-  // Joins the textes
-  return textes.join(" ");
-}
-
 //#endregion IPostElement utility
-
-/**
- * Gets the text of the node only, excluding child nodes.
- * Also includes formatted text elements (i.e. `<b>`).
- */
-function getCheerioNonChildrenText(node: cheerio.Cheerio): string {
-  // Local variable
-  let text = "";
-
-  // If the node has no children, return the node's text
-  if (node.contents().length === 1) {
-    // @todo Remove IF after cheerio RC6
-    text = node.text();
-  } else {
-    // Find all the text nodes in the node
-    text = node
-      .first()
-      .contents() // @todo Change to children() after cheerio RC6
-      .filter((idx, e) => isTextNode(e))
-      .text();
-  }
-
-  // Clean and return the text
-  return text.replace(/\s\s+/g, " ").trim();
-}
 
 /**
  * Collapse an `IPostElement` element with a single subnode
@@ -434,14 +401,9 @@ function pairUpElements(elements: IPostElement[]): IPostElement[] {
       e.pairs.forEach((e, i) => shallow.splice(index + i, 0, e));
     });
 
-  // Ignore the "Generic" elements that we have already parsed
-  //const validElements = shallow.filter((e) => e.type !== "Generic");
-
-  // Than we find all the IDs of "Text" elements where the
-  // text doesn't starts with double points. This means
-  // that we find all the IDs of "title" elements.
+  // Than we find all the IDs of the elements that are "titles".
   const indexes = shallow
-    .filter((e, i) => filterValidElements(e, i, shallow))
+    .filter((e, i) => isValidTitleElement(e, i, shallow))
     .map((e) => shallow.indexOf(e));
 
   // Now we find all the elements between indexes and
@@ -449,7 +411,13 @@ function pairUpElements(elements: IPostElement[]): IPostElement[] {
   return indexes.map((i, j) => parseGroupData(i, j, indexes, shallow));
 }
 
-function filterValidElements(element: IPostElement, index: number, array: IPostElement[]): boolean {
+/**
+ * Verify if the `element` is a valid title.
+ * @param element Element to check
+ * @param index Index of the element in `array`
+ * @param array Array of elements to check
+ */
+function isValidTitleElement(element: IPostElement, index: number, array: IPostElement[]): boolean {
   // Check if this element is a "title" checking also the next element
   const isPostfixDoublePoints = element.text.endsWith(":") && element.text !== ":";
   const nextElementIsValue = array[index + 1]?.text.startsWith(":");
