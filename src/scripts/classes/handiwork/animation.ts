@@ -6,7 +6,7 @@
 "use strict";
 
 // Modules from files
-import { TAuthor, IAnimation, TRating, TCategory } from "../../interfaces";
+import { TAuthor, IAnimation, TRating, TCategory, TChangelog } from "../../interfaces";
 
 export default class Animation implements IAnimation {
   //#region Properties
@@ -19,7 +19,7 @@ export default class Animation implements IAnimation {
   resolution: string[];
   authors: TAuthor[];
   category: TCategory;
-  changelog: string[];
+  changelog: TChangelog[];
   cover: string;
   id: number;
   lastThreadUpdate: Date;

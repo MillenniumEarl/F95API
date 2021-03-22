@@ -11,7 +11,7 @@ import { DateTime } from "luxon";
 // Modules from files
 import HandiWork from "../classes/handiwork/handiwork";
 import Thread from "../classes/mapping/thread";
-import { IBasic, TAuthor, TEngine, TExternalPlatform, TStatus } from "../interfaces";
+import { IBasic, TAuthor, TChangelog, TEngine, TExternalPlatform, TStatus } from "../interfaces";
 import shared, { TPrefixDict } from "../shared";
 import { ILink, IPostElement } from "./post-parse";
 
@@ -193,7 +193,7 @@ function fillWithPostData(hw: HandiWork, elements: IPostElement[]) {
     ?.text?.split(",")
     .map((s) => s.trim());
   hw.version = getPostElementByName(elements, "version")?.text;
-  hw.installation = getPostElementByName(elements, "installation")?.content.shift()?.text;
+  hw.installation = getPostElementByName(elements, "installation")?.text;
   hw.pages = getPostElementByName(elements, "pages")?.text;
   hw.resolution = getPostElementByName(elements, "resolution")
     ?.text?.split(",")
@@ -206,64 +206,112 @@ function fillWithPostData(hw: HandiWork, elements: IPostElement[]) {
   if (censored) hw.censored = stringToBoolean(censored.text);
 
   // Get the genres
-  const genre = getPostElementByName(elements, "genre")?.content.shift()?.text;
+  const genre = getPostElementByName(elements, "genre")?.text;
   hw.genre = genre
     ?.split(",")
     .map((s) => s.trim())
     .filter((s) => s !== "");
 
   // Get the cover
-  const cover = getPostElementByName(elements, "overview")?.content.find(
-    (el) => el.type === "Image"
-  ) as ILink;
+  const cover = elements.find((e) => e.type === "Image") as ILink;
   hw.cover = cover?.href;
 
   // Fill the dates
   const releaseDate = getPostElementByName(elements, "release date")?.text;
   if (DateTime.fromISO(releaseDate).isValid) hw.lastRelease = new Date(releaseDate);
 
-  //#region Convert the author
+  // Get the author
+  hw.authors = parseAuthor(elements);
+
+  // Get the changelog
+  hw.changelog = parseChangelog(elements);
+}
+
+/**
+ * Parse the author from the post's data.
+ */
+function parseAuthor(elements: IPostElement[]): TAuthor[] {
+  // Local variables
+  const author: TAuthor = {
+    name: "",
+    platforms: []
+  };
+
+  // Fetch the authors from the post data
   const authorElement =
     getPostElementByName(elements, "developer") ||
     getPostElementByName(elements, "developer/publisher") ||
     getPostElementByName(elements, "artist");
-  const author: TAuthor = {
-    name: authorElement?.text,
-    platforms: []
-  };
 
-  // Add the found platforms
-  authorElement?.content.forEach((el: ILink, idx) => {
-    const platform: TExternalPlatform = {
-      name: el.text,
-      link: el.href
-    };
+  if (authorElement) {
+    // Set the author name
+    author.name = authorElement.text;
 
-    author.platforms.push(platform);
-  });
-  hw.authors = [author];
-  //#endregion Convert the author
+    // Add the found platforms
+    authorElement.content.forEach((e: ILink) => {
+      // Ignore invalid links
+      if (e.href) {
+        // Create and push the new platform
+        const platform: TExternalPlatform = {
+          name: e.text,
+          link: e.href
+        };
 
-  //#region Get the changelog
-  hw.changelog = [];
+        author.platforms.push(platform);
+      }
+    });
+  }
+
+  return [author];
+}
+
+/**
+ * Parse the changelog from the post's data.
+ */
+function parseChangelog(elements: IPostElement[]): TChangelog[] {
+  // Local variables
+  const changelog = [];
   const changelogElement =
     getPostElementByName(elements, "changelog") || getPostElementByName(elements, "change-log");
 
-  if (changelogElement?.content) {
-    const changelogSpoiler = changelogElement.content.find(
-      (el) => el.type === "Spoiler" && el.content.length > 0
-    );
+  if (changelogElement) {
+    // regex used to match version tags
+    const versionRegex = /^v[0-9]+\.[0-9]+.*/;
 
-    // Add to the changelog the single spoilers
-    const spoilers = changelogSpoiler.content
-      .filter((e) => e.text.trim() !== "")
-      .map((e) => e.text);
-    hw.changelog.push(...spoilers);
+    // Get the indexes of the version tags
+    const indexesVersion = changelogElement.content
+      .filter((e) => e.type === "Text" && versionRegex.test(e.text))
+      .map((e) => changelogElement.content.indexOf(e));
 
-    // Add at the end also the text of the "changelog" element
-    hw.changelog.push(changelogSpoiler.text);
+    const results = indexesVersion.map((i, j) => {
+      // In-loop variable
+      const versionChangelog: TChangelog = {
+        version: "",
+        information: []
+      };
+
+      // Get the difference in indexes between this and the next version tag
+      const diff = indexesVersion[j + 1] ?? changelogElement.content.length;
+
+      // fetch the group of data of this version tag
+      const group = changelogElement.content.slice(i, diff);
+      versionChangelog.version = group.shift().text.replace("v", "").trim();
+
+      // parse the data
+      group.forEach((e) => {
+        if (e.type === "Generic" || e.type === "Spoiler") {
+          const textes = e.content.map((c) => c.text);
+          versionChangelog.information.push(...textes);
+        } else versionChangelog.information.push(e.text);
+      });
+
+      return versionChangelog;
+    });
+
+    changelog.push(...results);
   }
-  //#endregion Get the changelog
+
+  return changelog;
 }
 
 //#endregion Private methods

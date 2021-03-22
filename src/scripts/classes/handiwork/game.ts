@@ -6,7 +6,7 @@
 "use strict";
 
 // Modules from files
-import { TAuthor, TEngine, IGame, TRating, TStatus, TCategory } from "../../interfaces";
+import { TAuthor, TEngine, IGame, TRating, TStatus, TCategory, TChangelog } from "../../interfaces";
 
 export default class Game implements IGame {
   //#region Properties
@@ -22,7 +22,7 @@ export default class Game implements IGame {
   version: string;
   authors: TAuthor[];
   category: TCategory;
-  changelog: string[];
+  changelog: TChangelog[];
   cover: string;
   id: number;
   lastThreadUpdate: Date;

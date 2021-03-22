@@ -8,17 +8,41 @@
 // Import from files
 import { POST } from "../constants/css-selector";
 
+// Types
+type TNodeType = "Text" | "Formatted" | "Spoiler" | "Link" | "List" | "Noscript" | "Unknown";
+
 //#region Interfaces
 
+/**
+ * Represents an element contained in the post.
+ */
 export interface IPostElement {
+  /**
+   * Type of element.
+   */
   type: "Generic" | "Text" | "Link" | "Image" | "Spoiler";
+  /**
+   * Name associated with the element.
+   */
   name: string;
+  /**
+   * Text of the content of the element excluding any children.
+   */
   text: string;
+  /**
+   * Children elements contained in this element.
+   */
   content: IPostElement[];
 }
 
+/**
+ * Represents a link type link in the post.
+ */
 export interface ILink extends IPostElement {
   type: "Image" | "Link";
+  /**
+   * Link to the resource.
+   */
   href: string;
 }
 
@@ -54,7 +78,7 @@ export function parseF95ThreadPost($: cheerio.Root, post: cheerio.Cheerio): IPos
   supernode = removeEmptyContentFromElement(supernode);
 
   // Finally parse the elements to create the pairs of title/data
-  return associateNameToElements(supernode.content);
+  return pairUpElements(supernode.content);
 }
 
 //#endregion Public methods
@@ -94,8 +118,8 @@ function isLinkNode(node: cheerio.Element): boolean {
 
   // The node is a valid DOM element
   if (node.type === "tag") {
-    const el = node as cheerio.TagElement;
-    valid = el.name === "a" || el.name === "img";
+    const e = node as cheerio.TagElement;
+    valid = e.name === "a" || e.name === "img";
   }
 
   return valid;
@@ -106,6 +130,32 @@ function isLinkNode(node: cheerio.Element): boolean {
  */
 function isNoScriptNode(node: cheerio.Element): boolean {
   return node.type === "tag" && node.name === "noscript";
+}
+
+/**
+ * Check if the node is a list element, i.e. `<li>` or `<ul>` tag.
+ */
+function isListNode(node: cheerio.Element): boolean {
+  return node.type === "tag" && (node.name === "ul" || node.name === "li");
+}
+
+/**
+ * Idetnify the type of node passed by parameter.
+ */
+function nodeType($: cheerio.Root, node: cheerio.Element): TNodeType {
+  // Function map
+  const functionMap = {
+    Text: (node: cheerio.Element) => isTextNode(node) && !isFormattingNode(node),
+    Formatted: (node: cheerio.Element) => isFormattingNode(node),
+    Spoiler: (node: cheerio.Element) => isSpoilerNode($(node)),
+    Link: (node: cheerio.Element) => isLinkNode(node),
+    List: (node: cheerio.Element) => isListNode(node),
+    Noscript: (node: cheerio.Element) => isNoScriptNode(node)
+  };
+
+  // Parse and return the type of the node
+  const result = Object.keys(functionMap).find((e) => functionMap[e](node));
+  return result ? (result as TNodeType) : "Unknown";
 }
 
 //#endregion Node Type
@@ -139,10 +189,10 @@ function parseCheerioSpoilerNode($: cheerio.Root, node: cheerio.Cheerio): IPostE
     .find(POST.SPOILER_CONTENT)
     .contents()
     .toArray()
-    .map((el) => parseCheerioNode($, el));
+    .map((e) => parseCheerioNode($, e));
 
-  // Clean text
-  spoiler.text = spoiler.text.replace(/\s\s+/g, " ").trim();
+  // Clean text (Spoiler has no text) @todo
+  // spoiler.text = spoiler.text.replace(/\s\s+/g, " ").trim();
   return spoiler;
 }
 
@@ -185,6 +235,31 @@ function parseCheerioTextNode(node: cheerio.Cheerio): IPostElement {
   return content;
 }
 
+/**
+ * Gets the text of the node only, excluding child nodes.
+ * Also includes formatted text elements (i.e. `<b>`).
+ */
+function getCheerioNonChildrenText(node: cheerio.Cheerio): string {
+  // Local variable
+  let text = "";
+
+  // If the node has no children, return the node's text
+  if (node.contents().length === 1) {
+    // @todo Remove IF after cheerio RC6
+    text = node.text();
+  } else {
+    // Find all the text nodes in the node
+    text = node
+      .first()
+      .contents() // @todo Change to children() after cheerio RC6
+      .filter((idx, e) => isTextNode(e))
+      .text();
+  }
+
+  // Clean and return the text
+  return text.replace(/\s\s+/g, " ").trim();
+}
+
 //#endregion Parse Cheerio node
 
 //#region IPostElement utility
@@ -219,64 +294,29 @@ function createGenericElement(): IPostElement {
 }
 
 /**
- * Check if the element contains the overview of a thread (post #1).
+ * Clean the element `name` and `text` removing initial and final special characters.
  */
-function elementIsOverview(element: IPostElement): boolean {
-  // Search the text element that start with "overview"
-  const result = element.content
-    .filter((e) => e.type === "Text")
-    .find((e) => e.text.toUpperCase().startsWith("OVERVIEW"));
-  return result !== undefined;
-}
-
-/**
- * If the element contains the overview of a thread, parse it.
- */
-function getOverviewFromElement(element: IPostElement): string {
+function cleanElement(element: IPostElement): IPostElement {
   // Local variables
-  const alphanumericRegex = new RegExp("[a-zA-Z0-9]+");
+  const shallow = Object.assign({}, element);
+  const specialCharSet = /[-!$%^&*()_+|~=`{}[\]:";'<>?,./]/;
+  const startsWithSpecialCharsRegex = new RegExp("^" + specialCharSet.source);
+  const endsWithSpecialCharsRegex = new RegExp(specialCharSet.source + "$");
 
-  // Get all the text values of the overview
-  const textes = element.content
-    .filter((e) => e.type === "Text")
-    .filter((e) => {
-      const cleanValue = e.text.toUpperCase().replace("OVERVIEW", "").trim();
-      const isAlphanumeric = alphanumericRegex.test(cleanValue);
+  shallow.name = shallow.name
+    .replace(startsWithSpecialCharsRegex, "")
+    .replace(endsWithSpecialCharsRegex, "")
+    .trim();
 
-      return cleanValue !== "" && isAlphanumeric;
-    })
-    .map((e) => e.text);
+  shallow.text = shallow.text
+    .replace(startsWithSpecialCharsRegex, "")
+    .replace(endsWithSpecialCharsRegex, "")
+    .trim();
 
-  // Joins the textes
-  return textes.join(" ");
+  return shallow;
 }
 
 //#endregion IPostElement utility
-
-/**
- * Gets the text of the node only, excluding child nodes.
- * Also includes formatted text elements (i.e. `<b>`).
- */
-function getCheerioNonChildrenText(node: cheerio.Cheerio): string {
-  // Local variable
-  let text = "";
-
-  // If the node has no children, return the node's text
-  if (node.contents().length === 1) {
-    // @todo Remove IF after cheerio RC6
-    text = node.text();
-  } else {
-    // Find all the text nodes in the node
-    text = node
-      .first()
-      .contents() // @todo Change to children() after cheerio RC6
-      .filter((idx, el) => isTextNode(el))
-      .text();
-  }
-
-  // Clean and return the text
-  return text.replace(/\s\s+/g, " ").trim();
-}
 
 /**
  * Collapse an `IPostElement` element with a single subnode
@@ -286,7 +326,7 @@ function reducePostElement(element: IPostElement): IPostElement {
   // Local variables
   const shallowCopy = Object.assign({}, element);
 
-  // If the node has only one child, return it
+  // If the node has only one child, reduce and return it
   if (isPostElementUnknown(shallowCopy) && shallowCopy.content.length === 1) {
     return reducePostElement(shallowCopy.content[0]);
   }
@@ -304,11 +344,15 @@ function removeEmptyContentFromElement(element: IPostElement, recursive = true):
   // Create a copy of the element
   const copy = Object.assign({}, element);
 
-  // Find the non-empty nodes
-  const validNodes = copy.content.filter((e) => !isPostElementEmpty(e));
-
   // Reduce nested contents if recursive
-  if (recursive) validNodes.forEach((e) => removeEmptyContentFromElement(e));
+  const recursiveResult = recursive
+    ? element.content.map((e) => removeEmptyContentFromElement(e))
+    : copy.content;
+
+  // Find the non-empty nodes
+  const validNodes = recursiveResult
+    .filter((e) => !isPostElementEmpty(e)) // Remove the empty nodes
+    .filter((e) => !isPostElementEmpty(cleanElement(e))); // Remove the useless nodes
 
   // Assign the nodes
   copy.content = validNodes;
@@ -321,26 +365,35 @@ function removeEmptyContentFromElement(element: IPostElement, recursive = true):
  */
 function parseCheerioNode($: cheerio.Root, node: cheerio.Element): IPostElement {
   // Local variables
-  let post: IPostElement = createGenericElement();
   const cheerioNode = $(node);
 
-  // Parse the node
-  if (!isNoScriptNode(node)) {
-    if (isTextNode(node) && !isFormattingNode(node)) post = parseCheerioTextNode(cheerioNode);
-    else if (isSpoilerNode(cheerioNode)) post = parseCheerioSpoilerNode($, cheerioNode);
-    else if (isLinkNode(node)) post = parseCheerioLinkNode(cheerioNode);
+  // Function mapping
+  const functionMap = {
+    Text: (node: cheerio.Cheerio) => parseCheerioTextNode(node),
+    Spoiler: (node: cheerio.Cheerio) => parseCheerioSpoilerNode($, node),
+    Link: (node: cheerio.Cheerio) => parseCheerioLinkNode(node)
+  };
 
-    // Avoid duplication of link name
-    if (!isLinkNode(node)) {
-      // Parse the node's childrens
-      const childPosts = cheerioNode
-        .contents() // @todo Change to children() after cheerio RC6
-        .toArray()
-        .filter((el) => el) // Ignore undefined elements
-        .map((el) => parseCheerioNode($, el))
-        .filter((el) => !isPostElementEmpty(el));
-      post.content.push(...childPosts);
-    }
+  // Get the type of node
+  const type = nodeType($, node);
+
+  // Get the post based on the type of node
+  const post = Object.keys(functionMap).includes(type)
+    ? functionMap[type]($(node))
+    : createGenericElement();
+
+  // Parse the childrens only if the node is a <b>/<i> element, a list
+  // or a unknown element. For the link in unnecessary while for the
+  // spoilers is already done in parseCheerioSpoilerNode
+  const includeTypes: TNodeType[] = ["Formatted", "List", "Unknown"];
+  if (includeTypes.includes(type)) {
+    const childPosts = cheerioNode
+      .contents() // @todo Change to children() after cheerio RC6
+      .toArray()
+      .filter((e) => e) // Ignore undefined elements
+      .map((e) => parseCheerioNode($, e))
+      .filter((e) => !isPostElementEmpty(e));
+    post.content.push(...childPosts);
   }
 
   return post;
@@ -350,50 +403,118 @@ function parseCheerioNode($: cheerio.Root, node: cheerio.Element): IPostElement 
  * It simplifies the `IPostElement` elements by associating
  * the corresponding value to each characterizing element (i.e. author).
  */
-function associateNameToElements(elements: IPostElement[]): IPostElement[] {
+function pairUpElements(elements: IPostElement[]): IPostElement[] {
   // Local variables
-  const pairs: IPostElement[] = [];
-  const specialCharsRegex = /^[-!$%^&*()_+|~=`{}[\]:";'<>?,./]/;
-  const specialRegex = new RegExp(specialCharsRegex);
+  const shallow = [...elements];
 
-  for (let i = 0; i < elements.length; i++) {
-    // If the text starts with a special char, clean it
-    const startWithSpecial = specialRegex.test(elements[i].text);
+  // Parse all the generic elements that
+  // act as "container" for other information
+  shallow
+    .filter((e) => e.type === "Generic")
+    .map((e) => ({
+      element: e,
+      pairs: pairUpElements(e.content)
+    }))
+    .forEach((e) => {
+      // Find the index of the elements
+      const index = shallow.indexOf(e.element);
 
-    // Get the latest IPostElement in "pairs"
-    const lastIndex = pairs.length - 1;
-    const lastPair = pairs[lastIndex];
+      // Remove that elements
+      shallow.splice(index, 1);
 
-    // If this statement is valid, we have a "data"
-    if (elements[i].type === "Text" && startWithSpecial && pairs.length > 0) {
-      // We merge this element with the last element appended to 'pairs'
-      const cleanText = elements[i].text.replace(specialCharsRegex, "").trim();
-      lastPair.text = lastPair.text || cleanText;
-      lastPair.content.push(...elements[i].content);
-    }
-    // This is a special case
-    else if (elementIsOverview(elements[i])) {
-      // We add the overview to the pairs as a text element
-      elements[i].type = "Text";
-      elements[i].name = "Overview";
-      elements[i].text = getOverviewFromElement(elements[i]);
-      pairs.push(elements[i]);
-    }
-    // We have an element referred to the previous "title"
-    else if (elements[i].type != "Text" && pairs.length > 0) {
-      // We append this element to the content of the last title
-      lastPair.content.push(elements[i]);
-    }
-    // ... else we have a "title" (we need to swap the text to the name because it is a title)
-    else {
-      const swap: IPostElement = Object.assign({}, elements[i]);
-      swap.name = elements[i].text;
-      swap.text = "";
-      pairs.push(swap);
-    }
-  }
+      // Add the pairs at the index of the deleted element
+      e.pairs.forEach((e, i) => shallow.splice(index + i, 0, e));
+    });
 
-  return pairs;
+  // Than we find all the IDs of the elements that are "titles".
+  const indexes = shallow
+    .filter((e, i) => isValidTitleElement(e, i, shallow))
+    .map((e) => shallow.indexOf(e));
+
+  // Now we find all the elements between indexes and
+  // associate them with the previous "title" element
+  return indexes.map((i, j) => parseGroupData(i, j, indexes, shallow));
+}
+
+/**
+ * Verify if the `element` is a valid title.
+ * @param element Element to check
+ * @param index Index of the element in `array`
+ * @param array Array of elements to check
+ */
+function isValidTitleElement(element: IPostElement, index: number, array: IPostElement[]): boolean {
+  // Check if this element is a "title" checking also the next element
+  const isPostfixDoublePoints = element.text.endsWith(":") && element.text !== ":";
+  const nextElementIsValue = array[index + 1]?.text.startsWith(":");
+  const elementIsTextTitle =
+    element.type === "Text" && (isPostfixDoublePoints || nextElementIsValue);
+
+  // Special values tha must be set has "title"
+  const specialValues = ["DOWNLOAD", "CHANGELOG", "CHANGE-LOG", "GENRE"];
+  const specialTypes = ["Image"];
+
+  // Used to ignore already merged elements with name (ignore spoilers)
+  // because they have as name the content of the spoiler button
+  const hasName = element.name !== "" && element.type !== "Spoiler";
+
+  return (
+    elementIsTextTitle ||
+    specialTypes.includes(element.type) ||
+    specialValues.includes(element.text.toUpperCase()) ||
+    hasName
+  );
+}
+
+/**
+ * Associate the relative values to a title.
+ * @param start Title index in the `elements` array
+ * @param index `start` index in `indexes`
+ * @param indexes List of titles indices in the `elements` array
+ * @param elements Array of elements to group
+ */
+function parseGroupData(
+  start: number,
+  index: number,
+  indexes: number[],
+  elements: IPostElement[]
+): IPostElement {
+  // Local variables
+  const endsWithSpecialCharsRegex = /[-:]$/;
+  const startsWithDoublePointsRegex = /^[:]/;
+
+  // Find all the elements (title + data) of the same data group
+  const nextIndex = indexes[index + 1] ?? elements.length;
+  const group = elements.slice(start, nextIndex);
+
+  // Extract the title
+  const title = group.shift();
+
+  // If the title is already named (beacuse it was
+  // previously elaborated) return it witout
+  if (title.name !== "" && title.type !== "Spoiler") return title;
+
+  // Assign name and text of the title
+  title.name = title.text.replace(endsWithSpecialCharsRegex, "").trim();
+  title.text = group
+    .filter((e) => e.type === "Text")
+    .map((e) =>
+      e.text
+        .replace(startsWithDoublePointsRegex, "") // Remove the starting ":" from the element's text
+        .replace(endsWithSpecialCharsRegex, "") // Remove any special chars at the end
+        .trim()
+    )
+    .join(" ") // Join with space
+    .trim();
+
+  // Append all the content of the elements.
+  group.forEach(
+    (e) =>
+      e.type === "Spoiler"
+        ? title.content.push(...e.content) // Add all the content fo the spoiler
+        : title.content.push(e) // Add the element itself
+  );
+
+  return title;
 }
 
 //#endregion Private methods
