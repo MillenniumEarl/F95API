@@ -23,7 +23,7 @@ import dotenv from "dotenv";
 // Modules from file
 import {
   login,
-  getUserData,
+  UserProfile,
   getLatestUpdates,
   LatestSearchQuery,
   Game,
@@ -70,7 +70,8 @@ async function authenticate(): Promise<boolean> {
 async function fetchUserData(): Promise<void> {
   console.log("Fetching user data...");
 
-  const userdata = await getUserData();
+  const userdata = new UserProfile();
+  await userdata.fetch();
 
   const gameThreads = userdata.watched.filter((e) => e.forum === "Games");
   const unread = gameThreads.filter((e) => e.unread).length;
