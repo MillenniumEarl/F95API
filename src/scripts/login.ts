@@ -31,54 +31,38 @@ export async function login(
   password: string,
   cb2fa?: () => Promise<number>
 ): Promise<LoginResult> {
+  // Login result
+  let loginResult: LoginResult = null;
+
   // Try to load a previous session
   await shared.session.load();
 
-  // If the session is valid, return
+  // If the session is valid, login from it
   if (shared.session.isValid(username, password)) {
-    shared.logger.info(`Loading previous session for ${username}`);
-
-    // Load platform data
-    await fetchPlatformData();
-
-    shared.setIsLogged(true);
-    return new LoginResult(
-      true,
-      LoginResult.ALREADY_AUTHENTICATED,
-      `${username} already authenticated (session)`
-    );
+    loginResult = loginFromLocalSession(username);
   }
+  // Otherwise login from the F95Zone platform
+  else {
+    const creds = await createCredentials(username, password);
+    loginResult = await loginInTheRemotePlatform(creds, cb2fa);
 
-  // Creating credentials and fetch unique platform token
-  shared.logger.trace("Fetching token...");
-  const creds = new Credentials(username, password);
-  await creds.fetchToken();
-
-  shared.logger.trace(`Authentication for ${username}`);
-  let result = await authenticate(creds);
-  shared.setIsLogged(result.success);
-
-  // 2FA Authentication is required, fetch OTP
-  if (result.code === LoginResult.REQUIRE_2FA) {
-    const code = await cb2fa();
-    const response2fa = await send2faCode(code, creds.token);
-    if (response2fa.isSuccess()) result = response2fa.value;
-    else throw response2fa.value;
-  }
-
-  if (result.success) {
     // Recreate the session, overwriting the old one
-    shared.session.create(username, password, creds.token);
-    await shared.session.save();
+    if (loginResult.success) {
+      shared.session.create(username, password, creds.token);
+      await shared.session.save();
+    }
+  }
 
+  if (loginResult.success) {
     // Load platform data
     await fetchPlatformData();
 
     shared.logger.info("User logged in through the platform");
-  } else shared.logger.warn(`Error during authentication: ${result.message}`);
+  } else shared.logger.warn(`Error during authentication: ${loginResult.message}`);
 
-  shared.setIsLogged(result.success);
-  return result;
+  // Set login status
+  shared.setIsLogged(loginResult.success);
+  return loginResult;
 }
 
 /**
@@ -95,3 +79,52 @@ export async function logout(): Promise<void> {
 }
 
 //#endregion Public methods
+
+//#region Private methods
+
+/**
+ * Create login result used if there is a valid local session.
+ */
+function loginFromLocalSession(username: string): LoginResult {
+  shared.logger.info(`Loading previous session for ${username}`);
+
+  return new LoginResult(
+    true,
+    LoginResult.ALREADY_AUTHENTICATED,
+    `${username} already authenticated (session)`
+  );
+}
+
+/**
+ * Create user credentials for login.
+ */
+async function createCredentials(username: string, password: string) {
+  // Creating credentials and fetch unique platform token
+  const creds = new Credentials(username, password);
+
+  shared.logger.trace("Fetching token...");
+  await creds.fetchToken();
+
+  return creds;
+}
+
+/**
+ * Login into the remote platform.
+ */
+async function loginInTheRemotePlatform(
+  creds: Credentials,
+  cb2fa?: () => Promise<number>
+): Promise<LoginResult> {
+  shared.logger.trace(`Authentication for ${creds.username}`);
+  const result = await authenticate(creds);
+
+  // 2FA Authentication is required, fetch OTP
+  if (result.code === LoginResult.REQUIRE_2FA) {
+    const code = await cb2fa();
+    const response2fa = await send2faCode(code, creds.token);
+    if (response2fa.isSuccess()) return response2fa.value;
+    else throw response2fa.value;
+  }
+}
+
+//#endregion Private methods
