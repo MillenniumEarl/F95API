@@ -116,15 +116,17 @@ async function loginInTheRemotePlatform(
   cb2fa?: () => Promise<number>
 ): Promise<LoginResult> {
   shared.logger.trace(`Authentication for ${creds.username}`);
-  const result = await authenticate(creds);
+  let result = await authenticate(creds);
 
   // 2FA Authentication is required, fetch OTP
   if (result.code === LoginResult.REQUIRE_2FA) {
     const code = await cb2fa();
     const response2fa = await send2faCode(code, creds.token);
-    if (response2fa.isSuccess()) return response2fa.value;
+    if (response2fa.isSuccess()) result = response2fa.value;
     else throw response2fa.value;
   }
+
+  return result;
 }
 
 //#endregion Private methods
