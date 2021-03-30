@@ -27,12 +27,12 @@ import Credentials from "./classes/credentials";
 axiosCookieJarSupport(axios);
 
 // Types
-type LookupMapCodeT = {
+type TLookupMapCode = {
   code: number;
   message: string;
 };
 
-type ProviderT = "auto" | "totp" | "email";
+type TProvider = "auto" | "totp" | "email";
 
 // Global variables
 const USER_AGENT =
@@ -150,7 +150,7 @@ export async function authenticate(
 export async function send2faCode(
   code: number,
   token: string,
-  provider: ProviderT = "auto",
+  provider: TProvider = "auto",
   trustedDevice: boolean = false
 ): Promise<Result<GenericAxiosError, LoginResult>> {
   // Prepare the parameters to send via POST request
@@ -384,7 +384,7 @@ function manageLoginPOSTResponse(response: AxiosResponse<any>) {
  */
 function messageToCode(message: string): number {
   // Prepare the lookup dict
-  const mapDict: LookupMapCodeT[] = [];
+  const mapDict: TLookupMapCode[] = [];
   mapDict.push({
     code: LoginResult.AUTH_SUCCESSFUL,
     message: AUTH_SUCCESSFUL_MESSAGE
@@ -405,7 +405,7 @@ function messageToCode(message: string): number {
 /**
  * Manage the response given by the platform when the 2FA is required.
  */
-function manage2faResponse(r: AxiosResponse<any>): Result<ProviderT, LoginResult> {
+function manage2faResponse(r: AxiosResponse<any>): Result<TProvider, LoginResult> {
   // The html property exists only if the provider is wrong
   const rightProvider = !("html" in r.data);
 
@@ -413,7 +413,7 @@ function manage2faResponse(r: AxiosResponse<any>): Result<ProviderT, LoginResult
   if (!rightProvider) {
     const $ = cheerio.load(r.data.html.content);
     const expectedProvider = $(GENERIC.EXPECTED_2FA_PROVIDER).attr("value");
-    return failure(expectedProvider as ProviderT);
+    return failure(expectedProvider as TProvider);
   }
 
   // r.data.status is 'ok' if the authentication is successful
