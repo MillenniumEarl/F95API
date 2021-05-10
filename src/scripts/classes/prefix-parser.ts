@@ -17,7 +17,7 @@ export default class PrefixParser {
    * Gets the key associated with a given value from a dictionary.
    * @param {Object} object Dictionary to search
    * @param {Any} value Value associated with the key
-   * @returns {String|undefined} Key found or undefined
+   * @returns {String|undefined} Key found or `undefined`
    */
   private getKeyByValue(object: TPrefixDict, value: string): string | undefined {
     return Object.keys(object).find((key) => object[key] === value);
