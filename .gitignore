@@ -4,3 +4,4 @@ node_modules/
 .env
 coverage.lcov
 **/*.js
+F95API_NPM_AUTH_TOKEN.txt
