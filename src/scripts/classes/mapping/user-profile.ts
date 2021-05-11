@@ -170,7 +170,9 @@ export default class UserProfile extends PlatformUser {
    */
   private async fetchPages(url: URL, n: number, s = 1): Promise<TFetchResult[]> {
     // Local variables
-    const responsePromiseList: Promise<TFetchResult>[] = [];
+    const threads: TFetchResult[] = [];
+    let responsePromiseList: Promise<TFetchResult>[] = [];
+    const MAX_SIMULTANEOUS_CONNECTION = 25;
 
     // Fetch the page' HTML
     for (let page = s; page <= n; page++) {
@@ -180,10 +182,19 @@ export default class UserProfile extends PlatformUser {
       // Fetch HTML but not wait for it
       const promise = fetchHTML(url.toString());
       responsePromiseList.push(promise);
+
+      // Wait for the promises to resolve if we reach
+      // the maximum number of simultaneous requests
+      if (responsePromiseList.length === MAX_SIMULTANEOUS_CONNECTION) {
+        const results = await Promise.all(responsePromiseList);
+        threads.push(...results);
+
+        // Reset the array
+        responsePromiseList = [];
+      }
     }
 
-    // Wait for the promises to resolve
-    return Promise.all(responsePromiseList);
+    return threads;
   }
 
   /**

@@ -6,7 +6,7 @@
 "use strict";
 
 // Public modules from npm
-import cheerio from "cheerio";
+import cheerio, { Cheerio, CheerioAPI, Node } from "cheerio";
 
 // Modules from file
 import PlatformUser from "./platform-user";
@@ -138,7 +138,7 @@ export default class Post implements ILazy {
     await this.parsePost($, $(post));
   }
 
-  private async parsePost($: cheerio.Root, post: cheerio.Cheerio): Promise<void> {
+  private async parsePost($: CheerioAPI, post: Cheerio<Node>): Promise<void> {
     // Find post's ID
     const sid: string = post.find(POST.ID).attr("id").replace("post-", "");
     this._id = parseInt(sid, 10);

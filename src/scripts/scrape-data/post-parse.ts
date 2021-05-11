@@ -5,6 +5,9 @@
 
 "use strict";
 
+// Public modules from npm
+import { Cheerio, Node, Element, CheerioAPI } from "cheerio";
+
 // Import from files
 import { POST } from "../constants/css-selector";
 
@@ -53,7 +56,7 @@ export interface ILink extends IPostElement {
 /**
  * Given a post of a thread page it extracts the information contained in the body.
  */
-export function parseF95ThreadPost($: cheerio.Root, post: cheerio.Cheerio): IPostElement[] {
+export function parseF95ThreadPost($: CheerioAPI, post: Cheerio<Node>): IPostElement[] {
   // The data is divided between "tag" and "text" elements.
   // Simple data is composed of a "tag" element followed
   // by a "text" element, while more complex data (contained
@@ -90,7 +93,7 @@ export function parseF95ThreadPost($: cheerio.Root, post: cheerio.Cheerio): IPos
 /**
  * Check if the node passed as a parameter is a formatting one (i.e. `<b>`).
  */
-function isFormattingNode(node: cheerio.Element): boolean {
+function isFormattingNode(node: Element): boolean {
   const formattedTags = ["b", "i"];
   return node.type === "tag" && formattedTags.includes(node.name);
 }
@@ -98,59 +101,52 @@ function isFormattingNode(node: cheerio.Element): boolean {
 /**
  * Check if the node passed as a parameter is of text type.
  */
-function isTextNode(node: cheerio.Element): boolean {
+function isTextNode(node: Element): boolean {
   return node.type === "text";
 }
 
 /**
  * Check if the node is a spoiler.
  */
-function isSpoilerNode(node: cheerio.Cheerio): boolean {
+function isSpoilerNode(node: Cheerio<Node>): boolean {
   return node.attr("class") === "bbCodeSpoiler";
 }
 
 /**
  * Check if the node is a link or a image.
  */
-function isLinkNode(node: cheerio.Element): boolean {
-  // Local variables
-  let valid = false;
-
-  // The node is a valid DOM element
-  if (node.type === "tag") {
-    const e = node as cheerio.TagElement;
-    valid = e.name === "a" || e.name === "img";
-  }
-
-  return valid;
+function isLinkNode(node: Element): boolean {
+  return node.type === "tag" && (node.name === "a" || node.name === "img");
 }
 
 /**
  * Check if the node is a `noscript` tag.
  */
-function isNoScriptNode(node: cheerio.Element): boolean {
+function isNoScriptNode(node: Element): boolean {
   return node.type === "tag" && node.name === "noscript";
 }
 
 /**
  * Check if the node is a list element, i.e. `<li>` or `<ul>` tag.
  */
-function isListNode(node: cheerio.Element): boolean {
+function isListNode(node: Element): boolean {
   return node.type === "tag" && (node.name === "ul" || node.name === "li");
 }
 
 /**
- * Idetnify the type of node passed by parameter.
+ * Identify the type of node passed by parameter.
  */
-function nodeType($: cheerio.Root, node: cheerio.Element): TNodeType {
+function nodeType($: CheerioAPI, node: Node): TNodeType {
+  // !!! Cheerio Element type is a Node type with children !!!
+
   // Function map
   const functionMap = {
-    Text: (node: cheerio.Element) => isTextNode(node) && !isFormattingNode(node),
-    Formatted: (node: cheerio.Element) => isFormattingNode(node),
-    Spoiler: (node: cheerio.Element) => isSpoilerNode($(node)),
-    Link: (node: cheerio.Element) => isLinkNode(node),
-    List: (node: cheerio.Element) => isListNode(node),
-    Noscript: (node: cheerio.Element) => isNoScriptNode(node)
+    Text: (node: Element) => isTextNode(node) && !isFormattingNode(node),
+    Formatted: (node: Element) => isFormattingNode(node),
+    Spoiler: (node: Element) => isSpoilerNode($(node)),
+    Link: (node: Element) => isLinkNode(node),
+    List: (node: Element) => isListNode(node),
+    Noscript: (node: Element) => isNoScriptNode(node)
   };
 
   // Parse and return the type of the node
@@ -166,7 +162,7 @@ function nodeType($: cheerio.Root, node: cheerio.Element): TNodeType {
  * Process a spoiler element by getting its text broken
  * down by any other spoiler elements present.
  */
-function parseCheerioSpoilerNode($: cheerio.Root, node: cheerio.Cheerio): IPostElement {
+function parseCheerioSpoilerNode($: CheerioAPI, node: Cheerio<Node>): IPostElement {
   // A spoiler block is composed of a div with class "bbCodeSpoiler",
   // containing a div "bbCodeSpoiler-content" containing, in cascade,
   // a div with class "bbCodeBlock--spoiler" and a div with class "bbCodeBlock-content".
@@ -199,7 +195,7 @@ function parseCheerioSpoilerNode($: cheerio.Root, node: cheerio.Cheerio): IPostE
 /**
  * Process a node that contains a link or image.
  */
-function parseCheerioLinkNode(element: cheerio.Cheerio): ILink {
+function parseCheerioLinkNode(element: Cheerio<Node>): ILink {
   // Local variable
   const link: ILink = {
     type: "Link",
@@ -225,7 +221,7 @@ function parseCheerioLinkNode(element: cheerio.Cheerio): ILink {
 /**
  * Process a text only node.
  */
-function parseCheerioTextNode(node: cheerio.Cheerio): IPostElement {
+function parseCheerioTextNode(node: Cheerio<Node>): IPostElement {
   const content: IPostElement = {
     type: "Text",
     name: "",
@@ -239,22 +235,9 @@ function parseCheerioTextNode(node: cheerio.Cheerio): IPostElement {
  * Gets the text of the node only, excluding child nodes.
  * Also includes formatted text elements (i.e. `<b>`).
  */
-function getCheerioNonChildrenText(node: cheerio.Cheerio): string {
-  // Local variable
-  let text = "";
-
-  // If the node has no children, return the node's text
-  if (node.contents().length === 1) {
-    // @todo Remove IF after cheerio RC6
-    text = node.text();
-  } else {
-    // Find all the text nodes in the node
-    text = node
-      .first()
-      .contents() // @todo Change to children() after cheerio RC6
-      .filter((idx, e) => isTextNode(e))
-      .text();
-  }
+function getCheerioNonChildrenText(node: Cheerio<Node>): string {
+  // Get text
+  const text = node.first().text();
 
   // Clean and return the text
   return text.replace(/\s\s+/g, " ").trim();
@@ -361,17 +344,17 @@ function removeEmptyContentFromElement(element: IPostElement, recursive = true):
 }
 
 /**
- * Transform a `cheerio.Cheerio` node into an `IPostElement` element with its subnodes.
+ * Transform a `Cheerio<Node>` node into an `IPostElement` element with its subnodes.
  */
-function parseCheerioNode($: cheerio.Root, node: cheerio.Element): IPostElement {
+function parseCheerioNode($: CheerioAPI, node: Node): IPostElement {
   // Local variables
   const cheerioNode = $(node);
 
   // Function mapping
   const functionMap = {
-    Text: (node: cheerio.Cheerio) => parseCheerioTextNode(node),
-    Spoiler: (node: cheerio.Cheerio) => parseCheerioSpoilerNode($, node),
-    Link: (node: cheerio.Cheerio) => parseCheerioLinkNode(node)
+    Text: (node: Cheerio<Node>) => parseCheerioTextNode(node),
+    Spoiler: (node: Cheerio<Node>) => parseCheerioSpoilerNode($, node),
+    Link: (node: Cheerio<Node>) => parseCheerioLinkNode(node)
   };
 
   // Get the type of node

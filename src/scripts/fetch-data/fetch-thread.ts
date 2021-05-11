@@ -6,7 +6,7 @@
 "use strict";
 
 // Public modules from npm
-import cheerio from "cheerio";
+import cheerio, { Cheerio, Node } from "cheerio";
 
 // Modules from file
 import shared from "../shared";
@@ -71,7 +71,7 @@ async function fetchResultURLs(html: string, limit: number = 30): Promise<string
  * @param {cheerio.Cheerio} selector Element to search
  * @returns {String} URL to thread
  */
-function extractLinkFromResult(selector: cheerio.Cheerio): string {
+function extractLinkFromResult(selector: Cheerio<Node>): string {
   shared.logger.trace("Extracting thread link from result...");
 
   const partialLink = selector.find(THREAD_SEARCH.THREAD_TITLE).attr("href").trim();

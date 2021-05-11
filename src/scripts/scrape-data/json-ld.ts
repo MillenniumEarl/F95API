@@ -6,7 +6,7 @@
 "use strict";
 
 // Public modules from npm
-import cheerio from "cheerio";
+import cheerio, { Cheerio, Node, Element } from "cheerio";
 
 // Modules from file
 import shared from "../shared";
@@ -19,17 +19,20 @@ export type TJsonLD = { [s: string]: string | TJsonLD };
 
 /**
  * Extracts and processes the JSON-LD values of the page.
- * @param {cheerio.Cheerio} body Page `body` selector
+ * @param {Cheerio<Node>} body Page `body` selector
  * @returns {TJsonLD[]} List of data obtained from the page
  */
-export function getJSONLD(body: cheerio.Cheerio): TJsonLD {
+export function getJSONLD(body: Cheerio<Node>): TJsonLD {
   shared.logger.trace("Extracting JSON-LD data...");
 
   // Fetch the JSON-LD data
   const structuredDataElements = body.find(THREAD.JSONLD);
 
   // Parse the data
-  const values = structuredDataElements.map((idx, el) => parseJSONLD(el)).get();
+  const values = structuredDataElements
+    .map((idx, el) => el)
+    .get()
+    .map((el) => parseJSONLD(el));
 
   // Merge the data and return a single value
   return mergeJSONLD(values);
@@ -54,7 +57,7 @@ function mergeJSONLD(data: TJsonLD[]): TJsonLD {
 /**
  * Parse a JSON-LD element source code.
  */
-function parseJSONLD(element: cheerio.Element): TJsonLD {
+function parseJSONLD(element: Element): TJsonLD {
   // Get the element HTML
   const html = cheerio(element).html().trim();
 
