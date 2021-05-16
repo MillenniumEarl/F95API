@@ -4,7 +4,7 @@
 import { expect } from "chai";
 
 // Modules from file
-import Credentials from "../../src/scripts/classes/credentials";
+import Credentials from "../../../src/scripts/classes/credentials";
 
 export function suite(): void {
   it("Check token formatting", async function testValidToken() {

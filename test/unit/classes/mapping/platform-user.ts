@@ -3,11 +3,11 @@
 // Public module from npm
 import chai from "chai";
 import chaiAsPromised from "chai-as-promised";
-import { INVALID_USER_ID, USER_NOT_LOGGED } from "../../../src/scripts/classes/errors";
+import { INVALID_USER_ID, USER_NOT_LOGGED } from "../../../../src/scripts/classes/errors";
 
 // Module from files
-import { PlatformUser } from "../../../src";
-import Shared from "../../../src/scripts/shared";
+import { PlatformUser } from "../../../../src";
+import Shared from "../../../../src/scripts/shared";
 
 chai.use(chaiAsPromised);
 const { expect } = chai;

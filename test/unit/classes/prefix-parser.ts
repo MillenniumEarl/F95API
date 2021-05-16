@@ -5,7 +5,7 @@ import { expect } from "chai";
 import dotenv from "dotenv";
 
 // Modules from file
-import { login, PrefixParser } from "../../src/index";
+import { login, PrefixParser } from "../../../src/index";
 
 // Configure the .env reader
 dotenv.config();
