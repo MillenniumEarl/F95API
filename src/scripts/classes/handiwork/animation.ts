@@ -6,29 +6,22 @@
 "use strict";
 
 // Modules from files
-import { TAuthor, IAnimation, TRating, TCategory, TChangelog } from "../../interfaces";
+import { IAnimation } from "../../interfaces";
+import Basic from "./basic";
 
-export default class Animation implements IAnimation {
+export default class Animation extends Basic implements IAnimation {
   //#region Properties
-  censored: boolean;
-  genre: string[];
-  installation: string;
-  language: string[];
-  lenght: string;
-  pages: string;
-  resolution: string[];
-  authors: TAuthor[];
-  category: TCategory;
-  changelog: TChangelog[];
-  cover: string;
-  id: number;
-  lastThreadUpdate: Date;
-  name: string;
-  overview: string;
-  prefixes: string[];
-  rating: TRating;
-  tags: string[];
-  threadPublishingDate: Date;
-  url: string;
+  readonly censored: boolean;
+  readonly genre: string[];
+  readonly installation: string;
+  readonly language: string[];
+  readonly length: string;
+  readonly pages: string;
+  readonly resolution: string[];
   //#endregion Properties
+
+  public constructor(init?: Partial<Animation>) {
+    super();
+    Object.assign(this, init);
+  }
 }

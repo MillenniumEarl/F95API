@@ -6,20 +6,16 @@
 "use strict";
 
 // Modules from files
-import {
-  TAuthor,
-  TRating,
-  IHandiwork,
-  TEngine,
-  TCategory,
-  TStatus,
-  TChangelog
-} from "../../interfaces";
+import { IHandiwork, TEngine, TStatus } from "../../interfaces";
+import Asset from "./asset";
+import Basic from "./basic";
+import Comic from "./comic";
+import Game from "./game";
 
 /**
  * It represents a generic work, be it a game, a comic, an animation or an asset.
  */
-export default class HandiWork implements IHandiwork {
+export default class HandiWork extends Basic implements IHandiwork {
   //#region Properties
   censored: boolean;
   engine: TEngine;
@@ -31,22 +27,9 @@ export default class HandiWork implements IHandiwork {
   os: string[];
   status: TStatus;
   version: string;
-  authors: TAuthor[];
-  category: TCategory;
-  changelog: TChangelog[];
-  cover: string;
-  id: number;
-  lastThreadUpdate: Date;
-  name: string;
-  overview: string;
-  prefixes: string[];
-  rating: TRating;
-  tags: string[];
-  threadPublishingDate: Date;
-  url: string;
   pages: string;
   resolution: string[];
-  lenght: string;
+  length: string;
   assetLink: string;
   associatedAssets: string[];
   compatibleSoftware: string;
@@ -54,4 +37,9 @@ export default class HandiWork implements IHandiwork {
   officialLinks: string[];
   sku: string;
   //#endregion Properties
+
+  public constructor(init?: Partial<HandiWork | Comic | Animation | Asset | Game>) {
+    super();
+    Object.assign(this, init);
+  }
 }

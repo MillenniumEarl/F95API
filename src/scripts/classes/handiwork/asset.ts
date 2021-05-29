@@ -6,28 +6,21 @@
 "use strict";
 
 // Modules from files
-import { TAuthor, IAsset, TRating, TCategory, TChangelog } from "../../interfaces";
+import { IAsset } from "../../interfaces";
+import Basic from "./basic";
 
-export default class Asset implements IAsset {
+export default class Asset extends Basic implements IAsset {
   //#region Properties
-  assetLink: string;
-  associatedAssets: string[];
-  compatibleSoftware: string;
-  includedAssets: string[];
-  officialLinks: string[];
-  sku: string;
-  authors: TAuthor[];
-  category: TCategory;
-  changelog: TChangelog[];
-  cover: string;
-  id: number;
-  lastThreadUpdate: Date;
-  name: string;
-  overview: string;
-  prefixes: string[];
-  rating: TRating;
-  tags: string[];
-  threadPublishingDate: Date;
-  url: string;
+  readonly assetLink: string;
+  readonly associatedAssets: string[];
+  readonly compatibleSoftware: string;
+  readonly includedAssets: string[];
+  readonly officialLinks: string[];
+  readonly sku: string;
   //#endregion Properties
+
+  public constructor(init?: Partial<Asset>) {
+    super();
+    Object.assign(this, init);
+  }
 }

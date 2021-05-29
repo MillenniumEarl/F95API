@@ -6,25 +6,18 @@
 "use strict";
 
 // Modules from files
-import { TAuthor, IComic, TRating, TCategory, TChangelog } from "../../interfaces";
+import { IComic } from "../../interfaces";
+import Basic from "./basic";
 
-export default class Comic implements IComic {
+export default class Comic extends Basic implements IComic {
   //#region Properties
-  genre: string[];
-  pages: string;
-  resolution: string[];
-  authors: TAuthor[];
-  category: TCategory;
-  changelog: TChangelog[];
-  cover: string;
-  id: number;
-  lastThreadUpdate: Date;
-  name: string;
-  overview: string;
-  prefixes: string[];
-  rating: TRating;
-  tags: string[];
-  threadPublishingDate: Date;
-  url: string;
+  readonly genre: string[];
+  readonly pages: string;
+  readonly resolution: string[];
   //#endregion Properties
+
+  public constructor(init?: Partial<Comic>) {
+    super();
+    Object.assign(this, init);
+  }
 }

@@ -6,32 +6,25 @@
 "use strict";
 
 // Modules from files
-import { TAuthor, TEngine, IGame, TRating, TStatus, TCategory, TChangelog } from "../../interfaces";
+import { TEngine, IGame, TStatus } from "../../interfaces";
+import Basic from "./basic";
 
-export default class Game implements IGame {
+export default class Game extends Basic implements IGame {
   //#region Properties
-  censored: boolean;
-  engine: TEngine;
-  genre: string[];
-  installation: string;
-  language: string[];
-  lastRelease: Date;
-  mod: boolean;
-  os: string[];
-  status: TStatus;
-  version: string;
-  authors: TAuthor[];
-  category: TCategory;
-  changelog: TChangelog[];
-  cover: string;
-  id: number;
-  lastThreadUpdate: Date;
-  name: string;
-  overview: string;
-  prefixes: string[];
-  rating: TRating;
-  tags: string[];
-  threadPublishingDate: Date;
-  url: string;
+  readonly censored: boolean;
+  readonly engine: TEngine;
+  readonly genre: string[];
+  readonly installation: string;
+  readonly language: string[];
+  readonly lastRelease: Date;
+  readonly mod: boolean;
+  readonly os: string[];
+  readonly status: TStatus;
+  readonly version: string;
   //#endregion Properties
+
+  public constructor(init?: Partial<Game>) {
+    super();
+    Object.assign(this, init);
+  }
 }
