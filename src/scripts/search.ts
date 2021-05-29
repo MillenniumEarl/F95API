@@ -8,12 +8,14 @@
 // Modules from file
 import { IBasic, IQuery } from "./interfaces";
 import getHandiworkInformation from "./scrape-data/handiwork-parse";
-import { HandiworkSearchQuery, LatestSearchQuery, ThreadSearchQuery } from "..";
 import fetchHandiworkURLs from "./fetch-data/fetch-handiwork";
 import fetchLatestHandiworkURLs from "./fetch-data/fetch-latest";
 import fetchThreadHandiworkURLs from "./fetch-data/fetch-thread";
 import { UserNotLogged, USER_NOT_LOGGED } from "./classes/errors";
 import shared from "./shared";
+import HandiworkSearchQuery from "./classes/query/handiwork-search-query";
+import LatestSearchQuery from "./classes/query/latest-search-query";
+import ThreadSearchQuery from "./classes/query/thread-search-query";
 
 /**
  * Gets the handiworks that match the passed parameters.

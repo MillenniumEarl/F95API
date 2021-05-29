@@ -6,7 +6,6 @@
 "use strict";
 
 // Modules from file
-import { LatestSearchQuery } from "..";
 import { UserNotLogged, USER_NOT_LOGGED } from "./classes/errors";
 import fetchLatestHandiworkURLs from "./fetch-data/fetch-latest";
 import { getHandiworkFromURL } from "./handiwork-from-url";
@@ -17,6 +16,7 @@ import shared from "./shared";
 
 // Classes from file
 import HandiWork from "./classes/handiwork/handiwork";
+import LatestSearchQuery from "./classes/query/latest-search-query";
 
 /**
  * Gets the latest updated games that match the specified parameters.

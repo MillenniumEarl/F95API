@@ -7,7 +7,6 @@
 
 // Public modules from npm
 import { DateTime } from "luxon";
-import { Handiwork } from "../..";
 
 // Modules from files
 import HandiWork from "../classes/handiwork/handiwork";
@@ -15,6 +14,7 @@ import Thread from "../classes/mapping/thread";
 import { IBasic, TAuthor, TChangelog, TEngine, TExternalPlatform, TStatus } from "../interfaces";
 import shared, { TPrefixDict } from "../shared";
 import { ILink, IPostElement } from "./post-parse";
+import Handiwork from "../classes/handiwork/handiwork";
 
 /**
  * Gets information of a particular handiwork from its thread.
