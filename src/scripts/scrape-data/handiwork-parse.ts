@@ -7,6 +7,7 @@
 
 // Public modules from npm
 import { DateTime } from "luxon";
+import { Handiwork } from "../..";
 
 // Modules from files
 import HandiWork from "../classes/handiwork/handiwork";
@@ -38,20 +39,22 @@ export default async function getHandiworkInformation<T extends IBasic>(
   shared.logger.info(`Obtaining handiwork from ${thread.url}`);
 
   // Convert the info from thread to handiwork
-  const hw: HandiWork = {} as HandiWork;
-  hw.id = thread.id;
-  hw.url = thread.url;
-  hw.name = thread.title;
-  hw.category = thread.category;
-  hw.threadPublishingDate = thread.publication;
-  hw.lastThreadUpdate = thread.modified;
-  hw.tags = thread.tags;
-  hw.rating = thread.rating;
+  let hw: HandiWork = new Handiwork({
+    id: thread.id,
+    url: thread.url,
+    name: thread.title,
+    category: thread.category,
+    threadPublishingDate: thread.publication,
+    lastThreadUpdate: thread.modified,
+    tags: thread.tags,
+    rating: thread.rating,
+    prefixes: []
+  });
   fillWithPrefixes(hw, thread.prefixes);
 
   // Fetch info from first post
   const post = await thread.getPost(1);
-  fillWithPostData(hw, post.body);
+  hw = fillWithPostData(hw, post.body);
 
   return <T>(<unknown>hw);
 }
@@ -150,10 +153,7 @@ function fillWithPrefixes(hw: HandiWork, prefixes: string[]) {
     1: "CHEAT MOD"
   };
 
-  // Initialize the array
-  hw.prefixes = [];
-
-  prefixes.map((item, idx) => {
+  prefixes.map((item) => {
     // Remove the square brackets
     const prefix = item.replace("[", "").replace("]", "");
 
@@ -183,9 +183,8 @@ function fillWithPrefixes(hw: HandiWork, prefixes: string[]) {
  * `Pages`, `Resolution`, `Lenght`, `Genre`, `Censored`,
  * `LastRelease`, `Authors`, `Changelog`, `Cover`.
  */
-function fillWithPostData(hw: HandiWork, elements: IPostElement[]) {
+function fillWithPostData(hw: HandiWork, elements: IPostElement[]): Handiwork {
   // First fill the "simple" elements
-  hw.overview = getPostElementByName(elements, "overview")?.text;
   hw.os = getPostElementByName(elements, "os")
     ?.text?.split(",")
     .map((s) => s.trim());
@@ -198,7 +197,7 @@ function fillWithPostData(hw: HandiWork, elements: IPostElement[]) {
   hw.resolution = getPostElementByName(elements, "resolution")
     ?.text?.split(",")
     .map((s) => s.trim());
-  hw.lenght = getPostElementByName(elements, "lenght")?.text;
+  hw.length = getPostElementByName(elements, "lenght")?.text;
 
   // Parse the censorship
   const censored =
@@ -212,19 +211,24 @@ function fillWithPostData(hw: HandiWork, elements: IPostElement[]) {
     .map((s) => s.trim())
     .filter((s) => s !== "");
 
-  // Get the cover
-  const cover = elements.find((e) => e.type === "Image") as ILink;
-  hw.cover = cover?.href;
-
   // Fill the dates
   const releaseDate = getPostElementByName(elements, "release date")?.text;
   if (DateTime.fromISO(releaseDate).isValid) hw.lastRelease = new Date(releaseDate);
 
+  //Get the overview
+  const overview = getPostElementByName(elements, "overview")?.text;
+
+  // Get the cover
+  const cover = (elements.find((e) => e.type === "Image") as ILink)?.href;
+
   // Get the author
-  hw.authors = parseAuthor(elements);
+  const authors = parseAuthor(elements);
 
   // Get the changelog
-  hw.changelog = parseChangelog(elements);
+  const changelog = parseChangelog(elements);
+
+  const merged = Object.assign({ overview, cover, authors, changelog }, hw);
+  return new Handiwork(merged);
 }
 
 /**
