@@ -6,7 +6,8 @@
 "use strict";
 
 // Import suites
-import { suite as credentials } from "./classes/credentials";
+import { suite as credentials } from "./classes/credentials.test";
+import { suite as prefixParser } from "./classes/prefix-parser.test";
 
 describe("Test basic function (integration)", function testBasic() {
   //#region Set-up
@@ -16,4 +17,5 @@ describe("Test basic function (integration)", function testBasic() {
   //#endregion Set-up
 
   describe("Test Credentials", credentials.bind(this));
+  describe("Test PrefixParser", prefixParser.bind(this));
 });

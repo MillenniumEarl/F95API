@@ -11,11 +11,10 @@ import { suite as assetClass } from "./classes/handiwork/asset.test";
 import { suite as animationClass } from "./classes/handiwork/animation.test";
 import { suite as comicClass } from "./classes/handiwork/comic.test";
 import { suite as gameClass } from "./classes/handiwork/game.test";
-import { suite as prefixParser } from "./classes/prefix-parser";
-import { suite as platformUser } from "./classes/mapping/platform-user";
-import { suite as post } from "./classes/mapping/post";
-import { suite as thread } from "./classes/mapping/thread";
-import { suite as userProfile } from "./classes/mapping/user-profile";
+import { suite as platformUser } from "./classes/mapping/platform-user.test";
+import { suite as post } from "./classes/mapping/post.test";
+import { suite as thread } from "./classes/mapping/thread.test";
+import { suite as userProfile } from "./classes/mapping/user-profile.test";
 
 describe("Test basic function (unit)", function testBasic() {
   //#region Set-up
@@ -30,7 +29,6 @@ describe("Test basic function (unit)", function testBasic() {
   describe("Test Animation handiwork class", animationClass.bind(this));
   describe("Test Comic handiwork class", comicClass.bind(this));
   describe("Test Game handiwork class", gameClass.bind(this));
-  describe("Test PrefixParser", prefixParser.bind(this));
   describe("Test PlatformUser", platformUser.bind(this));
   describe("Test Post", post.bind(this));
   describe("Test Thread", thread.bind(this));
