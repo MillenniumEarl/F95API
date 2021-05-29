@@ -22,6 +22,7 @@ import {
 } from "../errors";
 import { Result } from "../result";
 import shared from "../../shared";
+import Game from "../handiwork/game";
 
 // Interfaces
 interface IWatchedThread {
@@ -52,6 +53,7 @@ export default class UserProfile extends PlatformUser {
   private _bookmarks: Post[] = [];
   private _alerts: string[] = [];
   private _conversations: string[];
+  private _suggestedGames: Game[];
 
   //#endregion Fields
 
@@ -83,6 +85,13 @@ export default class UserProfile extends PlatformUser {
    */
   public get conversation(): string[] {
     return this._conversations;
+  }
+  /**
+   * List of suggested games for this user from the platform.
+   * @todo
+   */
+  public get suggestedGames(): Game[] {
+    return this._suggestedGames;
   }
 
   //#endregion Getters
@@ -150,7 +159,7 @@ export default class UserProfile extends PlatformUser {
       const lastPage = parseInt($(WATCHED_THREAD.LAST_PAGE).text().trim(), 10);
       const pages = await this.fetchPages(url, lastPage);
 
-      const watchedThreads = pages.map((r, idx) => {
+      const watchedThreads = pages.map((r) => {
         const elements = r.applyOnSuccess(this.fetchPageThreadElements);
         if (elements.isSuccess()) return elements.value;
       });
@@ -205,7 +214,7 @@ export default class UserProfile extends PlatformUser {
     const $ = cheerio.load(html);
 
     return $(WATCHED_THREAD.BODIES)
-      .map((idx, el) => {
+      .map((_idx, el) => {
         // Parse the URL
         const partialURL = $(el).find(WATCHED_THREAD.URL).attr("href");
         const url = new URL(partialURL.replace("unread", ""), `${urls.BASE}`).toString();
