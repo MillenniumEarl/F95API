@@ -247,7 +247,7 @@ export interface IAnimation extends IBasic {
   /**
    * Length of the animation.
    */
-  lenght: string;
+  length: string;
   /**
    * Number of pages or elements that make up the work.
    */
