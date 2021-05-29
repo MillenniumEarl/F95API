@@ -7,6 +7,7 @@
 
 // Modules from files
 import { IHandiwork, TEngine, TStatus } from "../../interfaces";
+import Animation from "./animation";
 import Asset from "./asset";
 import Basic from "./basic";
 import Comic from "./comic";
