@@ -30,7 +30,7 @@ export function getJSONLD(body: Cheerio<Node>): TJsonLD {
 
   // Parse the data
   const values = structuredDataElements
-    .map((idx, el) => el)
+    .map((_idx, el) => el)
     .get()
     .map((el) => parseJSONLD(el));
 
