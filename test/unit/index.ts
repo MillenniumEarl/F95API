@@ -6,6 +6,11 @@
 "use strict";
 
 // Import suites
+import { suite as basicClass } from "./classes/handiwork/basic.test";
+import { suite as assetClass } from "./classes/handiwork/asset.test";
+import { suite as animationClass } from "./classes/handiwork/animation.test";
+import { suite as comicClass } from "./classes/handiwork/comic.test";
+import { suite as gameClass } from "./classes/handiwork/game.test";
 import { suite as prefixParser } from "./classes/prefix-parser";
 import { suite as platformUser } from "./classes/mapping/platform-user";
 import { suite as post } from "./classes/mapping/post";
@@ -20,6 +25,11 @@ describe("Test basic function (unit)", function testBasic() {
   //#endregion Set-up
 
   // describe("Test network helper", network.bind(this));
+  describe("Test Basic handiwork class", basicClass.bind(this));
+  describe("Test Asset handiwork class", assetClass.bind(this));
+  describe("Test Animation handiwork class", animationClass.bind(this));
+  describe("Test Comic handiwork class", comicClass.bind(this));
+  describe("Test Game handiwork class", gameClass.bind(this));
   describe("Test PrefixParser", prefixParser.bind(this));
   describe("Test PlatformUser", platformUser.bind(this));
   describe("Test Post", post.bind(this));
