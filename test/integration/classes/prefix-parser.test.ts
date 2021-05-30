@@ -23,20 +23,29 @@ export function suite(): void {
 
   //#endregion Setup
 
-  it("Parse prefixes", async function testPrefixParser() {
+  // Test values
+  const testIDs = [103, 225, 44, 13, 2, 7, 22];
+  const testPrefixes = ["corruption", "pregnancy", "slave", "VN", "RPGM", "Ren'Py", "Abandoned"];
+
+  it("Prefixes to IDs", function prefixesToIDs() {
     // Create a new parser
     const parser = new PrefixParser();
 
-    // Test values
-    const testIDs = [103, 225, 44, 13, 2, 7, 22];
-    const testPrefixes = ["corruption", "pregnancy", "slave", "VN", "RPGM", "Ren'Py", "Abandoned"];
-
     // Parse values
     const ids = parser.prefixesToIDs(testPrefixes);
-    const tags = parser.idsToPrefixes(ids);
+
+    // Assert equality
+    expect(testIDs).to.be.deep.equal(ids, "The IDs must be the same");
+  });
+
+  it("IDs to prefixes", function IDsToPrefixes() {
+    // Create a new parser
+    const parser = new PrefixParser();
+
+    // Parse values
+    const tags = parser.idsToPrefixes(testIDs);
 
     // Assert equality
     expect(testPrefixes).to.be.deep.equal(tags, "The tags must be the same");
-    expect(testIDs).to.be.deep.equal(ids, "The IDs must be the same");
   });
 }
