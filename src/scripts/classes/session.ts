@@ -13,6 +13,7 @@ import path from "path";
 // Public modules from npm
 import { sha256 } from "js-sha256";
 import tough, { CookieJar } from "tough-cookie";
+import { ParameterError } from "./errors";
 
 // Promisifed functions
 const areadfile = promisify(fs.readFile);
@@ -82,6 +83,7 @@ export default class Session {
    * Initializes the session by setting the path for saving information to disk.
    */
   constructor(p: string) {
+    if (!p || p === "") throw new ParameterError("Invalid path for the session file");
     this._path = p;
     this._isMapped = fs.existsSync(this.path);
     this._created = new Date(Date.now());
