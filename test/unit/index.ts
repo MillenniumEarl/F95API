@@ -17,6 +17,7 @@ import { suite as thread } from "./classes/mapping/thread.test";
 import { suite as userProfile } from "./classes/mapping/user-profile.test";
 import { suite as errors } from "./classes/errors.test";
 import { suite as result } from "./classes/result.test";
+import { suite as session } from "./classes/session.test";
 
 describe("Unit tests", function testBasic() {
   // describe("Test network helper", network.bind(this));
@@ -31,4 +32,5 @@ describe("Unit tests", function testBasic() {
   describe("Test class UserProfile", userProfile.bind(this));
   describe("Test errors", errors.bind(this));
   describe("Test class Result", result.bind(this));
+  describe("Test class Session", session.bind(this));
 });

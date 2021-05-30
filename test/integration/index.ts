@@ -8,6 +8,7 @@
 // Import suites
 import { suite as credentials } from "./classes/credentials.test";
 import { suite as prefixParser } from "./classes/prefix-parser.test";
+import { suite as session } from "./classes/session.test";
 
 describe("Integration Tests", function testBasic() {
   //#region Set-up
@@ -18,4 +19,5 @@ describe("Integration Tests", function testBasic() {
 
   describe("Test class Credentials", credentials.bind(this));
   describe("Test class PrefixParser", prefixParser.bind(this));
+  describe("Test class Session", session.bind(this));
 });
