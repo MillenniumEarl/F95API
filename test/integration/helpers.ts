@@ -1,3 +1,8 @@
+// Copyright (c) 2021 MillenniumEarl
+//
+// This software is released under the MIT License.
+// https://opensource.org/licenses/MIT
+
 "use strict";
 
 // Public modules from npm
@@ -5,8 +10,8 @@ import dotenv from "dotenv";
 import inquirer from "inquirer";
 
 // Modulee from files
-import { login } from "../src/index";
-import LoginResult from "../src/scripts/classes/login-result";
+import { login } from "../../src/index";
+import LoginResult from "../../src/scripts/classes/login-result";
 
 // Configure the .env reader
 dotenv.config();
