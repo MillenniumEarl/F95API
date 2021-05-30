@@ -17,6 +17,7 @@ import { GENERIC } from "./constants/css-selector";
 import LoginResult from "./classes/login-result";
 import { failure, Result, success } from "./classes/result";
 import {
+  ERROR_CODE,
   GenericAxiosError,
   InvalidF95Token,
   UnexpectedResponseContentType
@@ -82,7 +83,7 @@ export async function fetchHTML(
     const isHTML = response.value.headers["content-type"].includes("text/html");
 
     const unexpectedResponseError = new UnexpectedResponseContentType({
-      id: 2,
+      id: ERROR_CODE.UNEXPECTED_HTML_RESPONSE,
       message: `Expected HTML but received ${response.value["content-type"]}`,
       error: null
     });
@@ -216,7 +217,7 @@ export async function fetchGETResponse(
   } catch (e) {
     shared.logger.error(`(GET) Error ${e.message} occurred while trying to fetch ${secureURL}`);
     const genericError = new GenericAxiosError({
-      id: 1,
+      id: ERROR_CODE.CANNOT_FETCH_GET_RESPONSE,
       message: `(GET) Error ${e.message} occurred while trying to fetch ${secureURL}`,
       error: e
     });
@@ -257,7 +258,7 @@ export async function fetchPOSTResponse(
     const message = `(POST) Error ${e.message} occurred while trying to fetch ${secureURL}`;
     shared.logger.error(message);
     const genericError = new GenericAxiosError({
-      id: 3,
+      id: ERROR_CODE.CANNOT_FETCH_POST_RESPONSE,
       message: message,
       error: e
     });

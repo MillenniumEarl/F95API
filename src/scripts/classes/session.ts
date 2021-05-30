@@ -13,7 +13,7 @@ import path from "path";
 // Public modules from npm
 import { sha256 } from "js-sha256";
 import tough, { CookieJar } from "tough-cookie";
-import { ParameterError } from "./errors";
+import { BaseAPIError, ERROR_CODE, ParameterError } from "./errors";
 
 // Promisifed functions
 const areadfile = promisify(fs.readFile);
@@ -189,10 +189,24 @@ export default class Session {
   async delete(): Promise<void> {
     if (this.isMapped) {
       // Delete the session data
-      await aunlinkfile(this.path);
+      await aunlinkfile(this.path).catch(
+        (e) =>
+          new BaseAPIError({
+            id: ERROR_CODE.CANNOT_DELETE_FILE,
+            message: "Cannot delete session file",
+            error: e
+          })
+      );
 
       // Delete the cookiejar
-      await aunlinkfile(this._cookieJarPath);
+      await aunlinkfile(this._cookieJarPath).catch(
+        (e) =>
+          new BaseAPIError({
+            id: ERROR_CODE.CANNOT_DELETE_FILE,
+            message: "Cannot delete cookiejar",
+            error: e
+          })
+      );
     }
   }
 

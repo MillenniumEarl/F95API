@@ -22,6 +22,14 @@ interface IBaseError {
   error: Error;
 }
 
+export const ERROR_CODE = {
+  UNEXPECTED_ERROR: 100,
+  CANNOT_DELETE_FILE: 200,
+  CANNOT_FETCH_GET_RESPONSE: 300,
+  CANNOT_FETCH_POST_RESPONSE: 301,
+  UNEXPECTED_HTML_RESPONSE: 302
+};
+
 export const USER_NOT_LOGGED = "User not authenticated, unable to continue";
 export const INVALID_USER_ID = "Invalid user ID";
 export const INVALID_POST_ID = "Invalid post ID";
