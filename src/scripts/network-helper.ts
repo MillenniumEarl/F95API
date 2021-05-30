@@ -85,7 +85,7 @@ export async function fetchHTML(
     const unexpectedResponseError = new UnexpectedResponseContentType({
       id: ERROR_CODE.UNEXPECTED_HTML_RESPONSE,
       message: `Expected HTML but received ${response.value["content-type"]}`,
-      error: null
+      error: new Error(`Expected HTML but received ${response.value["content-type"]}`)
     });
 
     return isHTML ? success(response.value.data as string) : failure(unexpectedResponseError);
