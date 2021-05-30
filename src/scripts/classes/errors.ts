@@ -8,10 +8,12 @@
 interface IBaseError {
   /**
    * Unique identifier of the error.
+   * Must be greater than zero.
    */
   id: number;
   /**
    * Error message.
+   * Cannot be empty.
    */
   message: string;
   /**
@@ -24,30 +26,39 @@ export const USER_NOT_LOGGED = "User not authenticated, unable to continue";
 export const INVALID_USER_ID = "Invalid user ID";
 export const INVALID_POST_ID = "Invalid post ID";
 export const INVALID_THREAD_ID = "Invalid thread ID";
+export const INVALID_ERROR_ID = "The error ID cannot be null and must be greater than zero";
+export const INVALID_ERROR_MESSAGE = "The error message cannot be null or empty";
+export const INVALID_ERROR_ERROR = "The reporting error cannot be null";
 
-export class GenericAxiosError extends Error implements IBaseError {
+export class BaseAPIError extends Error implements IBaseError {
   id: number;
   message: string;
   error: Error;
 
   constructor(args: IBaseError) {
     super();
+
+    // Check arguments
+    if (!args.id || args.id < 0) throw new ParameterError(INVALID_ERROR_ID);
+    if (!args.message || args.message === "") throw new ParameterError(INVALID_ERROR_MESSAGE);
+    if (!args.error) throw new ParameterError(INVALID_ERROR_ERROR);
+
+    // Assign arguments
     this.id = args.id;
     this.message = args.message;
     this.error = args.error;
   }
 }
 
-export class UnexpectedResponseContentType extends Error implements IBaseError {
-  id: number;
-  message: string;
-  error: Error;
-
+export class GenericAxiosError extends BaseAPIError {
   constructor(args: IBaseError) {
-    super();
-    this.id = args.id;
-    this.message = args.message;
-    this.error = args.error;
+    super(args);
+  }
+}
+
+export class UnexpectedResponseContentType extends BaseAPIError {
+  constructor(args: IBaseError) {
+    super(args);
   }
 }
 
