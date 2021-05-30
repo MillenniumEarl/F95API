@@ -1,3 +1,8 @@
+// Copyright (c) 2021 MillenniumEarl
+//
+// This software is released under the MIT License.
+// https://opensource.org/licenses/MIT
+
 "use strict";
 
 // Public module from npm
@@ -15,8 +20,8 @@ const { expect } = chai;
 export function suite(): void {
   it("Set invalid ID", function setInvalidID() {
     const user = new PlatformUser();
-    expect(user.setID(-1)).to.be.rejectedWith(INVALID_USER_ID);
-    expect(user.setID(null)).to.be.rejectedWith(INVALID_USER_ID);
+    expect(() => user.setID(-1)).throw(INVALID_USER_ID);
+    expect(() => user.setID(null)).throw(INVALID_USER_ID);
   });
 
   it("Fetch platform user without ID", async function fetchWithoutID() {
