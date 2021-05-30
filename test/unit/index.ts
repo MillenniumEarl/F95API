@@ -16,6 +16,7 @@ import { suite as post } from "./classes/mapping/post.test";
 import { suite as thread } from "./classes/mapping/thread.test";
 import { suite as userProfile } from "./classes/mapping/user-profile.test";
 import { suite as errors } from "./classes/errors.test";
+import { suite as result } from "./classes/result.test";
 
 describe("Unit tests", function testBasic() {
   // describe("Test network helper", network.bind(this));
@@ -24,9 +25,10 @@ describe("Unit tests", function testBasic() {
   describe("Test class Animation", animationClass.bind(this));
   describe("Test class Comic", comicClass.bind(this));
   describe("Test class Game", gameClass.bind(this));
-  describe("Test PlatformUser", platformUser.bind(this));
-  describe("Test Post", post.bind(this));
-  describe("Test Thread", thread.bind(this));
-  describe("Test UserProfile", userProfile.bind(this));
+  describe("Test class PlatformUser", platformUser.bind(this));
+  describe("Test class Post", post.bind(this));
+  describe("Test class Thread", thread.bind(this));
+  describe("Test class UserProfile", userProfile.bind(this));
   describe("Test errors", errors.bind(this));
+  describe("Test class Result", result.bind(this));
 });
