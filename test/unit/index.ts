@@ -17,19 +17,13 @@ import { suite as thread } from "./classes/mapping/thread.test";
 import { suite as userProfile } from "./classes/mapping/user-profile.test";
 import { suite as errors } from "./classes/errors.test";
 
-describe("Test basic function (unit)", function testBasic() {
-  //#region Set-up
-
-  this.timeout(30000); // All tests in this suite get 30 seconds before timeout
-
-  //#endregion Set-up
-
+describe("Unit tests", function testBasic() {
   // describe("Test network helper", network.bind(this));
-  describe("Test Basic handiwork class", basicClass.bind(this));
-  describe("Test Asset handiwork class", assetClass.bind(this));
-  describe("Test Animation handiwork class", animationClass.bind(this));
-  describe("Test Comic handiwork class", comicClass.bind(this));
-  describe("Test Game handiwork class", gameClass.bind(this));
+  describe("Test class Basic", basicClass.bind(this));
+  describe("Test class Asset", assetClass.bind(this));
+  describe("Test class Animation", animationClass.bind(this));
+  describe("Test class Comic", comicClass.bind(this));
+  describe("Test class Game", gameClass.bind(this));
   describe("Test PlatformUser", platformUser.bind(this));
   describe("Test Post", post.bind(this));
   describe("Test Thread", thread.bind(this));

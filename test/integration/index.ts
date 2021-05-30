@@ -9,13 +9,13 @@
 import { suite as credentials } from "./classes/credentials.test";
 import { suite as prefixParser } from "./classes/prefix-parser.test";
 
-describe("Test basic function (integration)", function testBasic() {
+describe("Integration Tests", function testBasic() {
   //#region Set-up
 
   this.timeout(30000); // All tests in this suite get 30 seconds before timeout
 
   //#endregion Set-up
 
-  describe("Test Credentials", credentials.bind(this));
-  describe("Test PrefixParser", prefixParser.bind(this));
+  describe("Test class Credentials", credentials.bind(this));
+  describe("Test class PrefixParser", prefixParser.bind(this));
 });
