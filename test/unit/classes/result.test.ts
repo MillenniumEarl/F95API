@@ -17,7 +17,7 @@ export function suite(): void {
       const result = failure.isFailure();
 
       // Expect result
-      expect(result).to.be.equal(true);
+      expect(result).to.be.true;
     });
 
     it("Failure - isSuccess", () => {
@@ -29,7 +29,7 @@ export function suite(): void {
       const result = failure.isSuccess();
 
       // Expect result
-      expect(result).to.be.equal(false);
+      expect(result).to.be.false;
     });
 
     it("Failure - applyOnSuccess", () => {
@@ -59,7 +59,7 @@ export function suite(): void {
       const result = success.isFailure();
 
       // Expect result
-      expect(result).to.be.equal(false);
+      expect(result).to.be.false;
     });
 
     it("Success - isSuccess", () => {
@@ -71,7 +71,7 @@ export function suite(): void {
       const result = success.isSuccess();
 
       // Expect result
-      expect(result).to.be.equal(true);
+      expect(result).to.be.true;
     });
 
     it("Success - applyOnSuccess", () => {
