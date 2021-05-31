@@ -119,8 +119,25 @@ export default class Thread implements ILazy {
    *
    * The unique ID of the thread must be specified.
    */
-  constructor(id: number) {
-    this._id = id;
+  constructor(id: number);
+  /**
+   * Initializes an object for mapping a thread.
+   *
+   * The URL of the thread must be specified.
+   */
+  constructor(url: URL);
+  constructor(args?: number | URL) {
+    // Check argument
+    if (!args) throw new ParameterError("The ID or URL of the thread cannnot be null");
+
+    // Assign ID
+    this._id = typeof args === "number" ? args : this.getIDFromURL(args);
+
+    // Check ID
+    if (!this.id || this.id < 1) throw new InvalidID(INVALID_THREAD_ID);
+
+    // Prepare the url
+    this._url = new URL(this.id.toString(), urls.THREADS).toString();
   }
 
   //#region Private methods
@@ -155,7 +172,7 @@ export default class Thread implements ILazy {
     // Start parsing the posts
     const posts = $(THREAD.POSTS_IN_PAGE)
       .toArray()
-      .map((el, idx) => {
+      .map((el) => {
         const id = $(el).find(POST.ID).attr("id").replace("post-", "");
         return new Post(parseInt(id, 10));
       });
@@ -225,6 +242,26 @@ export default class Thread implements ILazy {
     if (DateTime.fromISO(published).isValid) this._publication = new Date(published);
   }
 
+  /**
+   * Gets the ID of the thread from its URL.
+   */
+  private getIDFromURL(url: URL): number {
+    // Local variables
+    const surl = url.toString();
+    let id = -1;
+
+    // Find IDs in URLs in the form:
+    // + https://f95zone.to/threads/NAME.ID/
+    // + https://f95zone.to/threads/ID/
+    const regex = new RegExp(/(threads\/|\.)([0-9]+)/);
+    if (surl.match(regex)) {
+      const sid = surl.match(regex)[0].replace(".", "").replace("threads/", "");
+      id = parseInt(sid, 10);
+    }
+
+    return id;
+  }
+
   //#endregion Private methods
 
   //#region Public methods
@@ -235,12 +272,6 @@ export default class Thread implements ILazy {
   public async fetch(): Promise<void> {
     // Check login
     if (!shared.isLogged) throw new UserNotLogged(USER_NOT_LOGGED);
-
-    // Check ID
-    if (!this.id || this.id < 1) throw new InvalidID(INVALID_THREAD_ID);
-
-    // Prepare the url
-    this._url = new URL(this.id.toString(), urls.THREADS).toString();
 
     // Fetch the HTML source
     const response = await fetchHTML(this.url);
