@@ -58,6 +58,51 @@ export const WATCHED_THREAD = {
   LAST_PAGE: "ul.pageNav-main > li:last-child > a"
 };
 
+export const BOOKMARKED_POST = {
+  /**
+   * List of elements containing the data of the bookmarked posts.
+   */
+  BODIES: "li.block-row--separated",
+  /**
+   * Link element containing the full URL
+   * of the post in the `href` attribute.
+   *
+   * It could be defined as URL of a post (`.../posts/ID`) otherwise indicates the first post of a thread.
+   *
+   * For use within a `BOOKMARKED_POST.BODIES` selector.
+   */
+  URL: "* div.contentRow-title > a",
+  /**
+   * Link element containing the description of the bookmark as text.
+   *
+   * For use within a `BOOKMARKED_POST.BODIES` selector.
+   */
+  DESCRIPTION: "* div.contentRow-snippet",
+  /**
+   * Link element containing the ID of author of the post in the `data-user-id` attribute.
+   *
+   * For use within a `BOOKMARKED_POST.BODIES` selector.
+   */
+  OWNER_ID: "* div.contentRow-minor > * a.username:last-child",
+  /**
+   * Bookmark save date.
+   * The date is contained in the `datetime` attribute as an ISO string.
+   *
+   * For use within a `BOOKMARKED_POST.BODIES` selector.
+   */
+  BOOKMARK_TIME: "* div.contentRow-minor > * time",
+  /**
+   * Label elements for the current bookmarked post as text.
+   *
+   * For use within a `BOOKMARKED_POST.BODIES` selector.
+   */
+  LABELS: "* div.contentRow-minor > * li.tagList > a.tagItem",
+  /**
+   * Index of the last page available as text.
+   */
+  LAST_PAGE: "ul.pageNav-main > li:last-child > a"
+};
+
 export const THREAD = {
   /**
    * Number of pages in the thread (as text of the element).
