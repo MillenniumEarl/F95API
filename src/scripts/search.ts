@@ -59,12 +59,6 @@ async function getURLsFromQuery(query: IQuery, limit = 30): Promise<string[]> {
       fetchThreadHandiworkURLs(query as ThreadSearchQuery, limit)
   };
 
-  const typeMap = {
-    HandiworkSearchQuery: HandiworkSearchQuery,
-    LatestSearchQuery: LatestSearchQuery,
-    ThreadSearchQuery: ThreadSearchQuery
-  };
-
   // Throws error if the type of query is non existent
   if (!Object.keys(functionMap).includes(query.itype)) {
     throw Error(`Invalid query type: ${query.itype}`);
