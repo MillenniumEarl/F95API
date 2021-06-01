@@ -103,6 +103,69 @@ export const BOOKMARKED_POST = {
   LAST_PAGE: "ul.pageNav-main > li:last-child > a"
 };
 
+export const ALERT = {
+  /**
+   * List of elements containing the data of the alerts.
+   */
+  BODIES: "ol.listPlain > * li[data-alert-id] > div.user-alert > div.contentRow-main",
+  /**
+   * Indicates the user who performed a specific action reported by the alert.
+   * If the user has the symbols associated with the name may occur duplicate,
+   * make sure to get the element without children.
+   *
+   * The `data-user-id` attribute contains the user ID.
+   *
+   * For use within a `ALERT.BODIES` selector.
+   */
+  ACTOR: " > a.username",
+  /**
+   * The Alert page associated.
+   *
+   * Example: a thread post, the trophy page.
+   *
+   * For use within a `ALERT.BODIES` selector.
+   */
+  REFERENCE_PAGE: "> a.fauxBlockLink-blockLink",
+  /**
+   * Type of reaction to a post/thread.
+   *
+   * It may not be present in all alerts.
+   *
+   * For use within a `ALERT.BODIES` selector.
+   */
+  REACTION: "> span.reaction > span.reaction-text > bdi",
+  /**
+   * If the alert is summarized (so the `ALERT.SUMMARIZED_BUTTON` button is present),
+   * this link shows the partial URL to the page containing the separate alerts.
+   *
+   * For use within a `ALERT.BODIES` selector.
+   */
+  SUMMARIZED_SEPARATE_ALERTS: "> a[href*='alert_id']",
+  /**
+   * Date of receipt of the Alert in the `datetime○` attribute.
+   *
+   * For use within a `ALERT.BODIES` selector.
+   */
+  ALERT_TIME: "> div.contentRow-minor > time",
+  /**
+   * Button used to set an alert as unread.
+   * Its absence indicates that the message has not been read.
+   *
+   * For use within a `ALERT.BODIES` selector.
+   */
+  MARK_UNREAD_BUTTON: "> div.contentRow-minor > a.markAlertUnread",
+  /**
+   * If the button is present means that multiple similar alerts are grouped together.
+   *
+   * For use within a `ALERT.BODIES` selector.
+   */
+  SUMMARIZED_BUTTON: "> div.contentRow-minor > a.unsummarizeAlert",
+  /**
+   * Index of the last page available as text.
+   */
+  LAST_PAGE: "ul.pageNav-main > li:last-child > a"
+};
+
 export const THREAD = {
   /**
    * Number of pages in the thread (as text of the element).
