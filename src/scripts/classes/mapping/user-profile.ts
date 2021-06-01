@@ -11,7 +11,7 @@ import cheerio, { Node } from "cheerio";
 // Modules from files
 import PlatformUser from "./platform-user";
 import { urls } from "../../constants/url";
-import { BOOKMARKED_POST, GENERIC, WATCHED_THREAD } from "../../constants/css-selector";
+import { ALERT, BOOKMARKED_POST, GENERIC, WATCHED_THREAD } from "../../constants/css-selector";
 import { fetchHTML } from "../../network-helper";
 import {
   GenericAxiosError,
@@ -22,7 +22,9 @@ import {
 import { Result } from "../result";
 import shared from "../../shared";
 import Game from "../handiwork/game";
-import { Thread } from "../../..";
+import { IAlert } from "../../interfaces";
+import fetchAlertElements from "../../fetch-data/fetch-alert";
+import Thread from "./thread";
 
 // Interfaces
 interface IWatchedThread {
@@ -48,7 +50,7 @@ interface IBookmarkedPost {
   /**
    * ID of the user that wrote this post.
    */
-  authorID: number;
+  userid: number;
   /**
    * When this post was saved.
    */
@@ -63,7 +65,6 @@ interface IBookmarkedPost {
   labels: string[];
 }
 
-// Types
 type TFetchResult = Result<GenericAxiosError | UnexpectedResponseContentType, string>;
 
 /**
@@ -74,7 +75,7 @@ export default class UserProfile extends PlatformUser {
 
   private _watched: IWatchedThread[] = [];
   private _bookmarks: IBookmarkedPost[] = [];
-  private _alerts: string[] = [];
+  private _alerts: IAlert[] = [];
   private _conversations: string[];
   private _suggestedGames: Game[];
 
@@ -96,9 +97,8 @@ export default class UserProfile extends PlatformUser {
   }
   /**
    * List of alerts.
-   * @todo
    */
-  public get alerts(): string[] {
+  public get alerts(): IAlert[] {
     return this._alerts;
   }
   /**
@@ -140,6 +140,9 @@ export default class UserProfile extends PlatformUser {
 
     // Then the bookmarked posts
     this._bookmarks = await this.fetchBookmarkedPost();
+
+    // ...the alerts
+    this._alerts = await this.fetchAlerts();
   }
 
   //#endregion Public methods
@@ -213,6 +216,25 @@ export default class UserProfile extends PlatformUser {
     } else throw response.value;
   }
 
+  private async fetchAlerts(): Promise<IAlert[]> {
+    // Prepare and fetch URL
+    const url = new URL(urls.ALERTS);
+    const response = await fetchHTML(url.toString());
+
+    if (response.isSuccess()) {
+      // Fetch the elements in the page
+      const result = await this.fetchDataInPage(
+        response.value,
+        url,
+        ALERT.LAST_PAGE,
+        fetchAlertElements
+      );
+
+      // Cast and return elements
+      return (await Promise.all(result)) as IAlert[];
+    } else throw response.value;
+  }
+
   /**
    * Gets all the elements that solve a specific selector in a list on an HTML page.
    * @param html Source code of the HTML page containing a part of the elements of a list..
@@ -224,7 +246,9 @@ export default class UserProfile extends PlatformUser {
     html: string,
     url: URL,
     lastPageSelector: string,
-    elementFunc: (html: string) => Promise<IWatchedThread[]> | Promise<IBookmarkedPost[]>
+    elementFunc: (
+      html: string
+    ) => Promise<IWatchedThread[]> | Promise<IBookmarkedPost[]> | Promise<IAlert[]>
   ) {
     // Load page in cheerio
     const $ = cheerio.load(html);
@@ -235,7 +259,7 @@ export default class UserProfile extends PlatformUser {
     const pages = await this.fetchPages(url, lastPage);
 
     const promises = pages.map(async (page) => {
-      const elements = page.applyOnSuccess(elementFunc);
+      const elements = page.applyOnSuccess((value) => elementFunc(value));
       if (elements.isSuccess()) return await elements.value;
     });
 
@@ -340,7 +364,7 @@ export default class UserProfile extends PlatformUser {
 
       return {
         id: foundID,
-        authorID: parseInt(sOwnerID, 10),
+        userid: parseInt(sOwnerID, 10),
         description: $(el).find(BOOKMARKED_POST.DESCRIPTION).text().trim(),
         savedate: new Date(sDate),
         labels: $(el)

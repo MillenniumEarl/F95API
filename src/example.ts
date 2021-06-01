@@ -74,12 +74,14 @@ async function fetchUserData(): Promise<void> {
   await userdata.fetch();
 
   const gameThreads = userdata.watched.filter((e) => e.forum === "Games");
-  const unread = gameThreads.filter((e) => e.unread).length;
+  const unreadGameThreads = gameThreads.filter((e) => e.unread).length;
+  const unreadAlerts = userdata.alerts.filter((i) => !i.read).length;
 
   console.log(`User: ${userdata.name}`);
   console.log(`Threads followed: ${userdata.watched.length}`);
   console.log(`Games followed: ${gameThreads.length}`);
-  console.log(`Unread game threads: ${unread}\n`);
+  console.log(`Unread game threads: ${unreadGameThreads}`);
+  console.log(`Unread alerts: ${unreadAlerts}\n`);
 }
 
 /**

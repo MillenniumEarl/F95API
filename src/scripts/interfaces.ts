@@ -100,6 +100,27 @@ export type TCategory = "games" | "mods" | "comics" | "animations" | "assets";
 export type TQueryInterface = "LatestSearchQuery" | "ThreadSearchQuery" | "HandiworkSearchQuery";
 
 /**
+ * Types of reaction that can be used in response to a post.
+ */
+export type TAlertReactionType =
+  | "Like"
+  | "HeyThere"
+  | "Love"
+  | "Jizzed"
+  | "Hearth"
+  | "Yay"
+  | "Haha"
+  | "Sad"
+  | "Thinking"
+  | "Facepalm"
+  | "Wow";
+
+/**
+ * Types of alert messages that can be notified to the currently logged in user.
+ */
+export type TAlertType = "Quote" | "Reaction" | "Award" | "Reply" | "Rating" | "Unknown";
+
+/**
  * Collection of values defined for each
  * handiwork on the F95Zone platform.
  */
@@ -340,4 +361,34 @@ export interface ILazy {
    * Gets the data relating to the object.
    */
   fetch(): Promise<void>;
+}
+
+/**
+ * It represents a single alert message received by the currently logged in user.
+ */
+export interface IAlert {
+  /**
+   * Type of alert.
+   */
+  type: TAlertType;
+  /**
+   * ID of the user that caused this alert.
+   */
+  userid: number;
+  /**
+   * URL linked to this alert (may be a post, a thread...).
+   */
+  linkedURL: URL;
+  /**
+   * If `type` is `Reaction`, define the reaction otherwise is `null`.
+   */
+  reaction: TAlertReactionType;
+  /**
+   * When this alert was raised.
+   */
+  date: Date;
+  /**
+   * True if the alert has been read.
+   */
+  read: boolean;
 }
