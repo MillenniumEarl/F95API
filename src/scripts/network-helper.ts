@@ -6,9 +6,8 @@
 "use strict";
 
 // Public modules from npm
-import axios, { AxiosResponse } from "axios";
+import { AxiosInstance, AxiosResponse } from "axios";
 import cheerio from "cheerio";
-import axiosCookieJarSupport from "axios-cookiejar-support";
 
 // Modules from file
 import shared from "./shared";
@@ -23,9 +22,7 @@ import {
   UnexpectedResponseContentType
 } from "./classes/errors";
 import Credentials from "./classes/credentials";
-
-// Configure axios to use the cookie jar
-axiosCookieJarSupport(axios);
+import configure from "./agent-configuration";
 
 // Types
 type TLookupMapCode = {
@@ -69,12 +66,18 @@ const commonConfig = {
   timeout: 5000
 };
 
+// Agent used to send requests
+let api: AxiosInstance = null;
+
 /**
  * Gets the HTML code of a page.
  */
 export async function fetchHTML(
   url: string
 ): Promise<Result<GenericAxiosError | UnexpectedResponseContentType, string>> {
+  // Initialize the agent if not ready
+  if (!api) await init();
+
   // Fetch the response of the platform
   const response = await fetchGETResponse(url);
 
@@ -104,6 +107,9 @@ export async function authenticate(
   credentials: Credentials,
   force: boolean = false
 ): Promise<LoginResult> {
+  // Initialize the agent if not ready
+  if (!api) await init();
+
   shared.logger.info(`Authenticating with user ${credentials.username}`);
   if (!credentials.token) throw new InvalidF95Token(`Invalid token for auth: ${credentials.token}`);
 
@@ -154,6 +160,9 @@ export async function send2faCode(
   provider: TProvider = "auto",
   trustedDevice: boolean = false
 ): Promise<Result<GenericAxiosError, LoginResult>> {
+  // Initialize the agent if not ready
+  if (!api) await init();
+
   // Prepare the parameters to send via POST request
   const params = {
     _xfRedirect: urls.BASE,
@@ -188,6 +197,9 @@ export async function send2faCode(
  * Obtain the token used to authenticate the user to the platform.
  */
 export async function getF95Token(): Promise<string> {
+  // Initialize the agent if not ready
+  if (!api) await init();
+
   // Fetch the response of the platform
   const response = await fetchGETResponse(urls.LOGIN);
 
@@ -212,7 +224,7 @@ export async function fetchGETResponse(
   try {
     // Fetch and return the response
     commonConfig.jar = shared.session.cookieJar;
-    const response = await axios.get(secureURL, commonConfig);
+    const response = await api.get(secureURL, commonConfig);
     return success(response);
   } catch (e) {
     shared.logger.error(`(GET) Error ${e.message} occurred while trying to fetch ${secureURL}`);
@@ -226,7 +238,7 @@ export async function fetchGETResponse(
 }
 
 /**
- * Performs a POST request through axios.
+ * Performs a POST request through Axios.
  * @param url URL to request
  * @param params List of value pairs to send with the request
  * @param force If `true`, the request ignores the sending of cookies already present on the device.
@@ -252,7 +264,7 @@ export async function fetchPOSTResponse(
 
   // Send the POST request and await the response
   try {
-    const response = await axios.post(secureURL, urlParams, config);
+    const response = await api.post(secureURL, urlParams, config);
     return success(response);
   } catch (e) {
     const message = `(POST) Error ${e.message} occurred while trying to fetch ${secureURL}`;
@@ -325,13 +337,21 @@ export async function urlExists(url: string, checkRedirect: boolean = false): Pr
  */
 export async function getUrlRedirect(url: string): Promise<string> {
   commonConfig.jar = shared.session.cookieJar;
-  const response = await axios.head(url, commonConfig);
+  const response = await api.head(url, commonConfig);
   return response.config.url;
 }
 
 //#endregion Utility methods
 
 //#region Private methods
+
+/**
+ * Initializes the Axios agent used to
+ * send and receive requests on the network.
+ */
+async function init(): Promise<void> {
+  api = await configure();
+}
 
 /**
  * Check with Axios if a URL exists.
@@ -343,7 +363,7 @@ async function axiosUrlExists(url: string): Promise<boolean> {
 
   try {
     commonConfig.jar = shared.session.cookieJar;
-    const response = await axios.head(url, commonConfig);
+    const response = await api.head(url, commonConfig);
     valid = response && !/4\d\d/.test(response.status.toString());
   } catch (error) {
     // Throw error only if the error is unknown

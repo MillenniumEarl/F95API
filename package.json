@@ -37,10 +37,13 @@
   },
   "dependencies": {
     "axios": "^0.21.1",
+    "axios-cache-adapter": "^2.7.3",
     "axios-cookiejar-support": "^1.0.1",
     "cheerio": "^1.0.0-rc.9",
     "class-validator": "^0.13.1",
     "js-sha256": "^0.9.0",
+    "localforage": "^1.9.0",
+    "localforage-memoryStorageDriver": "^0.9.2",
     "log4js": "^6.3.0",
     "luxon": "^1.26.0",
     "tough-cookie": "^4.0.0"
