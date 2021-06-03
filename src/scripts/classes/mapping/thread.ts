@@ -28,13 +28,15 @@ import {
 import { getJSONLD, TJsonLD } from "../../scrape-data/json-ld";
 import shared from "../../shared";
 
+type TPostsForPage = 20 | 40 | 60 | 100;
+
 /**
  * Represents a generic F95Zone platform thread.
  */
 export default class Thread implements ILazy {
   //#region Fields
 
-  private POST_FOR_PAGE = 20;
+  private POST_FOR_PAGE: TPostsForPage = 20;
   private _id: number;
   private _url: string;
   private _title: string;
@@ -146,7 +148,7 @@ export default class Thread implements ILazy {
   /**
    * Set the number of posts to display for the current thread.
    */
-  private async setMaximumPostsForPage(n: 20 | 40 | 60 | 100): Promise<void> {
+  private async setMaximumPostsForPage(n: TPostsForPage): Promise<void> {
     // Prepare the parameters to send via POST request
     const params = {
       _xfResponseType: "json",
@@ -164,9 +166,9 @@ export default class Thread implements ILazy {
   }
 
   /**
-   * Gets all posts on a page.
+   * Fetch all the posts on a page.
    */
-  private parsePostsInPage(html: string): Post[] {
+  private async parsePostsInPage(html: string): Promise<Post[]> {
     // Load the HTML
     const $ = cheerio.load(html);
 
@@ -178,7 +180,12 @@ export default class Thread implements ILazy {
         return new Post(parseInt(id, 10));
       });
 
+    // Fetch the data of the posts
+    const promises = posts.map((post) => post.fetch(html));
+
     // Wait for the post to be fetched
+    await Promise.all(promises);
+
     return posts;
   }
 
@@ -290,8 +297,8 @@ export default class Thread implements ILazy {
     // Validate parameters
     if (index < 1) throw new ParameterError("Index must be greater or equal than 1");
 
-    // Local variables
-    let returnValue = null;
+    // Reduce the maximum number of posts per page to POST_FOR_PAGE
+    await this.setMaximumPostsForPage(this.POST_FOR_PAGE);
 
     // Get the page number of the post
     const page = Math.ceil(index / this.POST_FOR_PAGE);
@@ -301,20 +308,12 @@ export default class Thread implements ILazy {
     const htmlResponse = await fetchHTML(url);
 
     if (htmlResponse.isSuccess()) {
-      // Parse the post
-      const posts = this.parsePostsInPage(htmlResponse.value);
+      // Fetch all the posts in the page
+      const posts = await this.parsePostsInPage(htmlResponse.value);
 
-      // Find the searched post
-      for (const p of posts) {
-        await p.fetch();
-
-        if (p.number === index) {
-          returnValue = p;
-          break;
-        }
-      }
-
-      return returnValue;
+      // Find and return the post with the same
+      // position number as the specified index
+      return posts.find((p) => p.number === index);
     } else throw htmlResponse.value;
   }
 
