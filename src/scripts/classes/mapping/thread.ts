@@ -19,6 +19,7 @@ import { fetchHTML, fetchPOSTResponse } from "../../network-helper";
 import Shared from "../../shared";
 import {
   InvalidID,
+  INVALID_THREAD_CONSTRUCTOR_ARGUMENT,
   INVALID_THREAD_ID,
   ParameterError,
   UserNotLogged,
@@ -128,7 +129,7 @@ export default class Thread implements ILazy {
   constructor(url: URL);
   constructor(args?: number | URL) {
     // Check argument
-    if (!args) throw new ParameterError("The ID or URL of the thread cannnot be null");
+    if (!args) throw new ParameterError(INVALID_THREAD_CONSTRUCTOR_ARGUMENT);
 
     // Assign ID
     this._id = typeof args === "number" ? args : this.getIDFromURL(args);

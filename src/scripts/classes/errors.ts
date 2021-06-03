@@ -34,6 +34,7 @@ export const USER_NOT_LOGGED = "User not authenticated, unable to continue";
 export const INVALID_USER_ID = "Invalid user ID";
 export const INVALID_POST_ID = "Invalid post ID";
 export const INVALID_THREAD_ID = "Invalid thread ID";
+export const INVALID_THREAD_CONSTRUCTOR_ARGUMENT = "The ID or URL of the thread cannnot be null";
 export const INVALID_ERROR_ID = "The error ID cannot be null and must be greater than zero";
 export const INVALID_ERROR_MESSAGE = "The error message cannot be null or empty";
 export const INVALID_ERROR_ERROR = "The reporting error cannot be null";
