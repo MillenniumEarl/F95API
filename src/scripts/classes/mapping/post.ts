@@ -96,13 +96,17 @@ export default class Post implements ILazy {
 
   /**
    * Gets the post data starting from its unique ID for the entire platform.
+   * @param html HTML source code of the page that contains the post
    */
-  public async fetch(): Promise<void> {
+  public async fetch(html?: string): Promise<void> {
     // Check login
     if (!shared.isLogged) throw new UserNotLogged(USER_NOT_LOGGED);
 
     // Check ID
     if (!this.id || this.id < 1) throw new InvalidID(INVALID_POST_ID);
+
+    // Avoid to fetch the HTML if we already have it
+    if (html) await this.elaborateResponse(html);
 
     // Fetch HTML page containing the post
     const url = new URL(this.id.toString(), urls.POSTS).toString();
@@ -126,7 +130,7 @@ export default class Post implements ILazy {
 
     const post = $(THREAD.POSTS_IN_PAGE)
       .toArray()
-      .find((el, idx) => {
+      .find((el) => {
         // Fetch the ID and check if it is what we are searching
         const sid: string = $(el).find(POST.ID).attr("id").replace("post-", "");
         const id = parseInt(sid, 10);
