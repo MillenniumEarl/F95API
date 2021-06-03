@@ -6,8 +6,9 @@
 "use strict";
 
 // Public modules from npm
-import { AxiosInstance, AxiosResponse } from "axios";
+import { AxiosError, AxiosInstance, AxiosResponse } from "axios";
 import cheerio from "cheerio";
+import { Semaphore } from "await-semaphore";
 
 // Modules from file
 import shared from "./shared";
@@ -66,8 +67,13 @@ const commonConfig = {
   timeout: 5000
 };
 
+let initialized = false;
+
 // Agent used to send requests
 let api: AxiosInstance = null;
+
+// Semaphore used to avoid flooding the platform
+let semaphore: Semaphore = null;
 
 /**
  * Gets the HTML code of a page.
@@ -75,11 +81,11 @@ let api: AxiosInstance = null;
 export async function fetchHTML(
   url: string
 ): Promise<Result<GenericAxiosError | UnexpectedResponseContentType, string>> {
-  // Initialize the agent if not ready
-  if (!api) await init();
+  // Secure the URL
+  const secureURL = enforceHttpsUrl(url);
 
   // Fetch the response of the platform
-  const response = await fetchGETResponse(url);
+  const response = await fetchGETResponse(secureURL);
 
   if (response.isSuccess()) {
     // Check if the response is a HTML source code
@@ -107,9 +113,6 @@ export async function authenticate(
   credentials: Credentials,
   force: boolean = false
 ): Promise<LoginResult> {
-  // Initialize the agent if not ready
-  if (!api) await init();
-
   shared.logger.info(`Authenticating with user ${credentials.username}`);
   if (!credentials.token) throw new InvalidF95Token(`Invalid token for auth: ${credentials.token}`);
 
@@ -160,9 +163,6 @@ export async function send2faCode(
   provider: TProvider = "auto",
   trustedDevice: boolean = false
 ): Promise<Result<GenericAxiosError, LoginResult>> {
-  // Initialize the agent if not ready
-  if (!api) await init();
-
   // Prepare the parameters to send via POST request
   const params = {
     _xfRedirect: urls.BASE,
@@ -197,9 +197,6 @@ export async function send2faCode(
  * Obtain the token used to authenticate the user to the platform.
  */
 export async function getF95Token(): Promise<string> {
-  // Initialize the agent if not ready
-  if (!api) await init();
-
   // Fetch the response of the platform
   const response = await fetchGETResponse(urls.LOGIN);
 
@@ -218,22 +215,28 @@ export async function getF95Token(): Promise<string> {
 export async function fetchGETResponse(
   url: string
 ): Promise<Result<GenericAxiosError, AxiosResponse<any>>> {
-  // Secure the URL
-  const secureURL = enforceHttpsUrl(url);
+  // Initialize the components if not ready
+  if (!initialized) await init();
+
+  // Get a token from the semaphore
+  const release = await semaphore.acquire();
 
   try {
     // Fetch and return the response
     commonConfig.jar = shared.session.cookieJar;
-    const response = await api.get(secureURL, commonConfig);
+    const response = await api.get(url, commonConfig);
     return success(response);
   } catch (e) {
-    shared.logger.error(`(GET) Error ${e.message} occurred while trying to fetch ${secureURL}`);
+    shared.logger.error(`(GET) Error ${e.message} occurred while trying to fetch ${url}`);
     const genericError = new GenericAxiosError({
       id: ERROR_CODE.CANNOT_FETCH_GET_RESPONSE,
-      message: `(GET) Error ${e.message} occurred while trying to fetch ${secureURL}`,
+      message: `(GET) Error ${e.message} occurred while trying to fetch ${url}`,
       error: e
     });
     return failure(genericError);
+  } finally {
+    // Release the token
+    release();
   }
 }
 
@@ -248,8 +251,8 @@ export async function fetchPOSTResponse(
   params: { [s: string]: string },
   force = false
 ): Promise<Result<GenericAxiosError, AxiosResponse<any>>> {
-  // Secure the URL
-  const secureURL = enforceHttpsUrl(url);
+  // Initialize the components if not ready
+  if (!initialized) await init();
 
   // Prepare the parameters for the POST request
   const urlParams = new URLSearchParams();
@@ -262,12 +265,15 @@ export async function fetchPOSTResponse(
   // Remove the cookies if forced
   if (force) delete config.jar;
 
+  // Get a token from the semaphore
+  const release = await semaphore.acquire();
+
   // Send the POST request and await the response
   try {
-    const response = await api.post(secureURL, urlParams, config);
+    const response = await api.post(url, urlParams, config);
     return success(response);
   } catch (e) {
-    const message = `(POST) Error ${e.message} occurred while trying to fetch ${secureURL}`;
+    const message = `(POST) Error ${e.message} occurred while trying to fetch ${url}`;
     shared.logger.error(message);
     const genericError = new GenericAxiosError({
       id: ERROR_CODE.CANNOT_FETCH_POST_RESPONSE,
@@ -275,6 +281,42 @@ export async function fetchPOSTResponse(
       error: e
     });
     return failure(genericError);
+  } finally {
+    // Release the token
+    release();
+  }
+}
+
+/**
+ * Performs a HEAD request to a specific URL and returns the response.
+ */
+export async function fetchHEADResponse(
+  url: string
+): Promise<Result<GenericAxiosError, AxiosResponse<any>>> {
+  // Initialize the components if not ready
+  if (!initialized) await init();
+
+  // Get a token from the semaphore
+  const release = await semaphore.acquire();
+
+  // Prepare the cookie jar
+  commonConfig.jar = shared.session.cookieJar;
+
+  try {
+    commonConfig.jar = shared.session.cookieJar;
+    const response = await api.head(url, commonConfig);
+    return success(response);
+  } catch (e) {
+    shared.logger.error(`(HEAD) Error ${e.message} occurred while trying to fetch ${url}`);
+    const genericError = new GenericAxiosError({
+      id: ERROR_CODE.CANNOT_FETCH_HEAD_RESPONSE,
+      message: `(HEAD) Error ${e.message} occurred while trying to fetch ${url}`,
+      error: e
+    });
+    return failure(genericError);
+  } finally {
+    // Release the token
+    release();
   }
 }
 
@@ -336,9 +378,10 @@ export async function urlExists(url: string, checkRedirect: boolean = false): Pr
  * @returns {Promise<String>} Redirect URL or the passed URL
  */
 export async function getUrlRedirect(url: string): Promise<string> {
-  commonConfig.jar = shared.session.cookieJar;
-  const response = await api.head(url, commonConfig);
-  return response.config.url;
+  const response = await fetchHEADResponse(url);
+
+  if (response.isSuccess()) return response.value.config.url;
+  else throw response.value;
 }
 
 //#endregion Utility methods
@@ -346,11 +389,12 @@ export async function getUrlRedirect(url: string): Promise<string> {
 //#region Private methods
 
 /**
- * Initializes the Axios agent used to
- * send and receive requests on the network.
+ * Initializes the components used to manage requests to the network.
  */
 async function init(): Promise<void> {
   api = await configure();
+  semaphore = new Semaphore(15);
+  initialized = true;
 }
 
 /**
@@ -361,14 +405,11 @@ async function axiosUrlExists(url: string): Promise<boolean> {
   const ERROR_CODES = ["ENOTFOUND", "ETIMEDOUT"];
   let valid = false;
 
-  try {
-    commonConfig.jar = shared.session.cookieJar;
-    const response = await api.head(url, commonConfig);
-    valid = response && !/4\d\d/.test(response.status.toString());
-  } catch (error) {
-    // Throw error only if the error is unknown
-    if (!ERROR_CODES.includes(error.code)) throw error;
-  }
+  // Send a HEAD request
+  const r = await fetchHEADResponse(url);
+  if (r.isSuccess()) valid = r.value && !/4\d\d/.test(r.value.status.toString());
+  else if (r.isFailure() && !ERROR_CODES.includes((r.value.error as AxiosError<any>).code))
+    throw r.value.error;
 
   return valid;
 }
@@ -405,19 +446,20 @@ function manageLoginPOSTResponse(response: AxiosResponse<any>) {
  */
 function messageToCode(message: string): number {
   // Prepare the lookup dict
-  const mapDict: TLookupMapCode[] = [];
-  mapDict.push({
-    code: LoginResult.AUTH_SUCCESSFUL,
-    message: AUTH_SUCCESSFUL_MESSAGE
-  });
-  mapDict.push({
-    code: LoginResult.INCORRECT_CREDENTIALS,
-    message: INCORRECT_CREDENTIALS_MESSAGE
-  });
-  mapDict.push({
-    code: LoginResult.INCORRECT_2FA_CODE,
-    message: INVALID_2FA_CODE_MESSAGE
-  });
+  const mapDict: TLookupMapCode[] = [
+    {
+      code: LoginResult.AUTH_SUCCESSFUL,
+      message: AUTH_SUCCESSFUL_MESSAGE
+    },
+    {
+      code: LoginResult.INCORRECT_CREDENTIALS,
+      message: INCORRECT_CREDENTIALS_MESSAGE
+    },
+    {
+      code: LoginResult.INCORRECT_2FA_CODE,
+      message: INVALID_2FA_CODE_MESSAGE
+    }
+  ];
 
   const result = mapDict.find((e) => e.message === message);
   return result ? result.code : LoginResult.UNKNOWN_ERROR;
