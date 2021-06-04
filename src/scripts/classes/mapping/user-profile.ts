@@ -11,13 +11,7 @@ import PlatformUser from "./platform-user";
 import { urls } from "../../constants/url";
 import { ALERT, BOOKMARKED_POST, GENERIC, WATCHED_THREAD } from "../../constants/css-selector";
 import { fetchHTML } from "../../network-helper";
-import {
-  GenericAxiosError,
-  UnexpectedResponseContentType,
-  UserNotLogged,
-  USER_NOT_LOGGED
-} from "../errors";
-import { Result } from "../result";
+import { UserNotLogged, USER_NOT_LOGGED } from "../errors";
 import shared from "../../shared";
 import Game from "../handiwork/game";
 import { IAlert } from "../../interfaces";
@@ -63,7 +57,7 @@ interface IBookmarkedPost {
   labels: string[];
 }
 
-type TFetchResult = Result<GenericAxiosError | UnexpectedResponseContentType, string>;
+type TRequestedTypes = IWatchedThread | IBookmarkedPost | IAlert;
 
 /**
  * Class containing the data of the user currently connected to the F95Zone platform.
@@ -137,19 +131,62 @@ export default class UserProfile extends PlatformUser {
     const superprops = Object.getOwnPropertyNames(temp);
     superprops.map((p) => (this[p] = temp[p]));
 
-    // Now fetch the watched threads
-    this._watched = await this.fetchWatchedThread();
-
-    // Then the bookmarked posts
-    this._bookmarks = await this.fetchBookmarkedPost();
-
-    // ...the alerts
-    this._alerts = await this.fetchAlerts();
+    // Fetch all the data of this user
+    await this.wrapperElementsFetcher();
   }
 
   //#endregion Public methods
 
   //#region Private methods
+  /**
+   * Wrapper that encloses the search for all non-basic data of the user who must be processed.
+   */
+  private async wrapperElementsFetcher(): Promise<void> {
+    interface IData {
+      propertyName: string;
+      url: string;
+      selector: string;
+      parseFunction: (html: string) => Promise<TRequestedTypes[]>;
+    }
+
+    // Prepare the URL for the watched threads
+    const urlWatched = new URL(urls.WATCHED_THREADS);
+    urlWatched.searchParams.set("unread", "0");
+
+    const functionParametersMap: IData[] = [
+      {
+        propertyName: "_watched",
+        url: urlWatched.toString(),
+        selector: WATCHED_THREAD.LAST_PAGE,
+        parseFunction: this.fetchPageThreadElements
+      },
+      {
+        propertyName: "_bookmarks",
+        url: urls.BOOKMARKS,
+        selector: BOOKMARKED_POST.LAST_PAGE,
+        parseFunction: this.fetchBookmarkElements
+      },
+      {
+        propertyName: "_alerts",
+        url: urls.ALERTS,
+        selector: ALERT.LAST_PAGE,
+        parseFunction: fetchAlertElements
+      }
+    ];
+
+    // Execute the functions asynchronously
+    const results = functionParametersMap.map((data) => {
+      return {
+        name: data.propertyName,
+        elements: this.fetchElementsInPages(data.url, data.selector, data.parseFunction)
+      };
+    });
+
+    // Assign the values to the propeties of the class
+    for (const result of results) {
+      this[result.name] = await result.elements;
+    }
+  }
 
   /**
    * Gets the ID of the user currently logged.
@@ -173,101 +210,47 @@ export default class UserProfile extends PlatformUser {
   }
 
   /**
-   * Gets the list of threads followed by the user currently logged.
-   */
-  private async fetchWatchedThread(): Promise<IWatchedThread[]> {
-    // Prepare and fetch URL
-    const url = new URL(urls.WATCHED_THREADS);
-    url.searchParams.set("unread", "0");
-
-    const response = await fetchHTML(url.toString());
-
-    if (response.isSuccess()) {
-      // Fetch the elements in the page
-      const result = await this.fetchDataInPage(
-        response.value,
-        url,
-        WATCHED_THREAD.LAST_PAGE,
-        this.fetchPageThreadElements
-      );
-
-      // Cast and return elements
-      return result as IWatchedThread[];
-    } else throw response.value;
-  }
-
-  /**
-   * Get the list of post bookmarked by the user currently logged.
-   */
-  private async fetchBookmarkedPost(): Promise<IBookmarkedPost[]> {
-    // Prepare and fetch URL
-    const url = new URL(urls.BOOKMARKS);
-    const response = await fetchHTML(url.toString());
-
-    if (response.isSuccess()) {
-      // Fetch the elements in the page
-      const result = await this.fetchDataInPage(
-        response.value,
-        url,
-        BOOKMARKED_POST.LAST_PAGE,
-        this.fetchBookmarkElements
-      );
-
-      // Cast and return elements
-      return (await Promise.all(result)) as IBookmarkedPost[];
-    } else throw response.value;
-  }
-
-  private async fetchAlerts(): Promise<IAlert[]> {
-    // Prepare and fetch URL
-    const url = new URL(urls.ALERTS);
-    const response = await fetchHTML(url.toString());
-
-    if (response.isSuccess()) {
-      // Fetch the elements in the page
-      const result = await this.fetchDataInPage(
-        response.value,
-        url,
-        ALERT.LAST_PAGE,
-        fetchAlertElements
-      );
-
-      // Cast and return elements
-      return (await Promise.all(result)) as IAlert[];
-    } else throw response.value;
-  }
-
-  /**
-   * Gets all the elements that solve a specific selector in a list on an HTML page.
-   * @param html Source code of the HTML page containing a part of the elements of a list..
+   * Gets all the elements that solve a specific
+   * selector in a list on multiple web pages.
    * @param url Page URL represented in `html`.
    * @param lastPageSelector CSS selector of the button for the last page of the list.
    * @param elementFunc Function that gets individual elements from the list in the web pages.
    */
-  private async fetchDataInPage(
-    html: string,
-    url: URL,
+  private async fetchElementsInPages<T extends TRequestedTypes>(
+    url: string,
     lastPageSelector: string,
-    elementFunc: (
-      html: string
-    ) => Promise<IWatchedThread[]> | Promise<IBookmarkedPost[]> | Promise<IAlert[]>
-  ) {
+    parsingFunction: (html: string) => Promise<T[]>
+  ): Promise<T[]> {
+    // Fetch page
+    const response = await fetchHTML(url);
+    if (response.isFailure()) throw response.value;
+
     // Load page in cheerio
-    const $ = cheerio.load(html);
+    const $ = cheerio.load(response.value);
 
-    // Fetch the pages
-    const lastPageText = $(lastPageSelector).text().trim();
-    const lastPage = parseInt(lastPageText, 10);
-    const pages = await this.fetchPages(url, lastPage);
+    // Fetch the pages (select only the first selector if multiple are found)
+    const lastPageText = $(lastPageSelector).first().text().trim();
+    const lastPage = lastPageText ? parseInt(lastPageText, 10) : 1;
 
-    const promises = pages.map(async (page) => {
-      const elements = page.applyOnSuccess((value) => elementFunc(value));
-      if (elements.isSuccess()) return await elements.value;
-    });
+    // Create the async iterator used to fetch the pages
+    const iter = this.fetchPages(url, lastPage);
+    let curr = await iter.next();
 
-    // Flat the array and return the elements
+    const promises: Promise<T[]>[] = [];
+    while (!curr.done) {
+      // Explicit cast because it always return a string
+      const page = curr.value as string;
+
+      // Parse elements but not resolve the promise
+      const elements = parsingFunction(page);
+      promises.push(elements);
+
+      curr = await iter.next();
+    }
+
+    // Resolve and flat the array then return the elements
     const elementsScraped = await Promise.all(promises);
-    return [].concat(...elementsScraped);
+    return [].concat(...elementsScraped) as T[];
   }
 
   /**
@@ -276,21 +259,29 @@ export default class UserProfile extends PlatformUser {
    * @param n Total number of pages
    * @param s Page to start from
    */
-  private async fetchPages(url: URL, n: number, s = 1): Promise<TFetchResult[]> {
+  private async *fetchPages(url: string, n: number, s = 1): AsyncGenerator<string, void, unknown> {
     // Local variables
-    const responsePromiseList: Promise<TFetchResult>[] = [];
+    const u = new URL(url);
+    const pipeline = [];
 
-    // Fetch the page' HTML
+    // Fetch the page' HTML in sequence
     for (let page = s; page <= n; page++) {
       // Set the page URL
-      url.searchParams.set("page", page.toString());
+      u.searchParams.set("page", page.toString());
 
       // Fetch HTML but not wait for it
-      const promise = fetchHTML(url.toString());
-      responsePromiseList.push(promise);
+      const promise = fetchHTML(u.toString());
+      pipeline.push(promise);
     }
 
-    return await Promise.all(responsePromiseList);
+    // Now that we have all the promises,
+    // resolve them and return the HTML code
+    // of the pages
+    for (const p of pipeline) {
+      const response = await p;
+      if (response.isSuccess()) yield response.value;
+      else throw response.value;
+    }
   }
 
   /**
