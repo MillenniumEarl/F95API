@@ -157,10 +157,10 @@ export default class Post implements ILazy {
     const sLastEdit: string = post.find(POST.LAST_EDIT).attr("datetime");
     this._lastEdit = new Date(sLastEdit);
 
-    // Find post's owner
-    const sOwnerID: string = post.find(POST.OWNER_ID).attr("data-user-id").trim();
-    this._owner = new PlatformUser(parseInt(sOwnerID, 10));
-    await this._owner.fetch();
+    // Find post's owner (if no ID is found thant the user has been deleted)
+    const ownerID = post.find(POST.OWNER_ID).attr("data-user-id");
+    this._owner = ownerID ? new PlatformUser(parseInt(ownerID.trim(), 10)) : null;
+    if (this._owner) await this._owner.fetch();
 
     // Find if the post is bookmarked
     this._bookmarked = post.find(POST.BOOKMARKED).length !== 0;
