@@ -378,7 +378,7 @@ export interface IAlert {
   /**
    * URL linked to this alert (may be a post, a thread...).
    */
-  linkedURL: URL;
+  linkedURL: string;
   /**
    * If `type` is `Reaction`, define the reaction otherwise is `null`.
    */
