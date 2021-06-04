@@ -62,7 +62,7 @@ const commonConfig = {
   validateStatus: function (status: number) {
     return status < 500; // Resolve only if the status code is less than 500
   },
-  timeout: 5000
+  timeout: 30000
 };
 
 let initialized = false;
@@ -296,9 +296,6 @@ export async function fetchHEADResponse(
 
   // Get a token from the semaphore
   const release = await semaphore.acquire();
-
-  // Prepare the cookie jar
-  commonConfig.jar = shared.session.cookieJar;
 
   try {
     commonConfig.jar = shared.session.cookieJar;
