@@ -18,12 +18,6 @@ chai.use(chaiAsPromised);
 const { expect } = chai;
 
 export function suite(): void {
-  it("Set invalid ID", function setInvalidID() {
-    const user = new PlatformUser();
-    expect(() => user.setID(-1)).throw(INVALID_USER_ID);
-    expect(() => user.setID(null)).throw(INVALID_USER_ID);
-  });
-
   it("Fetch platform user without ID", async function fetchWithoutID() {
     Shared.setIsLogged(true);
     const user = new PlatformUser();
