@@ -17,6 +17,7 @@ import Game from "../handiwork/game";
 import { IAlert } from "../../interfaces";
 import fetchAlertElements from "../../fetch-data/fetch-alert";
 import Thread from "./thread";
+import { getHandiworkFromURL } from "../../handiwork-from-url";
 
 // Interfaces
 interface IWatchedThread {
@@ -69,7 +70,7 @@ export default class UserProfile extends PlatformUser {
   private _bookmarks: IBookmarkedPost[] = [];
   private _alerts: IAlert[] = [];
   private _conversations: string[] = [];
-  private _suggestedGames: Game[] = [];
+  private _featuredGames: Game[] = [];
 
   //#endregion Fields
 
@@ -101,11 +102,11 @@ export default class UserProfile extends PlatformUser {
     return this._conversations;
   }
   /**
-   * List of suggested games for this user from the platform.
+   * List of featured games from the platform.
    * @todo
    */
-  public get suggestedGames(): Game[] {
-    return this._suggestedGames;
+  public get featuredGames(): Game[] {
+    return this._featuredGames;
   }
 
   //#endregion Getters
@@ -131,17 +132,21 @@ export default class UserProfile extends PlatformUser {
     const superprops = Object.getOwnPropertyNames(temp);
     superprops.map((p) => (this[p] = temp[p]));
 
-    // Fetch all the data of this user
-    await this.wrapperElementsFetcher();
+    // Fetch all the data in a list of this user
+    await this.fetchElementsWithinList();
+
+    // Fetch the games in the slider (if the option is enabled on the platform)
+    this._featuredGames = await this.fetchFeaturedGames();
   }
 
   //#endregion Public methods
 
   //#region Private methods
   /**
-   * Wrapper that encloses the search for all non-basic data of the user who must be processed.
+   * Wrapper that encloses the search for all non-basic data
+   * that are in a list of the user who must be processed.
    */
-  private async wrapperElementsFetcher(): Promise<void> {
+  private async fetchElementsWithinList(): Promise<void> {
     interface IData {
       propertyName: string;
       url: string;
@@ -355,6 +360,35 @@ export default class UserProfile extends PlatformUser {
       .get();
 
     return await Promise.all(promises);
+  }
+
+  private async fetchFeaturedGames(): Promise<Game[]> {
+    // Local variables
+    const url = new URL(urls.BASE).toString();
+
+    // Fetch and parse page
+    const response = await fetchHTML(url);
+
+    if (response.isSuccess()) {
+      // Load page with cheerio
+      const $ = cheerio.load(response.value);
+
+      // Get all the <a> elements containing the featured game urls
+      const slider = $(GENERIC.FEATURED_GAMES).toArray();
+
+      // Extract the URL from the attribute
+      const partialURLs = slider.map((el) => $(el).attr("href").trim());
+
+      // Prepare the unique URLs
+      const gameURLs = [...new Set(partialURLs)].map((pu) => new URL(pu, urls.BASE).toString());
+
+      // fetch the games
+      const promises = gameURLs.map((url) => {
+        return getHandiworkFromURL<Game>(url);
+      });
+
+      return Promise.all(promises);
+    } else throw response.value;
   }
 
   //#endregion Private methods
