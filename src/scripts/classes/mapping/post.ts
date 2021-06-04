@@ -132,7 +132,7 @@ export default class Post implements ILazy {
       .toArray()
       .find((el) => {
         // Fetch the ID and check if it is what we are searching
-        const sid: string = $(el).find(POST.ID).attr("id").replace("post-", "");
+        const sid = $(el).find(POST.ID).attr("id").replace("post-", "").trim();
         const id = parseInt(sid, 10);
 
         if (id === this.id) return el;
