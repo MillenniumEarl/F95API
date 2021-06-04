@@ -161,9 +161,9 @@ export default class Thread implements ILazy {
   }
 
   /**
-   * Fetch all the posts on a page.
+   * Fetch one at a time the posts on the current page.
    */
-  private async parsePostsInPage(html: string): Promise<Post[]> {
+  private async *parsePostsInPage(html: string): AsyncGenerator<Post, void, unknown> {
     // Load the HTML
     const $ = cheerio.load(html);
 
@@ -176,12 +176,10 @@ export default class Thread implements ILazy {
       });
 
     // Fetch the data of the posts
-    const promises = posts.map((post) => post.fetch(html));
-
-    // Wait for the post to be fetched
-    await Promise.all(promises);
-
-    return posts;
+    for (const post of posts) {
+      await post.fetch();
+      yield post;
+    }
   }
 
   /**
@@ -303,12 +301,20 @@ export default class Thread implements ILazy {
     const htmlResponse = await fetchHTML(url);
 
     if (htmlResponse.isSuccess()) {
-      // Fetch all the posts in the page
-      const posts = await this.parsePostsInPage(htmlResponse.value);
+      // Prepare the iterator that fetch the posts
+      const iter = this.parsePostsInPage(htmlResponse.value);
 
       // Find and return the post with the same
       // position number as the specified index
-      return posts.find((p) => p.number === index);
+      let curr = await iter.next();
+      while (!curr.done) {
+        // Explicit cast because the iterator doesn't return anything
+        const post = curr.value as Post;
+
+        if (post.number === index) return post;
+
+        curr = await iter.next();
+      }
     } else throw htmlResponse.value;
   }
 
