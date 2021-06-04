@@ -76,8 +76,8 @@ export default class UserProfile extends PlatformUser {
   private _watched: IWatchedThread[] = [];
   private _bookmarks: IBookmarkedPost[] = [];
   private _alerts: IAlert[] = [];
-  private _conversations: string[];
-  private _suggestedGames: Game[];
+  private _conversations: string[] = [];
+  private _suggestedGames: Game[] = [];
 
   //#endregion Fields
 
@@ -130,10 +130,14 @@ export default class UserProfile extends PlatformUser {
 
     // First get the user ID and set it
     const id = await this.fetchUserID();
-    super.setID(id);
+    const temp = new PlatformUser(id);
 
     // Than fetch the basic data
-    await super.fetch();
+    await temp.fetch();
+
+    // Copy the property of the superior class to this instance
+    const superprops = Object.getOwnPropertyNames(temp);
+    superprops.map((p) => (this[p] = temp[p]));
 
     // Now fetch the watched threads
     this._watched = await this.fetchWatchedThread();

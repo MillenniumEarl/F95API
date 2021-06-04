@@ -142,13 +142,6 @@ export default class PlatformUser implements ILazy {
 
   //#region Public methods
 
-  public setID(id: number): void {
-    // Check ID
-    if (!id || id < 1) throw new InvalidID(INVALID_USER_ID);
-
-    this._id = id;
-  }
-
   public async fetch(): Promise<void> {
     // Check login
     if (!shared.isLogged) throw new UserNotLogged(USER_NOT_LOGGED);
