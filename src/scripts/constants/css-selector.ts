@@ -28,7 +28,13 @@ export const GENERIC = {
   /**
    * Locate the script containing the tags and prefixes of the platform content in JSON format.
    */
-  LATEST_UPDATES_TAGS_SCRIPT: "script:contains('latestUpdates')"
+  LATEST_UPDATES_TAGS_SCRIPT: "script:contains('latestUpdates')",
+  /**
+   * List of games sponsored by the platform. Most objects are cloned and be used first ID be used.
+   *
+   * A partial URL at the game thread is present in the `href` attribute.
+   */
+  FEATURED_GAMES: "div#fullwidth_slider >ul.es-slides > li > a"
 };
 
 export const WATCHED_THREAD = {
