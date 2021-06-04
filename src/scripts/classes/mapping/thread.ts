@@ -38,7 +38,6 @@ export default class Thread implements ILazy {
 
   private POST_FOR_PAGE: TPostsForPage = 20;
   private _id: number;
-  private _url: string;
   private _title: string;
   private _tags: string[];
   private _prefixes: string[];
@@ -64,7 +63,8 @@ export default class Thread implements ILazy {
    * It may vary depending on any versions of the contained product.
    */
   public get url(): string {
-    return this._url;
+    // Create the URL at runtime to save memory
+    return new URL(this.id.toString(), urls.THREADS).toString();
   }
   /**
    * Thread title.
@@ -138,9 +138,6 @@ export default class Thread implements ILazy {
 
     // Check ID
     if (!this.id || this.id < 1) throw new InvalidID(INVALID_THREAD_ID);
-
-    // Prepare the url
-    this._url = new URL(this.id.toString(), urls.THREADS).toString();
   }
 
   //#region Private methods
