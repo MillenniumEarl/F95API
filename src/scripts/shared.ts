@@ -4,7 +4,6 @@
 // https://opensource.org/licenses/MIT
 
 /* istanbul ignore file */
-"use strict";
 
 // Core modules
 import { tmpdir } from "os";

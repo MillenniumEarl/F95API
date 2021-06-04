@@ -3,8 +3,6 @@
 // This software is released under the MIT License.
 // https://opensource.org/licenses/MIT
 
-"use strict";
-
 // Modules from files
 import { IComic } from "../../interfaces";
 import Basic from "./basic";

@@ -3,8 +3,6 @@
 // This software is released under the MIT License.
 // https://opensource.org/licenses/MIT
 
-"use strict";
-
 // Modules from file
 import { UserNotLogged, USER_NOT_LOGGED } from "./classes/errors";
 import { IBasic } from "./interfaces";

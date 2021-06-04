@@ -3,8 +3,6 @@
 // This software is released under the MIT License.
 // https://opensource.org/licenses/MIT
 
-"use strict";
-
 // Public modules from npm
 import { AxiosError, AxiosInstance, AxiosResponse } from "axios";
 import cheerio from "cheerio";

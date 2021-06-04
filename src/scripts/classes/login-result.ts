@@ -3,8 +3,6 @@
 // This software is released under the MIT License.
 // https://opensource.org/licenses/MIT
 
-"use strict";
-
 /**
  * Object obtained in response to an attempt to login to the portal.
  */

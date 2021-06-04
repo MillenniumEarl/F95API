@@ -3,8 +3,6 @@
 // This software is released under the MIT License.
 // https://opensource.org/licenses/MIT
 
-"use strict";
-
 // Public imports from npm
 import axiosCookieJarSupport from "axios-cookiejar-support";
 import { setup } from "axios-cache-adapter";

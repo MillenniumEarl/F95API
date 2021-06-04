@@ -3,8 +3,6 @@
 // This software is released under the MIT License.
 // https://opensource.org/licenses/MIT
 
-"use strict";
-
 // Modules from file
 import LatestSearchQuery from "../classes/query/latest-search-query";
 import { urls } from "../constants/url";

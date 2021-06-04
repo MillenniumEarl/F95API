@@ -3,8 +3,6 @@
 // This software is released under the MIT License.
 // https://opensource.org/licenses/MIT
 
-"use strict";
-
 // Core modules
 import * as fs from "fs";
 import { promisify } from "util";
