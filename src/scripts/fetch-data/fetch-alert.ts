@@ -3,7 +3,10 @@
 // This software is released under the MIT License.
 // https://opensource.org/licenses/MIT
 
+// Public modules from npm
 import cheerio, { CheerioAPI, Node } from "cheerio";
+
+// Modules from files
 import { ALERT } from "../constants/css-selector";
 import { urls } from "../constants/url";
 import { IAlert, TAlertReactionType, TAlertType } from "../interfaces";
@@ -16,13 +19,33 @@ export default async function fetchAlertElements(html: string): Promise<IAlert[]
   // Local variables
   const $ = cheerio.load(html);
 
-  const promises = $(ALERT.BODIES)
-    .toArray()
+  // Find all the bodies of the alerts in the page
+  const bodies = $(ALERT.BODIES).toArray();
+
+  // Now find all the summarized alerts and parse them
+  const summarizedPosts = bodies.filter((el) => isSummarized($, el));
+  const summarizedPromises = summarizedPosts.map((el) => {
+    // Find the URL
+    const partialURL = $(el).find(ALERT.SUMMARIZED_SEPARATE_ALERTS).attr("href");
+    return fetchSummarizedAlerts(partialURL);
+  });
+
+  // Find all the NON summarized alerts
+  const alerts = bodies
+    .filter((el) => !summarizedPosts.includes(el))
     .map((el) => parseAlertElement($, el));
 
   // Wait for all the promises to finish then flat the list
-  const listToFlatten = await Promise.all(promises);
-  return [].concat(...listToFlatten);
+  const listToFlatten = await Promise.all(summarizedPromises);
+  return [].concat(...listToFlatten).concat(alerts);
+}
+
+/**
+ * Indicates whether the requested element is summarized,
+ * ie if it is a grouping of other alerts.
+ */
+function isSummarized($: CheerioAPI, el: Node): boolean {
+  return $(el).find(ALERT.SUMMARIZED_BUTTON).length === 1;
 }
 
 /**
@@ -71,6 +94,7 @@ function parseAlertType(text: string): TAlertType {
 /**
  * Given the text value of the reaction to a post returns
  * the value suitable for the `TAlertReactionType` type.
+ * @todo
  */
 function parseReactionTypeFromAlert(text: string): TAlertReactionType {
   // Keywords to define reaction types
@@ -109,20 +133,18 @@ function parseReactionTypeFromAlert(text: string): TAlertReactionType {
   return result ? (result as TAlertReactionType) : null;
 }
 
-async function parseAlertElement($: CheerioAPI, el: Node) {
-  // First check if the alert is summarized
-  if ($(el).find(ALERT.SUMMARIZED_BUTTON).length === 1) {
-    // Find the URL
-    const partialURL = $(el).find(ALERT.SUMMARIZED_SEPARATE_ALERTS).attr("href");
-    return await fetchSummarizedAlerts(partialURL);
-  }
-
+/**
+ * Parse a Cheerio node containing an alert in order to obtains its data.
+ * @param $ Cheerio root identifing the page where the element is in
+ * @param el Element to parse
+ */
+function parseAlertElement($: CheerioAPI, el: Node): IAlert {
   // Find the ID of the user that caused the alert
   const sid = $(el).find(ALERT.ACTOR).attr("data-user-id");
 
   // Find the referenced URL
   const partial = $(el).find(ALERT.REFERENCE_PAGE).attr("href");
-  const url = new URL(partial, urls.BASE);
+  const url = new URL(partial, urls.BASE).toString();
 
   // Find the reaction type (if any)
   const reactionText = $(el).find(ALERT.REACTION).text();
@@ -131,14 +153,12 @@ async function parseAlertElement($: CheerioAPI, el: Node) {
   const isotime = $(el).find(ALERT.ALERT_TIME).attr("datetime");
 
   // Return as array so if there are summarized alerts we can flatten at the end
-  return [
-    {
-      type: parseAlertType($(el).text()),
-      userid: parseInt(sid, 10),
-      linkedURL: url,
-      reaction: reactionText ? parseReactionTypeFromAlert(reactionText) : null,
-      date: new Date(isotime),
-      read: $(el).find(ALERT.MARK_UNREAD_BUTTON).length === 1
-    } as IAlert
-  ];
+  return {
+    type: parseAlertType($(el).text()),
+    userid: parseInt(sid, 10),
+    linkedURL: url,
+    reaction: reactionText ? parseReactionTypeFromAlert(reactionText) : null,
+    date: new Date(isotime),
+    read: $(el).find(ALERT.MARK_UNREAD_BUTTON).length === 1
+  } as IAlert;
 }
