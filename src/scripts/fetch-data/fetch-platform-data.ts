@@ -54,7 +54,8 @@ interface ILatestResource {
  */
 export default async function fetchPlatformData(): Promise<void> {
   // Check if the data are cached
-  if (!readCache(shared.cachePath)) {
+  const cacheExists = await readCache(shared.cachePath);
+  if (!cacheExists) {
     // Load the HTML
     const response = await fetchHTML(f95url.LATEST_UPDATES);
 
