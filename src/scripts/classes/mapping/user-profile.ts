@@ -17,7 +17,7 @@ import Game from "../handiwork/game";
 import { IAlert } from "../../interfaces";
 import fetchAlertElements from "../../fetch-data/fetch-alert";
 import Thread from "./thread";
-import { getHandiworkFromURL } from "../../handiwork-from-url";
+import getHandiworkFromURL from "../../handiwork-from-url";
 
 // Interfaces
 interface IWatchedThread {

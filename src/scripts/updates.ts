@@ -6,7 +6,7 @@
 // Modules from file
 import { UserNotLogged, USER_NOT_LOGGED } from "./classes/errors";
 import fetchLatestHandiworkURLs from "./fetch-data/fetch-latest";
-import { getHandiworkFromURL } from "./handiwork-from-url";
+import getHandiworkFromURL from "./handiwork-from-url";
 import { IBasic } from "./interfaces";
 import { urlExists } from "./network-helper";
 import getHandiworkInformation from "./scrape-data/handiwork-parse";
