@@ -181,24 +181,10 @@ export default class Session {
   async delete(): Promise<void> {
     if (this.isMapped) {
       // Delete the session data
-      await fs.unlink(this.path).catch(
-        (e) =>
-          new BaseAPIError({
-            id: ERROR_CODE.CANNOT_DELETE_FILE,
-            message: "Cannot delete session file",
-            error: e
-          })
-      );
+      await fs.unlink(this.path);
 
       // Delete the cookiejar
-      await fs.unlink(this._cookieJarPath).catch(
-        (e) =>
-          new BaseAPIError({
-            id: ERROR_CODE.CANNOT_DELETE_FILE,
-            message: "Cannot delete cookiejar",
-            error: e
-          })
-      );
+      await fs.unlink(this._cookieJarPath);
     }
   }
 
