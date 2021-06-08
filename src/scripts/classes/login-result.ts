@@ -35,6 +35,11 @@ export default class LoginResult {
 
   //#endregion Properties
 
+  /**
+   * @param success Result of the login
+   * @param code ID code of the result event
+   * @param message Message associated with the result
+   */
   constructor(success: boolean, code: number, message?: string) {
     this.success = success;
     this.code = code;
