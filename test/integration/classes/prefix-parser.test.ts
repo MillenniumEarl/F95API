@@ -7,23 +7,16 @@
 
 // Public module from npm
 import { expect } from "chai";
-import dotenv from "dotenv";
 
 // Modules from file
-import { login, PrefixParser } from "../../../src/index";
-
-// Configure the .env reader
-dotenv.config();
-
-// Global variables
-const USERNAME = process.env.F95_USERNAME;
-const PASSWORD = process.env.F95_PASSWORD;
+import { PrefixParser } from "../../../src/index";
+import fetchPlatformData from "../../../src/scripts/fetch-data/fetch-platform-data";
 
 export function suite(): void {
   //#region Setup
 
   before(async function beforeAll() {
-    await login(USERNAME, PASSWORD);
+    await fetchPlatformData();
   });
 
   //#endregion Setup
