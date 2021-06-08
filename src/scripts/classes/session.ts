@@ -140,6 +140,9 @@ export default class Session {
     // Update the creation date
     this._created = new Date(Date.now());
 
+    // Set the session as mapped on file
+    this._isMapped = true;
+
     // Convert data
     const json = this.toJSON();
     const data = JSON.stringify(json);
