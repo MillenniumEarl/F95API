@@ -4,7 +4,7 @@
 // https://opensource.org/licenses/MIT
 
 // Core modules
-import { readFileSync, writeFileSync, existsSync } from "fs";
+import { promises as fs, constants } from "fs";
 
 // Public modules from npm
 import cheerio from "cheerio";
@@ -59,17 +59,15 @@ export default async function fetchPlatformData(): Promise<void> {
     const response = await fetchHTML(f95url.LATEST_UPDATES);
 
     // Parse data
-    const result = response.applyOnSuccess((html) => {
-      const data = parseLatestPlatformHTML(html);
+    if (response.isSuccess()) {
+      const data = parseLatestPlatformHTML(response.value);
 
       // Assign data
       assignLatestPlatformData(data);
 
       // Cache data
-      saveCache(shared.cachePath);
-    });
-
-    if (result.isFailure()) throw result.value;
+      await saveCache(shared.cachePath);
+    } else throw response.value;
   }
 }
 
@@ -80,12 +78,21 @@ export default async function fetchPlatformData(): Promise<void> {
 /**
  * Read the platform cache (if available).
  */
-function readCache(path: string) {
+async function readCache(path: string): Promise<boolean> {
   // Local variables
   let returnValue = false;
 
-  if (existsSync(path)) {
-    const data = readFileSync(path, { encoding: "utf-8", flag: "r" });
+  async function checkFileExists(file: string) {
+    return fs
+      .access(file, constants.F_OK)
+      .then(() => true)
+      .catch(() => false);
+  }
+
+  const existsCache = await checkFileExists(path);
+
+  if (existsCache) {
+    const data = await fs.readFile(path, { encoding: "utf-8", flag: "r" });
     const json: { [s: string]: TPrefixDict } = JSON.parse(data);
 
     shared.setPrefixPair("engines", json.engines);
@@ -101,7 +108,7 @@ function readCache(path: string) {
 /**
  * Save the current platform variables to disk.
  */
-function saveCache(path: string): void {
+async function saveCache(path: string): Promise<void> {
   const saveDict = {
     engines: shared.prefixes["engines"],
     statuses: shared.prefixes["statuses"],
@@ -109,7 +116,7 @@ function saveCache(path: string): void {
     others: shared.prefixes["others"]
   };
   const json = JSON.stringify(saveDict);
-  writeFileSync(path, json);
+  await fs.writeFile(path, json);
 }
 
 /**
@@ -135,7 +142,7 @@ function assignLatestPlatformData(data: ILatestResource): void {
   const scrapedData = {};
 
   // Parse and assign the values that are NOT tags
-  for (const [key, value] of Object.entries(data.prefixes)) {
+  for (const [, value] of Object.entries(data.prefixes)) {
     for (const res of value) {
       // Prepare the dict
       const dict: TPrefixDict = {};

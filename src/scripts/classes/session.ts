@@ -4,19 +4,13 @@
 // https://opensource.org/licenses/MIT
 
 // Core modules
-import * as fs from "fs";
-import { promisify } from "util";
+import { promises as fs, existsSync } from "fs";
 import path from "path";
 
 // Public modules from npm
 import { sha256 } from "js-sha256";
 import tough, { CookieJar } from "tough-cookie";
 import { BaseAPIError, ERROR_CODE, ParameterError } from "./errors";
-
-// Promisifed functions
-const areadfile = promisify(fs.readFile);
-const awritefile = promisify(fs.writeFile);
-const aunlinkfile = promisify(fs.unlink);
 
 export default class Session {
   //#region Fields
@@ -83,7 +77,7 @@ export default class Session {
   constructor(p: string) {
     if (!p || p === "") throw new ParameterError("Invalid path for the session file");
     this._path = p;
-    this._isMapped = fs.existsSync(this.path);
+    this._isMapped = existsSync(this.path);
     this._created = new Date(Date.now());
     this._hash = null;
     this._token = null;
@@ -151,11 +145,11 @@ export default class Session {
     const data = JSON.stringify(json);
 
     // Write data
-    await awritefile(this.path, data);
+    await fs.writeFile(this.path, data);
 
     // Write cookiejar
     const serializedJar = await this._cookieJar.serialize();
-    await awritefile(this._cookieJarPath, JSON.stringify(serializedJar));
+    await fs.writeFile(this._cookieJarPath, JSON.stringify(serializedJar));
   }
 
   /**
@@ -164,7 +158,7 @@ export default class Session {
   async load(): Promise<void> {
     if (this.isMapped) {
       // Read data
-      const data = await areadfile(this.path, { encoding: "utf-8", flag: "r" });
+      const data = await fs.readFile(this.path, { encoding: "utf-8", flag: "r" });
       const json = JSON.parse(data);
 
       // Assign values
@@ -173,7 +167,7 @@ export default class Session {
       this._token = json._token;
 
       // Load cookiejar
-      const serializedJar = await areadfile(this._cookieJarPath, {
+      const serializedJar = await fs.readFile(this._cookieJarPath, {
         encoding: "utf-8",
         flag: "r"
       });
@@ -187,7 +181,7 @@ export default class Session {
   async delete(): Promise<void> {
     if (this.isMapped) {
       // Delete the session data
-      await aunlinkfile(this.path).catch(
+      await fs.unlink(this.path).catch(
         (e) =>
           new BaseAPIError({
             id: ERROR_CODE.CANNOT_DELETE_FILE,
@@ -197,7 +191,7 @@ export default class Session {
       );
 
       // Delete the cookiejar
-      await aunlinkfile(this._cookieJarPath).catch(
+      await fs.unlink(this._cookieJarPath).catch(
         (e) =>
           new BaseAPIError({
             id: ERROR_CODE.CANNOT_DELETE_FILE,
