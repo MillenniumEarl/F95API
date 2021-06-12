@@ -23,9 +23,17 @@ export default function parseCheerioNode($: CheerioAPI, node: Node): IPostElemen
   const type = nodeType($, node);
 
   // Get the post based on the type of node
-  return Object.keys(functionMap).includes(type)
+  const obj = Object.keys(functionMap).includes(type)
     ? (functionMap[type]($(node)) as IPostElement)
     : null;
+
+  // Remove the Zero Width Space (\u200B) from strings
+  if (obj) {
+    obj.text = obj.text.replace(/\u200B/gmu, "");
+    obj.name = obj.name.replace(/\u200B/gmu, "");
+  }
+
+  return obj;
 }
 
 /**
