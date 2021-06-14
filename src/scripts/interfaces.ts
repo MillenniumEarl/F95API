@@ -400,7 +400,7 @@ export interface IPostElement {
   /**
    * Type of element.
    */
-  type: "Generic" | "Text" | "Link" | "Image" | "Spoiler";
+  type: "Root" | "Empty" | "Text" | "Link" | "Image" | "Spoiler";
   /**
    * Name associated with the element.
    */
