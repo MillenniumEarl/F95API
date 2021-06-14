@@ -25,13 +25,11 @@ export default function parseCheerioNode($: CheerioAPI, node: Node): IPostElemen
   // Get the post based on the type of node
   const obj = Object.keys(functionMap).includes(type)
     ? (functionMap[type]($(node)) as IPostElement)
-    : null;
+    : createEmptyElement();
 
-  // Remove the Zero Width Space (\u200B) from strings
-  if (obj) {
-    obj.text = obj.text.replace(/\u200B/gmu, "");
-    obj.name = obj.name.replace(/\u200B/gmu, "");
-  }
+  // Remove invisible characters from strings
+  obj.text = cleanTextFromInvisibleCharacters(obj.text);
+  obj.name = cleanTextFromInvisibleCharacters(obj.name);
 
   return obj;
 }
@@ -110,4 +108,25 @@ function getCheerioNonChildrenText(node: Cheerio<Node>): string {
 
   // Clean and return the text
   return text.replace(/\s\s+/g, " ").trim();
+}
+
+/**
+ * Removes all invisible characters from the string,
+ * such as control characters or the Zero Width Space.
+ */
+function cleanTextFromInvisibleCharacters(s: string): string {
+  // eslint-disable-next-line no-control-regex
+  return s.replace(/[\u0000-\u001F\u007F-\u009F\u200B]/gmu, "");
+}
+
+/**
+ * Create a `IPostElement` without name, text or content.
+ */
+function createEmptyElement(): IPostElement {
+  return {
+    type: "Empty",
+    name: "",
+    text: "",
+    content: []
+  };
 }
