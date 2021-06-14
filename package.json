@@ -40,7 +40,7 @@
     "axios": "^0.21.1",
     "axios-cache-adapter": "^2.7.3",
     "axios-cookiejar-support": "^1.0.1",
-    "cheerio": "^1.0.0-rc.9",
+    "cheerio": "^1.0.0-rc.10",
     "class-validator": "^0.13.1",
     "js-sha256": "^0.9.0",
     "log4js": "^6.3.0",
