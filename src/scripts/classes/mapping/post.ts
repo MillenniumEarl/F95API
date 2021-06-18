@@ -8,13 +8,13 @@ import cheerio, { Cheerio, CheerioAPI, Node } from "cheerio";
 
 // Modules from file
 import PlatformUser from "./platform-user";
-import { IPostElement, parseF95ThreadPost } from "../../scrape-data/post-parse";
 import { POST, THREAD } from "../../constants/css-selector";
 import { urls } from "../../constants/url";
 import { fetchHTML } from "../../network-helper";
 import shared from "../../shared";
 import { InvalidID, INVALID_POST_ID, UserNotLogged, USER_NOT_LOGGED } from "../errors";
-import { ILazy } from "../../interfaces";
+import { ILazy, IPostElement } from "../../interfaces";
+import { extractDataFromFirstThreadPost } from "../../scrape-data/post-parse-tree";
 
 /**
  * Represents a post published by a user on the F95Zone platform.
@@ -169,8 +169,8 @@ export default class Post implements ILazy {
     this._message = post.find(POST.BODY).text();
 
     // Parse post's body
-    const body = post.find(POST.BODY);
-    this._body = parseF95ThreadPost($, body);
+    const body = post.find(POST.BODY).get()[0];
+    this._body = extractDataFromFirstThreadPost($, body);
   }
 
   //#endregion

@@ -9,9 +9,17 @@ import { DateTime } from "luxon";
 // Modules from files
 import HandiWork from "../classes/handiwork/handiwork";
 import Thread from "../classes/mapping/thread";
-import { IBasic, TAuthor, TChangelog, TEngine, TExternalPlatform, TStatus } from "../interfaces";
+import {
+  IBasic,
+  ILink,
+  IPostElement,
+  TAuthor,
+  TChangelog,
+  TEngine,
+  TExternalPlatform,
+  TStatus
+} from "../interfaces";
 import shared, { TPrefixDict } from "../shared";
-import { ILink, IPostElement } from "./post-parse";
 import Handiwork from "../classes/handiwork/handiwork";
 
 /**
@@ -217,7 +225,7 @@ function fillWithPostData(hw: HandiWork, elements: IPostElement[]): Handiwork {
   const overview = getPostElementByName(elements, "overview")?.text;
 
   // Get the cover
-  const cover = (elements.find((e) => e.type === "Image") as ILink)?.href;
+  const cover = (getPostElementByName(elements, "cover") as ILink)?.href;
 
   // Get the author
   const authors = parseAuthor(elements);
@@ -301,7 +309,7 @@ function parseChangelog(elements: IPostElement[]): TChangelog[] {
 
       // parse the data
       group.forEach((e) => {
-        if (e.type === "Generic" || e.type === "Spoiler") {
+        if (e.type === "Empty" || e.type === "Spoiler") {
           const textes = e.content.map((c) => c.text);
           versionChangelog.information.push(...textes);
         } else versionChangelog.information.push(e.text);
