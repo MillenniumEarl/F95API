@@ -4,3 +4,4 @@ f95cache/
 .env
 F95API_NPM_AUTH_TOKEN.txt
 coverage.lcov
+dist/
