@@ -10,6 +10,7 @@ import { CheerioAPI, Cheerio, Node } from "cheerio";
 import { POST } from "../../constants/css-selector";
 import { ILink, IPostElement } from "../../interfaces";
 import { nodeType } from "./node-type";
+import { cleanTextFromInvisibleCharacters, createEmptyElement } from "./node-utility";
 
 export default function parseCheerioNode($: CheerioAPI, node: Node): IPostElement {
   // Function mapping
@@ -108,25 +109,4 @@ function getCheerioNonChildrenText(node: Cheerio<Node>): string {
 
   // Clean and return the text
   return text.replace(/\s\s+/g, " ").trim();
-}
-
-/**
- * Removes all invisible characters from the string,
- * such as control characters or the Zero Width Space.
- */
-function cleanTextFromInvisibleCharacters(s: string): string {
-  // eslint-disable-next-line no-control-regex
-  return s.replace(/[\u0000-\u001F\u007F-\u009F\u200B]/gmu, "");
-}
-
-/**
- * Create a `IPostElement` without name, text or content.
- */
-function createEmptyElement(): IPostElement {
-  return {
-    type: "Empty",
-    name: "",
-    text: "",
-    content: []
-  };
 }

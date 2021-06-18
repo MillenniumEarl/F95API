@@ -43,3 +43,24 @@ export function cleanElement(element: IPostElement): IPostElement {
 
   return shallow;
 }
+
+/**
+ * Removes all invisible characters from the string,
+ * such as control characters or the Zero Width Space.
+ */
+export function cleanTextFromInvisibleCharacters(s: string): string {
+  // eslint-disable-next-line no-control-regex
+  return s.replace(/[\u0000-\u001F\u007F-\u009F\u200B]/gmu, "");
+}
+
+/**
+ * Create a `IPostElement` without name, text or content.
+ */
+export function createEmptyElement(): IPostElement {
+  return {
+    type: "Empty",
+    name: "",
+    text: "",
+    content: []
+  };
+}
