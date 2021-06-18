@@ -111,7 +111,6 @@ async function fetchGameData(games: string[]): Promise<void> {
     // Fetch the first result
     const searchResult = await searchHandiwork<Game>(query, 1);
 
-    // No game found
     if (searchResult.length !== 0) {
       // Extract first game
       const gamedata = searchResult.shift();
