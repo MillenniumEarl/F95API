@@ -29,11 +29,11 @@ module.exports.getGameInfo = async function (url) {
 
     // Extract data
     const titleData = extractInfoFromTitle(body);
-    const tags = extractTags(body);
-    const prefixesData = parseGamePrefixes(body);
+    const tags = extractTags($, body);
+    const prefixesData = parseGamePrefixes($, body);
     const src = extractPreviewSource(body);
     const changelog = extractChangelog(mainPost);
-    const structuredData = extractStructuredData(body);
+    const structuredData = extractStructuredData($, body);
 
     // Sometimes the JSON-LD are not set, especially in low-profile game
     if(!structuredData) return null;
@@ -72,10 +72,11 @@ module.exports.getGameInfo = async function (url) {
  * @private
  * Parse the game prefixes obtaining the engine used, 
  * the advancement status and if the game is actually a game or a mod.
+ * @param {cheerio.CheerioAPI} $
  * @param {cheerio.Cheerio} body Page `body` selector
  * @returns {Object.<string, object>} Dictionary of values with keys `engine`, `status`, `mod`
  */
-function parseGamePrefixes(body) {
+function parseGamePrefixes($, body) {
     shared.logger.trace("Parsing prefixes...");
 
     // Local variables
@@ -85,9 +86,7 @@ function parseGamePrefixes(body) {
 
     // Obtain the title prefixes
     const prefixeElements = body.find(f95Selector.GT_TITLE_PREFIXES);
-    
-    const $ = cheerio.load([].concat(body));
-    prefixeElements.each(function parseGamePrefix(idx, el) {
+    prefixeElements.each(function parseGamePrefix(_idx, el) {
         // Obtain the prefix text
         let prefix = $(el).text().trim();
 
@@ -160,18 +159,16 @@ function extractInfoFromTitle(body) {
 /**
  * @private
  * Gets the tags used to classify the game.
+ * @param {cheerio.CheerioAPI} $
  * @param {cheerio.Cheerio} body Page `body` selector
  * @returns {String[]} List of tags
  */
-function extractTags(body) {
+function extractTags($, body) {
     shared.logger.trace("Extracting tags...");
 
     // Get the game tags
     const tagResults = body.find(f95Selector.GT_TAGS);
-    const $ = cheerio.load([].concat(body));
-    return tagResults.map(function parseGameTags(idx, el) {
-        return $(el).text().trim();
-    }).get();
+    return tagResults.toArray().map((e) => $(e).text().trim());
 }
 
 /**
@@ -298,11 +295,12 @@ function parseMainPostText(text) {
 /**
  * @private
  * Parse a JSON-LD element.
+ * @param {cheerio.CheerioAPI} $
  * @param {cheerio.Element} element 
  */
-function parseScriptTag(element) {
+function parseScriptTag($, element) {
     // Get the element HTML
-    const html = cheerio.load([].concat(element)).html().trim();
+    const html = $(element).html().trim();
 
     // Obtain the JSON-LD
     const data = html
@@ -319,17 +317,18 @@ function parseScriptTag(element) {
 /**
  * @private
  * Extracts and processes the JSON-LD values found at the bottom of the page.
+ * @param {cheerio.CheerioAPI} $
  * @param {cheerio.Cheerio} body Page `body` selector
  * @returns {Object.<string, string>} JSON-LD or `null` if no valid JSON is found
  */
-function extractStructuredData(body) {
+function extractStructuredData($, body) {
     shared.logger.trace("Extracting JSON-LD data...");
 
     // Fetch the JSON-LD data
-    const structuredDataElements = body.find(f95Selector.GT_JSONLD);
+    const structuredDataElements = body.find(f95Selector.GT_JSONLD).toArray();
 
     // Parse the data
-    const json = structuredDataElements.map((idx, el) => parseScriptTag(el)).get();
+    const json = structuredDataElements.map((e) => parseScriptTag($, e)).filter((e) => e);
     return json.lenght !== 0 ? json[0] : null;
 }
 
