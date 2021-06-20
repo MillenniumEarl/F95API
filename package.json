@@ -33,7 +33,7 @@
     "madge": "madge --image graph.svg src/index.ts"
   },
   "engines": {
-    "node": ">=10.0"
+    "node": ">=14.0"
   },
   "dependencies": {
     "await-semaphore": "^0.1.3",
