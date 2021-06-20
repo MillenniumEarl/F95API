@@ -14,7 +14,7 @@
         "alwaysStrict": true,
         "declaration": true,
     },
-    "include": ["./src/**/*.ts", "test/unit/classes/handiwork/asset.test.ts"],
+    "include": ["./src/**/*.ts"],
     "exclude": [
         "./test/",
         "./node_modules/",
