@@ -17,7 +17,11 @@ import LoginResult from "../../src/scripts/classes/login-result";
 dotenv.config();
 
 export async function auth(): Promise<LoginResult> {
-  return login(process.env.F95_USERNAME, process.env.F95_PASSWORD, insert2faCode);
+  return login(
+    process.env.F95_USERNAME,
+    process.env.F95_PASSWORD,
+    insert2faCode
+  );
 }
 
 //#region Private methods

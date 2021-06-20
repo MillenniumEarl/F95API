@@ -56,7 +56,11 @@ async function insert2faCode(): Promise<number> {
 async function authenticate(): Promise<boolean> {
   // Log in the platform
   console.log("Authenticating...");
-  const result = await login(process.env.F95_USERNAME, process.env.F95_PASSWORD, insert2faCode);
+  const result = await login(
+    process.env.F95_USERNAME,
+    process.env.F95_PASSWORD,
+    insert2faCode
+  );
   console.log(`Authentication result: ${result.message}\n`);
 
   return result.success;
@@ -92,7 +96,11 @@ async function fetchLatestGameInfo(): Promise<void> {
   latestQuery.includedTags = ["3d game"];
 
   const latestUpdates = await getLatestUpdates<Game>(latestQuery, 1);
-  console.log(`"${latestUpdates.shift().name}" was the last "3d game" tagged game to be updated\n`);
+  console.log(
+    `"${
+      latestUpdates.shift().name
+    }" was the last "3d game" tagged game to be updated\n`
+  );
 }
 
 /**
@@ -115,7 +123,9 @@ async function fetchGameData(games: string[]): Promise<void> {
       // Extract first game
       const gamedata = searchResult.shift();
       const authors = gamedata.authors.map((a) => a.name).join(", ");
-      console.log(`Found: ${gamedata.name} (${gamedata.version}) by ${authors}\n`);
+      console.log(
+        `Found: ${gamedata.name} (${gamedata.version}) by ${authors}\n`
+      );
     } else console.log(`No data found for '${gamename}'\n`);
   }
 }

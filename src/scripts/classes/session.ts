@@ -75,7 +75,8 @@ export default class Session {
    * Initializes the session by setting the path for saving information to disk.
    */
   constructor(p: string) {
-    if (!p || p === "") throw new ParameterError("Invalid path for the session file");
+    if (!p || p === "")
+      throw new ParameterError("Invalid path for the session file");
     this._path = p;
     this._isMapped = existsSync(this.path);
     this._created = new Date(Date.now());
@@ -161,7 +162,10 @@ export default class Session {
   async load(): Promise<void> {
     if (this.isMapped) {
       // Read data
-      const data = await fs.readFile(this.path, { encoding: "utf-8", flag: "r" });
+      const data = await fs.readFile(this.path, {
+        encoding: "utf-8",
+        flag: "r"
+      });
       const json = JSON.parse(data);
 
       // Assign values
@@ -207,8 +211,9 @@ export default class Session {
 
     // Search for expired cookies
     const jarValid =
-      this._cookieJar.getCookiesSync("https://f95zone.to").filter((el) => el.TTL() === 0).length ===
-      0;
+      this._cookieJar
+        .getCookiesSync("https://f95zone.to")
+        .filter((el) => el.TTL() === 0).length === 0;
 
     return dateValid && hashValid && jarValid;
   }

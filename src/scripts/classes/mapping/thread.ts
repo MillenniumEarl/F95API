@@ -163,7 +163,9 @@ export default class Thread implements ILazy {
   /**
    * Fetch one at a time the posts on the current page.
    */
-  private async *parsePostsInPage(html: string): AsyncGenerator<Post, void, unknown> {
+  private async *parsePostsInPage(
+    html: string
+  ): AsyncGenerator<Post, void, unknown> {
     // Load the HTML
     const $ = cheerio.load(html);
 
@@ -240,7 +242,8 @@ export default class Thread implements ILazy {
 
     // Validate the dates
     if (DateTime.fromISO(modified).isValid) this._modified = new Date(modified);
-    if (DateTime.fromISO(published).isValid) this._publication = new Date(published);
+    if (DateTime.fromISO(published).isValid)
+      this._publication = new Date(published);
   }
 
   /**
@@ -288,7 +291,8 @@ export default class Thread implements ILazy {
    */
   public async getPost(index: number): Promise<Post | null> {
     // Validate parameters
-    if (index < 1) throw new ParameterError("Index must be greater or equal than 1");
+    if (index < 1)
+      throw new ParameterError("Index must be greater or equal than 1");
 
     // Reduce the maximum number of posts per page to POST_FOR_PAGE
     await this.setMaximumPostsForPage(this.POST_FOR_PAGE);

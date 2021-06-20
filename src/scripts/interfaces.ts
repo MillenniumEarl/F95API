@@ -97,7 +97,10 @@ export type TCategory = "games" | "mods" | "comics" | "animations" | "assets";
 /**
  * Valid names of classes that implement the IQuery interface.
  */
-export type TQueryInterface = "LatestSearchQuery" | "ThreadSearchQuery" | "HandiworkSearchQuery";
+export type TQueryInterface =
+  | "LatestSearchQuery"
+  | "ThreadSearchQuery"
+  | "HandiworkSearchQuery";
 
 /**
  * Types of reaction that can be used in response to a post.
@@ -118,7 +121,13 @@ export type TAlertReactionType =
 /**
  * Types of alert messages that can be notified to the currently logged in user.
  */
-export type TAlertType = "Quote" | "Reaction" | "Award" | "Reply" | "Rating" | "Unknown";
+export type TAlertType =
+  | "Quote"
+  | "Reaction"
+  | "Award"
+  | "Reply"
+  | "Rating"
+  | "Unknown";
 
 /**
  * Collection of values defined for each

@@ -37,7 +37,9 @@ export default class HandiWork extends Basic implements IHandiwork {
   sku: string;
   //#endregion Properties
 
-  public constructor(init?: Partial<HandiWork | Comic | Animation | Asset | Game>) {
+  public constructor(
+    init?: Partial<HandiWork | Comic | Animation | Asset | Game>
+  ) {
     super();
     Object.assign(this, init);
   }

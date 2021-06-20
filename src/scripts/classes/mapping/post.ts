@@ -12,7 +12,12 @@ import { POST, THREAD } from "../../constants/css-selector";
 import { urls } from "../../constants/url";
 import { fetchHTML } from "../../network-helper";
 import shared from "../../shared";
-import { InvalidID, INVALID_POST_ID, UserNotLogged, USER_NOT_LOGGED } from "../errors";
+import {
+  InvalidID,
+  INVALID_POST_ID,
+  UserNotLogged,
+  USER_NOT_LOGGED
+} from "../errors";
 import { ILazy, IPostElement } from "../../interfaces";
 import { extractDataFromFirstThreadPost } from "../../scrape-data/post-parse-tree";
 
@@ -159,7 +164,9 @@ export default class Post implements ILazy {
 
     // Find post's owner (if no ID is found thant the user has been deleted)
     const ownerID = post.find(POST.OWNER_ID).attr("data-user-id");
-    this._owner = ownerID ? new PlatformUser(parseInt(ownerID.trim(), 10)) : null;
+    this._owner = ownerID
+      ? new PlatformUser(parseInt(ownerID.trim(), 10))
+      : null;
     if (this._owner) await this._owner.fetch();
 
     // Find if the post is bookmarked

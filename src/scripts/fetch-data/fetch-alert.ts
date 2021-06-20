@@ -15,7 +15,9 @@ import { fetchHTML } from "../network-helper";
 /**
  * Gets alert data starting from the source code of the page passed by parameter.
  */
-export default async function fetchAlertElements(html: string): Promise<IAlert[]> {
+export default async function fetchAlertElements(
+  html: string
+): Promise<IAlert[]> {
   // Local variables
   const $ = cheerio.load(html);
 
@@ -26,7 +28,9 @@ export default async function fetchAlertElements(html: string): Promise<IAlert[]
   const summarizedPosts = bodies.filter((el) => isSummarized($, el));
   const summarizedPromises = summarizedPosts.map((el) => {
     // Find the URL
-    const partialURL = $(el).find(ALERT.SUMMARIZED_SEPARATE_ALERTS).attr("href");
+    const partialURL = $(el)
+      .find(ALERT.SUMMARIZED_SEPARATE_ALERTS)
+      .attr("href");
     return fetchSummarizedAlerts(partialURL);
   });
 

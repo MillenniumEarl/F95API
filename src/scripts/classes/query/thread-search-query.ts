@@ -76,7 +76,9 @@ export default class ThreadSearchQuery implements IQuery {
     return validateSync(this).length === 0;
   }
 
-  public async execute(): Promise<Result<GenericAxiosError, AxiosResponse<any>>> {
+  public async execute(): Promise<
+    Result<GenericAxiosError, AxiosResponse<any>>
+  > {
     // Check if the query is valid
     if (!this.validate()) {
       throw new Error(`Invalid query: ${validateSync(this).join("\n")}`);
@@ -125,10 +127,12 @@ export default class ThreadSearchQuery implements IQuery {
 
     // Set included and excluded tags (joined with a comma)
     if (this.includedTags) params["c[tags]"] = this.includedTags.join(",");
-    if (this.excludedTags) params["c[excludeTags]"] = this.excludedTags.join(",");
+    if (this.excludedTags)
+      params["c[excludeTags]"] = this.excludedTags.join(",");
 
     // Set minimum reply number
-    if (this.minimumReplies > 0) params["c[min_reply_count]"] = this.minimumReplies.toString();
+    if (this.minimumReplies > 0)
+      params["c[min_reply_count]"] = this.minimumReplies.toString();
 
     // Add prefixes
     const parser = new PrefixParser();

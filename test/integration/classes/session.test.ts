@@ -56,7 +56,9 @@ export function suite(): void {
 
     // Verify test
     expect(sessionSave.hash).to.be.equal(sessionLoad.hash);
-    expect(sessionSave.created.toISOString()).to.be.equal(sessionLoad.created.toISOString());
+    expect(sessionSave.created.toISOString()).to.be.equal(
+      sessionLoad.created.toISOString()
+    );
     expect(sessionSave.token).to.be.equal(sessionLoad.token);
 
     // Delete file

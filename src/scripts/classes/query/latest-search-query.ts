@@ -70,7 +70,9 @@ export default class LatestSearchQuery implements IQuery {
     return validateSync(this).length === 0;
   }
 
-  public async execute(): Promise<Result<GenericAxiosError, AxiosResponse<any>>> {
+  public async execute(): Promise<
+    Result<GenericAxiosError, AxiosResponse<any>>
+  > {
     // Check if the query is valid
     if (!this.validate()) {
       throw new Error(`Invalid query: ${validateSync(this).join("\n")}`);
@@ -92,7 +94,10 @@ export default class LatestSearchQuery implements IQuery {
     const diff = this.dateDiffInDays(new Date(), d);
 
     // Find the closest valid value in the array
-    const closest = [365, 180, 90, 30, 14, 7, 3, 1].reduce(function (prev, curr) {
+    const closest = [365, 180, 90, 30, 14, 7, 3, 1].reduce(function (
+      prev,
+      curr
+    ) {
       return Math.abs(curr - diff) < Math.abs(prev - diff) ? curr : prev;
     });
 

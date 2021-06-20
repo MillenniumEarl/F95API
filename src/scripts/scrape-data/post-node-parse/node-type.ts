@@ -9,7 +9,14 @@ import { Cheerio, CheerioAPI, Element, Node } from "cheerio";
 /**
  * Possible kind of a Cheerio node.
  */
-export type TNodeType = "Text" | "Formatted" | "Spoiler" | "Link" | "List" | "Noscript" | "Unknown";
+export type TNodeType =
+  | "Text"
+  | "Formatted"
+  | "Spoiler"
+  | "Link"
+  | "List"
+  | "Noscript"
+  | "Unknown";
 
 /**
  * Identify the type of node passed by parameter.
@@ -19,7 +26,8 @@ export function nodeType($: CheerioAPI, node: Node): TNodeType {
 
   // Function map
   const functionMap = {
-    Text: (node: Element) => isTextNode(node) && !isFormattingNode(node) && !isImageTextNode(node),
+    Text: (node: Element) =>
+      isTextNode(node) && !isFormattingNode(node) && !isImageTextNode(node),
     Formatted: (node: Element) => isFormattingNode(node),
     Spoiler: (node: Element) => isSpoilerNode($(node)),
     Link: (node: Element) => isLinkNode(node),

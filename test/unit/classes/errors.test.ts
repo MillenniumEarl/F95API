@@ -68,8 +68,14 @@ export function suite(): void {
       const baseAPIError = new BaseAPIError(args);
 
       expect(baseAPIError.id).to.be.equal(ID, "ID value must be equal");
-      expect(baseAPIError.message).to.be.equal(MESSAGE, "Message value must be equal");
-      expect(baseAPIError.error).to.be.equal(ERROR, "Error value must be equal");
+      expect(baseAPIError.message).to.be.equal(
+        MESSAGE,
+        "Message value must be equal"
+      );
+      expect(baseAPIError.error).to.be.equal(
+        ERROR,
+        "Error value must be equal"
+      );
     });
   });
 
@@ -82,8 +88,14 @@ export function suite(): void {
       const genericAxiosError = new GenericAxiosError(args);
 
       expect(genericAxiosError.id).to.be.equal(ID, "ID value must be equal");
-      expect(genericAxiosError.message).to.be.equal(MESSAGE, "Message value must be equal");
-      expect(genericAxiosError.error).to.be.equal(ERROR, "Error value must be equal");
+      expect(genericAxiosError.message).to.be.equal(
+        MESSAGE,
+        "Message value must be equal"
+      );
+      expect(genericAxiosError.error).to.be.equal(
+        ERROR,
+        "Error value must be equal"
+      );
     });
   });
 

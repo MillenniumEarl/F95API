@@ -33,7 +33,13 @@ import ThreadSearchQuery, { TThreadOrder } from "./thread-search-query";
  *
  * `views`: Order based on the number of visits. Replacement: `replies`.
  */
-type THandiworkOrder = "date" | "likes" | "relevance" | "replies" | "title" | "views";
+type THandiworkOrder =
+  | "date"
+  | "likes"
+  | "relevance"
+  | "replies"
+  | "title"
+  | "views";
 type TExecuteResult = Result<GenericAxiosError, AxiosResponse<any>>;
 
 export default class HandiworkSearchQuery implements IQuery {
@@ -94,7 +100,8 @@ export default class HandiworkSearchQuery implements IQuery {
     // If the keywords are set or the number
     // of included tags is greather than 5,
     // we must perform a thread search
-    if (this.keywords || this.includedTags.length > MAX_TAGS_LATEST_SEARCH) return "thread";
+    if (this.keywords || this.includedTags.length > MAX_TAGS_LATEST_SEARCH)
+      return "thread";
 
     return DEFAULT_SEARCH_TYPE;
   }
@@ -114,8 +121,13 @@ export default class HandiworkSearchQuery implements IQuery {
 
     // Convert the query
     if (this.selectSearchType() === "latest")
-      response = await this.cast<LatestSearchQuery>("LatestSearchQuery").execute();
-    else response = await this.cast<ThreadSearchQuery>("ThreadSearchQuery").execute();
+      response = await this.cast<LatestSearchQuery>(
+        "LatestSearchQuery"
+      ).execute();
+    else
+      response = await this.cast<ThreadSearchQuery>(
+        "ThreadSearchQuery"
+      ).execute();
 
     return response;
   }

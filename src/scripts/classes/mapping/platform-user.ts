@@ -12,7 +12,12 @@ import { urls } from "../../constants/url";
 import { fetchHTML } from "../../network-helper";
 import { GENERIC, MEMBER } from "../../constants/css-selector";
 import shared from "../../shared";
-import { InvalidID, INVALID_USER_ID, UserNotLogged, USER_NOT_LOGGED } from "../errors";
+import {
+  InvalidID,
+  INVALID_USER_ID,
+  UserNotLogged,
+  USER_NOT_LOGGED
+} from "../errors";
 import { ILazy } from "../../interfaces";
 
 /**
@@ -152,7 +157,9 @@ export default class PlatformUser implements ILazy {
 
     // Fetch the page
     const response = await fetchHTML(url);
-    const result = response.applyOnSuccess((html) => this.elaborateResponse(html));
+    const result = response.applyOnSuccess((html) =>
+      this.elaborateResponse(html)
+    );
     if (result.isFailure()) throw response.value;
   }
 

@@ -131,7 +131,10 @@ function stringToBoolean(s: string): boolean {
  *
  * Case-insensitive.
  */
-function getPostElementByName(elements: IPostElement[], name: string): IPostElement | undefined {
+function getPostElementByName(
+  elements: IPostElement[],
+  name: string
+): IPostElement | undefined {
   return elements.find((el) => el.name.toUpperCase() === name.toUpperCase());
 }
 
@@ -164,8 +167,10 @@ function fillWithPrefixes(hw: HandiWork, prefixes: string[]) {
     const prefix = item.replace("[", "").replace("]", "");
 
     // Check what the prefix indicates
-    if (stringInDict(prefix, shared.prefixes["engines"])) engine = prefix as TEngine;
-    else if (stringInDict(prefix, shared.prefixes["statuses"])) status = prefix as TStatus;
+    if (stringInDict(prefix, shared.prefixes["engines"]))
+      engine = prefix as TEngine;
+    else if (stringInDict(prefix, shared.prefixes["statuses"]))
+      status = prefix as TStatus;
     else if (stringInDict(prefix, fakeModDict)) mod = true;
 
     // Anyway add the prefix to list
@@ -207,7 +212,8 @@ function fillWithPostData(hw: HandiWork, elements: IPostElement[]): Handiwork {
 
   // Parse the censorship
   const censored =
-    getPostElementByName(elements, "censored") || getPostElementByName(elements, "censorship");
+    getPostElementByName(elements, "censored") ||
+    getPostElementByName(elements, "censorship");
   if (censored) hw.censored = stringToBoolean(censored.text);
 
   // Get the genres
@@ -219,7 +225,8 @@ function fillWithPostData(hw: HandiWork, elements: IPostElement[]): Handiwork {
 
   // Fill the dates
   const releaseDate = getPostElementByName(elements, "release date")?.text;
-  if (DateTime.fromISO(releaseDate).isValid) hw.lastRelease = new Date(releaseDate);
+  if (DateTime.fromISO(releaseDate).isValid)
+    hw.lastRelease = new Date(releaseDate);
 
   //Get the overview
   const overview = getPostElementByName(elements, "overview")?.text;
@@ -282,7 +289,8 @@ function parseChangelog(elements: IPostElement[]): TChangelog[] {
   // Local variables
   const changelog = [];
   const changelogElement =
-    getPostElementByName(elements, "changelog") || getPostElementByName(elements, "change-log");
+    getPostElementByName(elements, "changelog") ||
+    getPostElementByName(elements, "change-log");
 
   if (changelogElement) {
     // regex used to match version tags

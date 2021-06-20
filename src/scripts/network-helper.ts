@@ -92,10 +92,14 @@ export async function fetchHTML(
     const unexpectedResponseError = new UnexpectedResponseContentType({
       id: ERROR_CODE.UNEXPECTED_HTML_RESPONSE,
       message: `Expected HTML but received ${response.value["content-type"]}`,
-      error: new Error(`Expected HTML but received ${response.value["content-type"]}`)
+      error: new Error(
+        `Expected HTML but received ${response.value["content-type"]}`
+      )
     });
 
-    return isHTML ? success(response.value.data as string) : failure(unexpectedResponseError);
+    return isHTML
+      ? success(response.value.data as string)
+      : failure(unexpectedResponseError);
   } else return failure(response.value as GenericAxiosError);
 }
 
@@ -112,7 +116,8 @@ export async function authenticate(
   force: boolean = false
 ): Promise<LoginResult> {
   shared.logger.info(`Authenticating with user ${credentials.username}`);
-  if (!credentials.token) throw new InvalidF95Token(`Invalid token for auth: ${credentials.token}`);
+  if (!credentials.token)
+    throw new InvalidF95Token(`Invalid token for auth: ${credentials.token}`);
 
   // Secure the URL
   const secureURL = enforceHttpsUrl(urls.LOGIN);
@@ -164,7 +169,8 @@ export async function send2faCode(
   // Prepare the parameters to send via POST request
   const params = {
     _xfRedirect: urls.BASE,
-    _xfRequestUri: "/login/two-step?_xfRedirect=https%3A%2F%2Ff95zone.to%2F&remember=1",
+    _xfRequestUri:
+      "/login/two-step?_xfRedirect=https%3A%2F%2Ff95zone.to%2F&remember=1",
     _xfResponseType: "json",
     _xfToken: token,
     _xfWithData: "1",
@@ -225,7 +231,9 @@ export async function fetchGETResponse(
     const response = await api.get(url, commonConfig);
     return success(response);
   } catch (e) {
-    shared.logger.error(`(GET) Error ${e.message} occurred while trying to fetch ${url}`);
+    shared.logger.error(
+      `(GET) Error ${e.message} occurred while trying to fetch ${url}`
+    );
     const genericError = new GenericAxiosError({
       id: ERROR_CODE.CANNOT_FETCH_GET_RESPONSE,
       message: `(GET) Error ${e.message} occurred while trying to fetch ${url}`,
@@ -254,7 +262,8 @@ export async function fetchPOSTResponse(
 
   // Prepare the parameters for the POST request
   const urlParams = new URLSearchParams();
-  for (const [key, value] of Object.entries(params)) urlParams.append(key, value);
+  for (const [key, value] of Object.entries(params))
+    urlParams.append(key, value);
 
   // Shallow copy of the common configuration object
   commonConfig.jar = shared.session.cookieJar;
@@ -302,7 +311,9 @@ export async function fetchHEADResponse(
     const response = await api.head(url, commonConfig);
     return success(response);
   } catch (e) {
-    shared.logger.error(`(HEAD) Error ${e.message} occurred while trying to fetch ${url}`);
+    shared.logger.error(
+      `(HEAD) Error ${e.message} occurred while trying to fetch ${url}`
+    );
     const genericError = new GenericAxiosError({
       id: ERROR_CODE.CANNOT_FETCH_HEAD_RESPONSE,
       message: `(HEAD) Error ${e.message} occurred while trying to fetch ${url}`,
@@ -351,7 +362,10 @@ export function isStringAValidURL(url: string): boolean {
  * If `true`, the function will consider redirects a violation and return `false`.
  * Default: `false`
  */
-export async function urlExists(url: string, checkRedirect: boolean = false): Promise<boolean> {
+export async function urlExists(
+  url: string,
+  checkRedirect: boolean = false
+): Promise<boolean> {
   // Local variables
   let valid = false;
 
@@ -402,8 +416,12 @@ async function axiosUrlExists(url: string): Promise<boolean> {
 
   // Send a HEAD request
   const r = await fetchHEADResponse(url);
-  if (r.isSuccess()) valid = r.value && !/4\d\d/.test(r.value.status.toString());
-  else if (r.isFailure() && !ERROR_CODES.includes((r.value.error as AxiosError<any>).code))
+  if (r.isSuccess())
+    valid = r.value && !/4\d\d/.test(r.value.status.toString());
+  else if (
+    r.isFailure() &&
+    !ERROR_CODES.includes((r.value.error as AxiosError<any>).code)
+  )
     throw r.value.error;
 
   return valid;
@@ -426,7 +444,10 @@ function manageLoginPOSTResponse(response: AxiosResponse<any>) {
   }
 
   // Get the error message (if any) and remove the new line chars
-  const errorMessage = $("body").find(GENERIC.LOGIN_MESSAGE_ERROR).text().replace(/\n/g, "");
+  const errorMessage = $("body")
+    .find(GENERIC.LOGIN_MESSAGE_ERROR)
+    .text()
+    .replace(/\n/g, "");
 
   // Return the result of the authentication
   const result = errorMessage.trim() === "";
@@ -463,7 +484,9 @@ function messageToCode(message: string): number {
 /**
  * Manage the response given by the platform when the 2FA is required.
  */
-function manage2faResponse(r: AxiosResponse<any>): Result<TProvider, LoginResult> {
+function manage2faResponse(
+  r: AxiosResponse<any>
+): Result<TProvider, LoginResult> {
   // The html property exists only if the provider is wrong
   const rightProvider = !("html" in r.data);
 
@@ -476,7 +499,9 @@ function manage2faResponse(r: AxiosResponse<any>): Result<TProvider, LoginResult
 
   // r.data.status is 'ok' if the authentication is successful
   const result = r.data.status === "ok";
-  const message: string = result ? AUTH_SUCCESSFUL_MESSAGE : r.data.errors.join(",");
+  const message: string = result
+    ? AUTH_SUCCESSFUL_MESSAGE
+    : r.data.errors.join(",");
   const loginCode = messageToCode(message);
   return success(new LoginResult(result, loginCode, message));
 }

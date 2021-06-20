@@ -56,7 +56,8 @@ export async function login(
     await fetchPlatformData();
 
     shared.logger.info("User logged in through the platform");
-  } else shared.logger.warn(`Error during authentication: ${loginResult.message}`);
+  } else
+    shared.logger.warn(`Error during authentication: ${loginResult.message}`);
 
   // Set login status
   shared.setIsLogged(loginResult.success);

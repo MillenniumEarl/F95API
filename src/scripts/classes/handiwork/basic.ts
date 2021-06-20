@@ -4,7 +4,13 @@
 // https://opensource.org/licenses/MIT
 
 // Modules from files
-import { TAuthor, TRating, TCategory, TChangelog, IBasic } from "../../interfaces";
+import {
+  TAuthor,
+  TRating,
+  TCategory,
+  TChangelog,
+  IBasic
+} from "../../interfaces";
 
 export default class Basic implements IBasic {
   //#region Properties

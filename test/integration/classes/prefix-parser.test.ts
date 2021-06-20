@@ -23,7 +23,15 @@ export function suite(): void {
 
   // Test values
   const testIDs = [103, 225, 44, 13, 2, 7, 22];
-  const testPrefixes = ["corruption", "pregnancy", "slave", "VN", "RPGM", "Ren'Py", "Abandoned"];
+  const testPrefixes = [
+    "corruption",
+    "pregnancy",
+    "slave",
+    "VN",
+    "RPGM",
+    "Ren'Py",
+    "Abandoned"
+  ];
 
   it("Prefixes to IDs", function prefixesToIDs() {
     // Create a new parser

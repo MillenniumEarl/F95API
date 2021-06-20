@@ -39,6 +39,8 @@ export function suite(): void {
     // Set the session as logged
     Shared.setIsLogged(true);
 
-    expect(getHandiworkFromURL(URL)).to.be.rejectedWith(/(is not a valid F95Zone URL)/);
+    expect(getHandiworkFromURL(URL)).to.be.rejectedWith(
+      /(is not a valid F95Zone URL)/
+    );
   });
 }

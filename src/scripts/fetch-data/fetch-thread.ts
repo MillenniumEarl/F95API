@@ -32,7 +32,8 @@ export default async function fetchThreadHandiworkURLs(
   const response = await query.execute();
 
   // Fetch the results from F95 and return the handiwork urls
-  if (response.isSuccess()) return fetchResultURLs(response.value.data as string, limit);
+  if (response.isSuccess())
+    return fetchResultURLs(response.value.data as string, limit);
   else throw response.value;
 }
 
@@ -45,7 +46,10 @@ export default async function fetchThreadHandiworkURLs(
  * @param {number} limit
  * Maximum number of items to get. Default: 30
  */
-async function fetchResultURLs(html: string, limit: number = 30): Promise<string[]> {
+async function fetchResultURLs(
+  html: string,
+  limit: number = 30
+): Promise<string[]> {
   // Prepare cheerio
   const $ = cheerio.load(html);
 
@@ -72,7 +76,10 @@ async function fetchResultURLs(html: string, limit: number = 30): Promise<string
 function extractLinkFromResult(selector: Cheerio<Node>): string {
   shared.logger.trace("Extracting thread link from result...");
 
-  const partialLink = selector.find(THREAD_SEARCH.THREAD_TITLE).attr("href").trim();
+  const partialLink = selector
+    .find(THREAD_SEARCH.THREAD_TITLE)
+    .attr("href")
+    .trim();
 
   // Compose and return the URL
   return new URL(partialLink, f95urls.BASE).toString();

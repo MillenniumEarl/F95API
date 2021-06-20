@@ -47,7 +47,9 @@ export async function getLatestUpdates<T extends IBasic>(
  *
  * You **must** be logged in to the portal before calling this method.
  */
-export async function checkIfHandiworkHasUpdate(hw: HandiWork): Promise<boolean> {
+export async function checkIfHandiworkHasUpdate(
+  hw: HandiWork
+): Promise<boolean> {
   // Local variables
   let hasUpdate = false;
 

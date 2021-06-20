@@ -9,7 +9,12 @@ import cheerio, { Node } from "cheerio";
 // Modules from files
 import PlatformUser from "./platform-user";
 import { urls } from "../../constants/url";
-import { ALERT, BOOKMARKED_POST, GENERIC, WATCHED_THREAD } from "../../constants/css-selector";
+import {
+  ALERT,
+  BOOKMARKED_POST,
+  GENERIC,
+  WATCHED_THREAD
+} from "../../constants/css-selector";
 import { fetchHTML } from "../../network-helper";
 import { UserNotLogged, USER_NOT_LOGGED } from "../errors";
 import shared from "../../shared";
@@ -183,7 +188,11 @@ export default class UserProfile extends PlatformUser {
     const results = functionParametersMap.map((data) => {
       return {
         name: data.propertyName,
-        elements: this.fetchElementsInPages(data.url, data.selector, data.parseFunction)
+        elements: this.fetchElementsInPages(
+          data.url,
+          data.selector,
+          data.parseFunction
+        )
       };
     });
 
@@ -264,7 +273,11 @@ export default class UserProfile extends PlatformUser {
    * @param n Total number of pages
    * @param s Page to start from
    */
-  private async *fetchPages(url: string, n: number, s = 1): AsyncGenerator<string, void, unknown> {
+  private async *fetchPages(
+    url: string,
+    n: number,
+    s = 1
+  ): AsyncGenerator<string, void, unknown> {
     // Local variables
     const u = new URL(url);
     const pipeline = [];
@@ -292,14 +305,19 @@ export default class UserProfile extends PlatformUser {
   /**
    * Gets thread data starting from the source code of the page passed by parameter.
    */
-  private async fetchPageThreadElements(html: string): Promise<IWatchedThread[]> {
+  private async fetchPageThreadElements(
+    html: string
+  ): Promise<IWatchedThread[]> {
     // Local variables
     const $ = cheerio.load(html);
 
     function parseElement(el: Node) {
       // Parse the URL
       const partialURL = $(el).find(WATCHED_THREAD.URL).attr("href");
-      const url = new URL(partialURL.replace("unread", ""), `${urls.BASE}`).toString();
+      const url = new URL(
+        partialURL.replace("unread", ""),
+        `${urls.BASE}`
+      ).toString();
 
       return {
         url: url.toString(),
@@ -316,7 +334,9 @@ export default class UserProfile extends PlatformUser {
   /**
    * Gets bookmarks data starting from the source code of the page passed by parameter.
    */
-  private async fetchBookmarkElements(html: string): Promise<IBookmarkedPost[]> {
+  private async fetchBookmarkElements(
+    html: string
+  ): Promise<IBookmarkedPost[]> {
     // Local variables
     const $ = cheerio.load(html);
 
@@ -341,7 +361,9 @@ export default class UserProfile extends PlatformUser {
       const sDate = $(el).find(BOOKMARKED_POST.BOOKMARK_TIME).attr("datetime");
 
       // Find the owner ID
-      const sOwnerID = $(el).find(BOOKMARKED_POST.OWNER_ID).attr("data-user-id");
+      const sOwnerID = $(el)
+        .find(BOOKMARKED_POST.OWNER_ID)
+        .attr("data-user-id");
 
       return {
         id: foundID,
@@ -380,7 +402,9 @@ export default class UserProfile extends PlatformUser {
       const partialURLs = slider.map((el) => $(el).attr("href").trim());
 
       // Prepare the unique URLs
-      const gameURLs = [...new Set(partialURLs)].map((pu) => new URL(pu, urls.BASE).toString());
+      const gameURLs = [...new Set(partialURLs)].map((pu) =>
+        new URL(pu, urls.BASE).toString()
+      );
 
       // fetch the games
       const promises = gameURLs.map((url) => {
