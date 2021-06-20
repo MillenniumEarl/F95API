@@ -112,9 +112,11 @@ function printTree(root: TreeNode, nindent = 0) {
   console.log(`${indent}${data}`);
 
   // Print the data of the children nodes
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   root.children.map((child) => printTree(child, nindent + 1));
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function printPairs(pairs: IPostElement[]) {
   pairs.map((e) => {
     const childData =

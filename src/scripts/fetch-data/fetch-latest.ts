@@ -40,7 +40,7 @@ export default async function fetchLatestHandiworkURLs(
       const data: [{ thread_id: number }] = response.value.data.msg.data;
       const totalPages: number = response.value.data.msg.pagination.total;
 
-      data.map((e, idx) => {
+      data.map((e) => {
         if (fetchedResults < limit) {
           const gameURL = new URL(e.thread_id.toString(), urls.THREADS).href;
           resultURLs.push(gameURL);

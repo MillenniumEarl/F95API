@@ -10,7 +10,7 @@ import path from "path";
 // Public modules from npm
 import { sha256 } from "js-sha256";
 import tough, { CookieJar } from "tough-cookie";
-import { BaseAPIError, ERROR_CODE, ParameterError } from "./errors";
+import { ParameterError } from "./errors";
 
 export default class Session {
   //#region Fields

@@ -8,10 +8,7 @@
 // Public module from npm
 import chai from "chai";
 import chaiAsPromised from "chai-as-promised";
-import {
-  INVALID_USER_ID,
-  USER_NOT_LOGGED
-} from "../../../../src/scripts/classes/errors";
+import { USER_NOT_LOGGED } from "../../../../src/scripts/classes/errors";
 
 // Module from files
 import { UserProfile } from "../../../../src";

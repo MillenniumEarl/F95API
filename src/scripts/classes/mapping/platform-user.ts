@@ -186,7 +186,7 @@ export default class PlatformUser implements ILazy {
       this._title = $(MEMBER.TITLE).text();
       this._banners = $(MEMBER.BANNERS)
         .toArray()
-        .map((el, idx) => $(el).text().trim())
+        .map((el) => $(el).text().trim())
         .filter((el) => el);
       this._avatar = $(MEMBER.AVATAR).attr("src");
       this._followed = $(MEMBER.FOLLOWED).text() === "Unfollow";

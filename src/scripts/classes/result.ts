@@ -22,6 +22,7 @@ export class Failure<L, A> {
     return false;
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   applyOnSuccess<B>(_: (a: A) => B): Result<L, B> {
     return this as any;
   }
