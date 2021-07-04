@@ -26,8 +26,6 @@ import Handiwork from "../classes/handiwork/handiwork";
  * Gets information of a particular handiwork from its thread.
  *
  * If you don't want to specify the object type, use `HandiWork`.
- *
- * @todo It does not currently support assets.
  */
 export default async function getHandiworkInformation<T extends IBasic>(
   arg: string | Thread
@@ -134,8 +132,38 @@ function stringToBoolean(s: string): boolean {
 function getPostElementByName(
   elements: IPostElement[],
   name: string
+): IPostElement | undefined;
+
+/**
+ * Gets the first non-null element having one of
+ * the specified ones as a name or `undefined`.
+ *
+ * Case-insensitive.
+ */
+function getPostElementByName(
+  elements: IPostElement[],
+  names: string[]
+): IPostElement | undefined;
+
+function getPostElementByName(
+  elements: IPostElement[],
+  searchValue: string | string[]
 ): IPostElement | undefined {
-  return elements.find((el) => el.name.toUpperCase() === name.toUpperCase());
+  // Check for the type of searchValue
+  const names = Array.isArray(searchValue) ? searchValue : [searchValue];
+
+  // Inside function used to find the element with the given name
+  function findElement(es: IPostElement[], name: string) {
+    return es.find((e) => e.name.toUpperCase() === name.toUpperCase());
+  }
+
+  // Find the elements with the given names, filter
+  // for "undefined" and return the first element or
+  // "undefined" if no element is found
+  return names
+    .map((name) => findElement(elements, name))
+    .filter((post) => post !== undefined)
+    .shift();
 }
 
 //#endregion Utilities
@@ -211,9 +239,7 @@ function fillWithPostData(hw: HandiWork, elements: IPostElement[]): Handiwork {
   hw.length = getPostElementByName(elements, "lenght")?.text;
 
   // Parse the censorship
-  const censored =
-    getPostElementByName(elements, "censored") ||
-    getPostElementByName(elements, "censorship");
+  const censored = getPostElementByName(elements, ["censored", "censorship"]);
   if (censored) hw.censored = stringToBoolean(censored.text);
 
   // Get the genres
@@ -255,19 +281,20 @@ function parseAuthor(elements: IPostElement[]): TAuthor[] {
   };
 
   // Fetch the authors from the post data
-  const authorElement =
-    getPostElementByName(elements, "developer") ||
-    getPostElementByName(elements, "developer/publisher") ||
-    getPostElementByName(elements, "artist");
+  const authorElement = getPostElementByName(elements, [
+    "developer",
+    "developer/publisher",
+    "artist"
+  ]);
 
   if (authorElement) {
     // Set the author name
     author.name = authorElement.text;
 
     // Add the found platforms
-    authorElement.content.forEach((e: ILink) => {
-      // Ignore invalid links
-      if (e.href) {
+    authorElement.content
+      .filter((e: ILink) => e.href)
+      .forEach((e: ILink) => {
         // Create and push the new platform
         const platform: TExternalPlatform = {
           name: e.text,
@@ -275,8 +302,7 @@ function parseAuthor(elements: IPostElement[]): TAuthor[] {
         };
 
         author.platforms.push(platform);
-      }
-    });
+      });
   }
 
   return [author];
@@ -288,12 +314,13 @@ function parseAuthor(elements: IPostElement[]): TAuthor[] {
 function parseChangelog(elements: IPostElement[]): TChangelog[] {
   // Local variables
   const changelog = [];
-  const changelogElement =
-    getPostElementByName(elements, "changelog") ||
-    getPostElementByName(elements, "change-log");
+  const changelogElement = getPostElementByName(elements, [
+    "changelog",
+    "change-log"
+  ]);
 
   if (changelogElement) {
-    // regex used to match version tags
+    // Regex used to match version tags
     const versionRegex = /^v[0-9]+\.[0-9]+.*/;
 
     // Get the indexes of the version tags
@@ -311,11 +338,11 @@ function parseChangelog(elements: IPostElement[]): TChangelog[] {
       // Get the difference in indexes between this and the next version tag
       const diff = indexesVersion[j + 1] ?? changelogElement.content.length;
 
-      // fetch the group of data of this version tag
+      // Fetch the group of data of this version tag
       const group = changelogElement.content.slice(i, diff);
       versionChangelog.version = group.shift().text.replace("v", "").trim();
 
-      // parse the data
+      // Parse the data
       group.forEach((e) => {
         if (e.type === "Empty" || e.type === "Spoiler") {
           const textes = e.content.map((c) => c.text);
