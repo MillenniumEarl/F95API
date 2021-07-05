@@ -1,5 +1,5 @@
 {
-  "main": "./src/index.ts",
+  "main": "dist/index.js",
   "name": "f95api",
   "version": "2.0.0",
   "author": "Millennium Earl",
@@ -25,11 +25,10 @@
   "scripts": {
     "lint": "eslint . --ext .ts",
     "prettier-format": "prettier --config .prettierrc {src,test}/**/*.ts --write",
-    "compile": "tsc",
-    "test": "nyc --reporter=text mocha --require ts-node/register test/{unit,integration}/index.ts",
-    "coverage": "nyc report --reporter=text-lcov > coverage.lcov && codecov -t 38ad72bf-a29d-4c2e-9827-96cbe037afd2",
-    "publish": "npm publish",
-    "run-example": "npm run compile && node --inspect ./dist/example.js",
+    "test": "mocha --require ts-node/register test/{unit,integration}/index.ts",
+    "coverage": "nyc --reporter=lcov --reporter=text npm run test",
+    "publish": "tsc && npm publish",
+    "run-example": "tsc && node --inspect ./dist/example.js",
     "madge": "madge --image graph.svg src/index.ts"
   },
   "engines": {
