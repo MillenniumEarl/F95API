@@ -27,7 +27,7 @@ export function isPostElementEmpty(node: IPostElement): boolean {
 export function cleanElement(element: IPostElement): IPostElement {
   // Local variables
   const shallow = Object.assign({}, element);
-  const specialCharSet = /[-!$%^&*()_+|~=`{}[\]:";'<>?,./]/;
+  const specialCharSet = /[-!$%^&*()_+|~=`{}[\]:";'<>?,./]+/;
   const startsWithSpecialCharsRegex = new RegExp("^" + specialCharSet.source);
   const endsWithSpecialCharsRegex = new RegExp(specialCharSet.source + "$");
 
