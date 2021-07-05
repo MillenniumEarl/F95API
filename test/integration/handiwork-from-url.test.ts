@@ -5,9 +5,9 @@
 
 // Public module from npm
 import { expect } from "chai";
-import { USER_NOT_LOGGED } from "../../src/scripts/classes/errors";
 
 // Modules from file
+import { USER_NOT_LOGGED } from "../../src/scripts/classes/errors";
 import getHandiworkFromURL from "../../src/scripts/handiwork-from-url";
 import Shared from "../../src/scripts/shared";
 
