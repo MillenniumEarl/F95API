@@ -20,6 +20,7 @@ import { suite as errors } from "./classes/errors.test";
 import { suite as result } from "./classes/result.test";
 import { suite as session } from "./classes/session.test";
 import { suite as loginresult } from "./classes/login-result.test";
+import { suite as nodetype } from "./scrape-data/post-node-parse/node-type.test";
 
 describe("Unit tests", function testBasic() {
   describe("Test class Basic", basicClass.bind(this));
@@ -36,4 +37,5 @@ describe("Unit tests", function testBasic() {
   describe("Test class Result", result.bind(this));
   describe("Test class Session", session.bind(this));
   describe("Test class LoginResult", loginresult.bind(this));
+  describe("Test for Cheerio node types", nodetype.bind(this));
 });
