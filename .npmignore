@@ -1,7 +1,6 @@
 test
 coverage.lcov
 tsconfig.json
-.dist
 .nyc_output
 .eslintignore
 .eslintrc
