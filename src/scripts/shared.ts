@@ -10,7 +10,7 @@ import { tmpdir } from "os";
 import { join } from "path";
 
 // Public modules from npm
-import log4js from "log4js";
+import log4js from "@log4js-node/log4js-api";
 
 // Modules from file
 import Session from "./classes/session";
