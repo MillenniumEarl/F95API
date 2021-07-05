@@ -1,7 +1,6 @@
 test
-coverage.lcov
 tsconfig.json
-.nyc_output
+.coverage
 .eslintignore
 .eslintrc
 .gitignore
@@ -11,3 +10,4 @@ tsconfig.json
 .deepsource.toml
 .env
 .prettierrc
+.nyc_output
