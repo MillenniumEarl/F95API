@@ -149,13 +149,19 @@ function purgeNode(node: TreeNode) {
   node.parent.children.splice(cloneIndex, 1);
 
   // After cleaning every child, assign them as children of this node parent
-  node.children.map((child, index) => {
+  let lastChildrenLength = node.parent.children.length;
+  let addedChildren = 0;
+  let newElementIndex = cloneIndex;
+  node.children.map((child) => {
     // Change the parent of the children
     child.parent = node.parent;
 
+    // Find the location to add this child to
+    newElementIndex += addedChildren;
+
     // Add this children nodes as children of this node parent
     // starting from the same ID of this node
-    node.parent.children.splice(cloneIndex + index, 0, child);
+    node.parent.children.splice(newElementIndex, 0, child);
 
     // Clean the children that otherwise will not be cleanes
     // because it is added to the children of a already cleaned node.
@@ -165,12 +171,24 @@ function purgeNode(node: TreeNode) {
     // If the children IS uninformative it will be purged,
     // so this instruction will overwrite a different valid node.
     // This check is used to prevent this.
-    if (clean) node.parent.children[cloneIndex + index] = clean;
+    if (clean) node.parent.children[newElementIndex] = clean;
+
+    // Calculates the number of child elements (even recursive)
+    // of child added to the parent node. This is necessary to
+    // avoid that, after a recursive call, an element is added
+    // before its position if the previous element had more than
+    // one child.
+    addedChildren = node.parent.children.length - lastChildrenLength;
+
+    // Save the actual length of the parent's children
+    lastChildrenLength = node.parent.children.length;
   });
 }
 
 /**
  * Eliminates connection nodes that do not bring additional information to the tree.
+ *
+ * Returns the cleaned node or `null` is the has been purged.
  */
 function pruneTreeNode(node: TreeNode): TreeNode | null {
   // Remove all the children that haven't a value AND other childrens
