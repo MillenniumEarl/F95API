@@ -103,12 +103,11 @@ export default class UserProfile extends PlatformUser {
    * List of conversations.
    * @todo
    */
-  public get conversation(): string[] {
+  public get conversations(): string[] {
     return this._conversations;
   }
   /**
    * List of featured games from the platform.
-   * @todo
    */
   public get featuredGames(): Game[] {
     return this._featuredGames;
