@@ -123,8 +123,8 @@ A generic user registered on the platform is represented by a [PlatformUser](htt
 | `title`          | `string`  | Title assigned to the user by the platform |
 | `banners`        | `string[]`| List of banners assigned by the platform |
 | `messages`       | `number`  | Number of messages written by the user |
-| `reactionScore`  | `number`  | @todo |
-| `points`         | `number`  | @todo |
+| `reactionScore`  | `number`  | Total number of reactions received from other users |
+| `points`         | `number`  | Total number of points received after the acquisition of trophies |
 | `ratingsReceived`| `number`  | Number of ratings received |
 | `joined`         | `Date`    | Date of joining the platform |
 | `lastSeen`       | `Date`    | Date of the last connection to the platform |
