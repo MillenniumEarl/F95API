@@ -71,6 +71,7 @@ export default async function getHandiworkInformation<T extends IBasic>(
 /**
  * Extracts the work's unique ID from its URL.
  */
+/* istanbul ignore next : it will not be called in tests*/
 function extractIDFromURL(url: string): number {
   shared.logger.trace("Extracting ID from URL...");
 
