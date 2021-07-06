@@ -98,20 +98,19 @@ function parseAlertType(text: string): TAlertType {
 /**
  * Given the text value of the reaction to a post returns
  * the value suitable for the `TAlertReactionType` type.
- * @todo
  */
 function parseReactionTypeFromAlert(text: string): TAlertReactionType {
   // Keywords to define reaction types
   const LIKE = "LIKE";
-  const HEY_THERE = "?";
+  const HEY_THERE = "HEY THERE";
   const LOVE = "LOVE";
-  const JIZZED = "?";
+  const JIZZED = "I JUST JIZZED MY PANTS";
   const HEARTH = "HEARTH";
-  const YAY = "RATED";
+  const YAY = "YAY, NEW UPDATE!";
   const HAHA = "HAHA";
   const SAD = "SAD";
-  const THINKING = "?";
-  const FACEPALM = "?";
+  const THINKING = "THINKING FACE";
+  const FACEPALM = "FACEPALM";
   const WOW = "WOW";
 
   // Prepare the text
