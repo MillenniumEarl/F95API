@@ -77,13 +77,13 @@ export default class PlatformUser implements ILazy {
     return this._messages;
   }
   /**
-   * @todo Reaction score.
+   * Total number of reactions received from other users.
    */
   public get reactionScore(): number {
     return this._reactionScore;
   }
   /**
-   * @todo Points.
+   * Total number of points received after the acquisition of trophies.
    */
   public get points(): number {
     return this._points;
