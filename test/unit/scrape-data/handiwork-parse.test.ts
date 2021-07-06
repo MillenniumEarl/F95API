@@ -88,7 +88,15 @@ class MockThread implements MockOf<Thread, "fetch"> {
         type: "Text",
         name: "Developer",
         text: "MillenniumEarl",
-        content: []
+        content: [
+          {
+            type: "Link",
+            name: "",
+            text: "Patreon",
+            href: "www.thiscouldbeapatreonurl.com",
+            content: []
+          } as ILink
+        ]
       },
       {
         type: "Text",
@@ -119,6 +127,25 @@ class MockThread implements MockOf<Thread, "fetch"> {
         name: "Installation",
         text: "1. Extract and run.",
         content: []
+      },
+      {
+        type: "Text",
+        name: "Changelog",
+        text: "Changelog",
+        content: [
+          {
+            type: "Text",
+            name: "",
+            text: "v2.0.0",
+            content: []
+          },
+          {
+            type: "Text",
+            name: "",
+            text: "The changes of this version go here",
+            content: []
+          }
+        ]
       }
     ];
 
