@@ -41,7 +41,7 @@ export default class Post implements ILazy {
   //#region Getters
 
   /**
-   * Represents a post published by a user on the F95Zone platform.
+   * Unique ID of the post on the F95Zone platform.
    */
   public get id(): number {
     return this._id;
