@@ -207,7 +207,7 @@ function fillWithPrefixes(hw: HandiWork, prefixes: string[]) {
   });
 
   // If the status is not set, then the game is in development (Ongoing)
-  status = !status && hw.category === "games" ? status : "Ongoing";
+  status = status && hw.category === "games" ? status : "Ongoing";
 
   hw.engine = engine;
   hw.status = status;
