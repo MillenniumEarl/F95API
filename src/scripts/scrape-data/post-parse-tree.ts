@@ -100,6 +100,7 @@ function createTree($: CheerioAPI, node: Node, parent?: TreeNode): TreeNode {
 /**
  * Debug function used to display the elements that make up a tree in the console.
  */
+/* istanbul ignore next: Debug method */
 function printTree(root: TreeNode, nindent = 0) {
   // Define the indent
   const indent = `${" ".repeat(nindent)}└─ `;
@@ -116,6 +117,7 @@ function printTree(root: TreeNode, nindent = 0) {
   root.children.map((child) => printTree(child, nindent + 1));
 }
 
+/* istanbul ignore next: Debug method */
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 function printPairs(pairs: IPostElement[]) {
   pairs.map((e) => {
