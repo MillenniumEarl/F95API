@@ -24,6 +24,7 @@ import { suite as nodetype } from "./scrape-data/post-node-parse/node-type.test"
 import { suite as nodeutility } from "./scrape-data/post-node-parse/node-utility.test";
 import { suite as nodeparse } from "./scrape-data/post-node-parse/node-parse.test";
 import { suite as jsonldparse } from "./scrape-data/json-ld.test";
+import { suite as handiworkparse } from "./scrape-data/handiwork-parse.test";
 
 describe("Unit tests", function testBasic() {
   describe("Test class Basic", basicClass.bind(this));
@@ -47,4 +48,5 @@ describe("Unit tests", function testBasic() {
     nodeparse.bind(this)
   );
   describe("Test JSON+LD parsing", jsonldparse.bind(this));
+  describe("Test parsing of handiwork", handiworkparse.bind(this));
 });
