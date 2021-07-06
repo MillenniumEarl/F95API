@@ -22,6 +22,8 @@ import { suite as session } from "./classes/session.test";
 import { suite as loginresult } from "./classes/login-result.test";
 import { suite as nodetype } from "./scrape-data/post-node-parse/node-type.test";
 import { suite as nodeutility } from "./scrape-data/post-node-parse/node-utility.test";
+import { suite as nodeparse } from "./scrape-data/post-node-parse/node-parse.test";
+import { suite as jsonldparse } from "./scrape-data/json-ld.test";
 
 describe("Unit tests", function testBasic() {
   describe("Test class Basic", basicClass.bind(this));
@@ -40,4 +42,9 @@ describe("Unit tests", function testBasic() {
   describe("Test class LoginResult", loginresult.bind(this));
   describe("Test for Cheerio node types", nodetype.bind(this));
   describe("Test for IPosteElement utility", nodeutility.bind(this));
+  describe(
+    "Test parsing from Cheerio node to IPosteElement",
+    nodeparse.bind(this)
+  );
+  describe("Test JSON+LD parsing", jsonldparse.bind(this));
 });
