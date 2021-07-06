@@ -17,16 +17,16 @@ export function suite(): void {
     <div id='container'>
         <script type="application/ld+json">
         {
-        "@context": "http://schema.org/",
-        "@type": "Book",
-        "name": "Thread title",
-        "description": "Thread description",
-        "aggregateRating": {
-            "@type": "AggregateRating",
-            "ratingValue": "5",
-            "bestRating": "5",
-            "ratingCount": "1"
-        }
+          "@context": "http://schema.org/",
+          "@type": "Book",
+          "name": "Thread title",
+          "description": "Thread description",
+          "aggregateRating": {
+              "@type": "AggregateRating",
+              "ratingValue": "5",
+              "bestRating": "5",
+              "ratingCount": "1"
+          }
         }
         </script>
     </div>`;
