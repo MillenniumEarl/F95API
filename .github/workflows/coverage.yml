@@ -1,5 +1,6 @@
 name: Publish Coverage
 
+# Run this action at every commit on every branch
 on: [push]
 
 jobs:
@@ -10,6 +11,11 @@ jobs:
       - name: Check out repository code
         uses: actions/checkout@v2
 
+      - name: Prepare NodeJS environment
+        uses: actions/setup-node@v2
+        with:
+          node-version: 14.x
+
       - name: Cache npm dependencies
         uses: actions/cache@v2.1.6
         with:
@@ -18,11 +24,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-node-
 
-      - name: Prepare NodeJS environment
-        uses: actions/setup-node@v2
-        with:
-          node-version: 14.x
-
+      # Install dependencies, than run tests and create coverage report
       - name: Generate coverage report
         run: |
           npm install
