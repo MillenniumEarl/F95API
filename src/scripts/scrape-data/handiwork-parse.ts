@@ -33,6 +33,7 @@ export default async function getHandiworkInformation<T extends IBasic>(
   // Local variables
   let thread: Thread = null;
 
+  /* istanbul ignore if */
   if (typeof arg === "string") {
     // Fetch thread data
     const id = extractIDFromURL(arg);
