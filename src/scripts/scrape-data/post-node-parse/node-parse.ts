@@ -15,6 +15,9 @@ import {
   createEmptyElement
 } from "./node-utility";
 
+/**
+ * Given a Cheerio node, it extracts the information into an IPostElement structure.
+ */
 export default function parseCheerioNode(
   $: CheerioAPI,
   node: Node
