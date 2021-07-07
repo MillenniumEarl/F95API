@@ -11,6 +11,7 @@ import { suite as prefixParser } from "./classes/prefix-parser.test";
 import { suite as session } from "./classes/session.test";
 import { suite as handiworkfromurl } from "./handiwork-from-url.test";
 import { suite as postparsetree } from "./scrape-data/post-parse-tree.test";
+import { suite as fetchalert } from "./fetch-data/fetch-alert.test";
 
 describe("Integration Tests", function testBasic() {
   //#region Set-up
@@ -24,4 +25,5 @@ describe("Integration Tests", function testBasic() {
   describe("Test class Session", session.bind(this));
   describe("Fetch handiwork from URL", handiworkfromurl.bind(this));
   describe("Test post parsing", postparsetree.bind(this));
+  describe("Test alert parsing", fetchalert.bind(this));
 });
