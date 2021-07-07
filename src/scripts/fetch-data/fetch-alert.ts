@@ -26,6 +26,7 @@ export default async function fetchAlertElements(
 
   // Now find all the summarized alerts and parse them
   const summarizedPosts = bodies.filter((el) => isSummarized($, el));
+  /* istanbul ignore next : Tests only the logic of this script without network activity */
   const summarizedPromises = summarizedPosts.map((el) => {
     // Find the URL
     const partialURL = $(el)
@@ -55,6 +56,7 @@ function isSummarized($: CheerioAPI, el: Node): boolean {
 /**
  * Given the partial URL of a summarized alert, it obtains the data of all summarized alerts.
  */
+/* istanbul ignore next : Tests only the logic of this script */
 async function fetchSummarizedAlerts(partialURL: string) {
   // Find the URL
   const url = new URL(partialURL, urls.BASE);
@@ -82,6 +84,7 @@ function parseAlertType(text: string): TAlertType {
   const t = text.trim().toUpperCase();
 
   // Function map
+  /* istanbul ignore next : It is only a string comparison, no need to check for everything */
   const functionMap = {
     Rating: (t: string) => t.includes(RATING),
     Reply: (t: string) => t.includes(REPLY),
@@ -117,6 +120,7 @@ function parseReactionTypeFromAlert(text: string): TAlertReactionType {
   const t = text.trim().toUpperCase();
 
   // Function map
+  /* istanbul ignore next : It is only a string comparison, no need to check for everything */
   const functionMap = {
     Like: (t: string) => t.includes(LIKE),
     HeyThere: (t: string) => t.includes(HEY_THERE),
