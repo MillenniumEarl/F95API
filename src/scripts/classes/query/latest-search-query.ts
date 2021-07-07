@@ -94,12 +94,10 @@ export default class LatestSearchQuery implements IQuery {
     const diff = this.dateDiffInDays(new Date(), d);
 
     // Find the closest valid value in the array
-    const closest = [365, 180, 90, 30, 14, 7, 3, 1].reduce(function (
-      prev,
-      curr
-    ) {
-      return Math.abs(curr - diff) < Math.abs(prev - diff) ? curr : prev;
-    });
+    const validDiffDays = [365, 180, 90, 30, 14, 7, 3, 1];
+    const closest = validDiffDays.reduce((prev, curr) =>
+      Math.abs(curr - diff) < Math.abs(prev - diff) ? curr : prev
+    );
 
     return closest as TDate;
   }
