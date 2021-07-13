@@ -446,6 +446,45 @@ export interface IBookmarkedPost {
   labels: string[];
 }
 
+export interface IConversation {
+  /**
+   * Title of the conversation.
+   */
+  title: string;
+  /**
+   * ID of the user that starts this conversation.
+   */
+  authorid: number;
+  /**
+   * Date of creation (first message).
+   */
+  creation: Date;
+  /**
+   * IDs of the recipients of this conversation.
+   */
+  lastRecipients: number[];
+  /**
+   * Total number of replies.
+   */
+  replies: number;
+  /**
+   * Total number of partecipants.
+   */
+  partecipants: number;
+  /**
+   * ID of the last user to reply.
+   */
+  lastResponseUser: number;
+  /**
+   * Date of the last reply message.
+   */
+  lastResponseTime: Date;
+  /**
+   * Messages exchanged by users.
+   */
+  //messages: IMessage[];
+}
+
 /**
  * Represents an element contained in the post.
  */
