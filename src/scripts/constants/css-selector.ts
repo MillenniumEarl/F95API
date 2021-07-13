@@ -150,7 +150,7 @@ export const ALERT = {
    */
   SUMMARIZED_SEPARATE_ALERTS: "> a[href*='alert_id']",
   /**
-   * Date of receipt of the Alert in the `datetime○` attribute.
+   * Date of receipt of the Alert in the `datetime` attribute.
    *
    * For use within a `ALERT.BODIES` selector.
    */
@@ -172,6 +172,85 @@ export const ALERT = {
    * Index of the last page available as text.
    */
   LAST_PAGE: "ul.pageNav-main > li:last-child > a"
+};
+
+export const CONVERSATION = {
+  /**
+   * List of elements containing the data of the conversations.
+   *
+   * If it contains the `is-unread` attribute then the conversation has new messages.
+   */
+  BODIES: "div.structItemContainer > div.structItem--conversation",
+  /**
+   * The title of the conversation.
+   *
+   * In the `href` attribute there is a part of the URL containing the conversation ID.
+   *
+   * For use within a `CONVERSATION.BODIES` selector.
+   */
+  TITLE: "div.structItem-cell--main > span > a.structItem-title",
+  /**
+   * Conversation creation date, corresponds to the sending date of the first message.
+   *
+   * The date is contained in the `datetime` attribute as a ISO string.
+   *
+   * For use within a `CONVERSATION.BODIES` selector.
+   */
+  START_DATE:
+    "div.structItem-cell--main > div.structItem-minor > ul.structItem-parts > li.structItem-startDate > a > time",
+  /**
+   * The list of recipients of the last message.
+   * If the user has the symbols associated with the name may occur duplicate,
+   * make sure to get the element without children.
+   *
+   * The `data-user-id` attribute contains the user ID.
+   *
+   * For use within a `CONVERSATION.BODIES` selector.
+   */
+  LAST_RECIPIENT:
+    "div.structItem-cell--main > div.structItem-minor > ul.recipientsList > * a.username[data-user-id]",
+  /**
+   * Indicates the user who created the conversation, i.e. the one who sent the first message.
+   * If the user has the symbols associated with the name may occur duplicate,
+   * make sure to get the element without children.
+   *
+   * The `data-user-id` attribute contains the user ID.
+   *
+   * For use within a `CONVERSATION.BODIES` selector.
+   */
+  AUTHOR:
+    "div.structItem-cell--main > div.structItem-minor > ul.structItem-parts > * a.username[data-user-id]",
+  /**
+   * Number of messages in the conversation.
+   *
+   * For use within a `CONVERSATION.BODIES` selector.
+   */
+  REPLIES: "div.structItem-cell--meta > dl:first-child > dd",
+  /**
+   * Number of participants in the conversation.
+   *
+   * For use within a `CONVERSATION.BODIES` selector.
+   */
+  PARTECIPANTS: "div.structItem-cell--meta > dl:nth-child(2) > dd",
+  /**
+   * Indicates the last user of the conversation to have replied to a message.
+   * If the user has the symbols associated with the name may occur duplicate,
+   * make sure to get the element without children.
+   *
+   * The `data-user-id` attribute contains the user ID.
+   *
+   * For use within a `CONVERSATION.BODIES` selector.
+   */
+  LAST_RESPONSE_USER: "div.structItem-cell--latest > a > time",
+  /**
+   * Date of the last reply to the conversation.
+   *
+   * The date is contained in the `datetime` attribute as a ISO string.
+   *
+   * For use within a `CONVERSATION.BODIES` selector.
+   */
+  LAST_RESPONSE_TIME:
+    "div.structItem-cell--latest > div.structItem-minor > a.username[data-user-id]"
 };
 
 export const THREAD = {
