@@ -19,7 +19,12 @@ import { fetchHTML } from "../../network-helper";
 import { UserNotLogged, USER_NOT_LOGGED } from "../errors";
 import shared from "../../shared";
 import Game from "../handiwork/game";
-import { IAlert, IBookmarkedPost, IWatchedThread } from "../../interfaces";
+import {
+  IAlert,
+  IBookmarkedPost,
+  IConversation,
+  IWatchedThread
+} from "../../interfaces";
 import fetchAlertElements from "../../fetch-data/fetch-alert";
 import Thread from "./thread";
 import getHandiworkFromURL from "../../handiwork-from-url";
@@ -48,7 +53,7 @@ export default class UserProfile extends PlatformUser {
   private _watched: IWatchedThread[] = null;
   private _bookmarks: IBookmarkedPost[] = null;
   private _alerts: IAlert[] = null;
-  private _conversations: string[] = null;
+  private _conversations: IConversation[] = null;
   private _featuredGames: Game[] = null;
 
   //#endregion Fields
@@ -73,13 +78,13 @@ export default class UserProfile extends PlatformUser {
   public get alerts(): Promise<IAlert[]> {
     return this.alertsGetWrapper();
   }
-  /**
-   * List of conversations.
-   * @todo
-   */
-  public get conversations(): Promise<string[]> {
-    return Promise.resolve([]);
-  }
+  // /**
+  //  * List of conversations.
+  //  * @todo
+  //  */
+  // public get conversations(): Promise<string[]> {
+  //   return Promise.resolve([]);
+  // }
   /**
    * List of featured games from the platform.
    */
