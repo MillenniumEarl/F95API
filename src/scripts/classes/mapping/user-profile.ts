@@ -183,14 +183,18 @@ export default class UserProfile extends PlatformUser {
     const superprops = Object.getOwnPropertyNames(temp);
     superprops.map((p) => (this[p] = temp[p]));
 
+    // Fetch all the "extra" data of this user
     if (extended) {
-      // Fetch all the data in a list of this user
-      await this.watchedThreadsGetWrapper();
-      await this.bookmarksGetWrapper();
-      await this.alertsGetWrapper();
+      const promises = [
+        this.watchedThreadsGetWrapper(),
+        this.bookmarksGetWrapper(),
+        this.alertsGetWrapper(),
+        this.featuredGamesGetWrapper()
+      ];
 
-      // Fetch the games in the slider (if the option is enabled on the platform)
-      this._featuredGames = await this.fetchFeaturedGames();
+      // Await all the promises. We can use `any`
+      // because the values are saved inside the functions.
+      await Promise.all<any>(promises);
     }
   }
 
@@ -374,6 +378,11 @@ export default class UserProfile extends PlatformUser {
     return await Promise.all(promises);
   }
 
+  /**
+   * Fetch the game featured by the platform (if the option is enabled).
+   *
+   * The games are those highlighted in the carousel of the main page.
+   */
   private async fetchFeaturedGames(): Promise<Game[]> {
     // Local variables
     const url = new URL(urls.BASE).toString();
