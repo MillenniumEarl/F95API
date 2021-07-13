@@ -57,7 +57,18 @@ While user data (after authenticating) with
 
 ```javascript
 const userdata = new UserProfile();
-await userdata.fetch(); // May take a while
+
+// Fetch basic data (always necessary)
+await userdata.fetch();
+
+// Fetch all data (may take a while)
+await userdata.fetch(extended=true);
+
+// Async properties
+const threads = await userdata.watched;
+const bookmarks = await userdata.bookmarks;
+const alerts = await userdata.alerts;
+const games = await userdata.featuredGames;
 ```
 
 # Classes
@@ -138,13 +149,12 @@ A generic user registered on the platform is represented by a [PlatformUser](htt
 
 The user data currently connected through this API extends the [PlatformUser](https://github.com/MillenniumEarl/F95API/blob/2.0.0-ts/src/scripts/classes/mapping/platform-user.ts) class via the class [UserProfile](https://github.com/MillenniumEarl/F95API/blob/2.0.0-ts/src/scripts/classes/mapping/user-profile.ts) and adds:
 
-| Property         | Type               | Description   |
-| :---------------:|:------------------:|:--------------|
-| `watched`        | `IWatchedThread[]` | List of followed thread data|
-| `bookmarks`      | `IBookmarkedPost[]`| List of bookmarked posts data|
-| `alerts`         | `IAlert[]`         | List of alerts|
-| `conversations`  | `string[]`         | @todo |
-| `featuredGames`  | `Game[]`           | List of featured games from the platform (carousel, may not be available if disabled in settings)|
+| Property         | Type                        | Description   |
+| :---------------:|:---------------------------:|:--------------|
+| `watched`        | `Promise<IWatchedThread[]>` | List of followed thread data|
+| `bookmarks`      | `Promise<IBookmarkedPost[]>`| List of bookmarked posts data|
+| `alerts`         | `Promise<IAlert[]>`         | List of alerts|
+| `featuredGames`  | `Promise<Game[]>`           | List of featured games from the platform (carousel, may not be available if disabled in settings)|
 
 ## Login results
 

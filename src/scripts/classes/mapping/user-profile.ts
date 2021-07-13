@@ -16,54 +16,33 @@ import {
   WATCHED_THREAD
 } from "../../constants/css-selector";
 import { fetchHTML } from "../../network-helper";
-import { UserNotLogged, USER_NOT_LOGGED } from "../errors";
+import { InvalidID, UserNotLogged, USER_NOT_LOGGED } from "../errors";
 import shared from "../../shared";
 import Game from "../handiwork/game";
-import { IAlert } from "../../interfaces";
+import {
+  IAlert,
+  IBookmarkedPost,
+  IConversation,
+  IWatchedThread
+} from "../../interfaces";
 import fetchAlertElements from "../../fetch-data/fetch-alert";
 import Thread from "./thread";
 import getHandiworkFromURL from "../../handiwork-from-url";
 
-// Interfaces
-interface IWatchedThread {
+interface IFetchOptions<T> {
   /**
-   * URL of the thread.
+   * URL of the page used to fetch `html` in `parseFunction`.
    */
   url: string;
   /**
-   * Indicates whether the thread has any unread posts.
+   * CSS selector of the button for the last page of the list.
    */
-  unread: boolean;
+  selector: string;
   /**
-   * Specifies the forum to which the thread belongs.
+   * Function that gets individual elements from the list in the web pages.
    */
-  forum: string;
+  parseFunction: (html: string) => Promise<T[]>;
 }
-
-interface IBookmarkedPost {
-  /**
-   * ID of the post.
-   */
-  id: number;
-  /**
-   * ID of the user that wrote this post.
-   */
-  userid: number;
-  /**
-   * When this post was saved.
-   */
-  savedate: Date;
-  /**
-   * Description of the post.
-   */
-  description: string;
-  /**
-   * List of user-defined labels for the post.
-   */
-  labels: string[];
-}
-
-type TRequestedTypes = IWatchedThread | IBookmarkedPost | IAlert;
 
 /**
  * Class containing the data of the user currently connected to the F95Zone platform.
@@ -71,11 +50,11 @@ type TRequestedTypes = IWatchedThread | IBookmarkedPost | IAlert;
 export default class UserProfile extends PlatformUser {
   //#region Fields
 
-  private _watched: IWatchedThread[] = [];
-  private _bookmarks: IBookmarkedPost[] = [];
-  private _alerts: IAlert[] = [];
-  private _conversations: string[] = [];
-  private _featuredGames: Game[] = [];
+  private _watched: IWatchedThread[] = null;
+  private _bookmarks: IBookmarkedPost[] = null;
+  private _alerts: IAlert[] = null;
+  private _conversations: IConversation[] = null;
+  private _featuredGames: Game[] = null;
 
   //#endregion Fields
 
@@ -84,36 +63,117 @@ export default class UserProfile extends PlatformUser {
   /**
    * List of followed thread data.
    */
-  public get watched(): IWatchedThread[] {
-    return this._watched;
+  public get watched(): Promise<IWatchedThread[]> {
+    return this.watchedThreadsGetWrapper();
   }
   /**
    * List of bookmarked posts data.
    */
-  public get bookmarks(): IBookmarkedPost[] {
-    return this._bookmarks;
+  public get bookmarks(): Promise<IBookmarkedPost[]> {
+    return this.bookmarksGetWrapper();
   }
   /**
    * List of alerts.
    */
-  public get alerts(): IAlert[] {
-    return this._alerts;
+  public get alerts(): Promise<IAlert[]> {
+    return this.alertsGetWrapper();
   }
-  /**
-   * List of conversations.
-   * @todo
-   */
-  public get conversations(): string[] {
-    return this._conversations;
-  }
+  // /**
+  //  * List of conversations.
+  //  * @todo
+  //  */
+  // public get conversations(): Promise<string[]> {
+  //   return Promise.resolve([]);
+  // }
   /**
    * List of featured games from the platform.
    */
-  public get featuredGames(): Game[] {
-    return this._featuredGames;
+  public get featuredGames(): Promise<Game[]> {
+    return this.featuredGamesGetWrapper();
   }
 
   //#endregion Getters
+
+  //#region Getters async wrappers
+
+  async watchedThreadsGetWrapper(): Promise<IWatchedThread[]> {
+    // Checks if basic data has already been retrieved
+    if (!this.id)
+      throw new InvalidID("First you need to call the fetch() method");
+
+    // Cache data
+    if (!this._watched) {
+      // Prepare the url of the threads followed by
+      // extending the selection to the threads already read
+      const url = new URL(urls.WATCHED_THREADS);
+      url.searchParams.set("unread", "0");
+
+      // Prepare the options to use for fetching the data
+      const options: IFetchOptions<IWatchedThread> = {
+        url: url.toString(),
+        selector: WATCHED_THREAD.LAST_PAGE,
+        parseFunction: this.fetchPageThreadElements
+      };
+
+      // Fetch data
+      this._watched = await this.fetchElementsInPages(options);
+    }
+    return Promise.resolve(this._watched);
+  }
+
+  async bookmarksGetWrapper(): Promise<IBookmarkedPost[]> {
+    // Checks if basic data has already been retrieved
+    if (!this.id)
+      throw new InvalidID("First you need to call the fetch() method");
+
+    // Cache data
+    if (!this._bookmarks) {
+      // Prepare the options to use for fetching the data
+      const options: IFetchOptions<IBookmarkedPost> = {
+        url: urls.BOOKMARKS,
+        selector: BOOKMARKED_POST.LAST_PAGE,
+        parseFunction: this.fetchBookmarkElements
+      };
+
+      // Fetch data
+      this._bookmarks = await this.fetchElementsInPages(options);
+    }
+    return Promise.resolve(this._bookmarks);
+  }
+
+  async alertsGetWrapper(): Promise<IAlert[]> {
+    // Checks if basic data has already been retrieved
+    if (!this.id)
+      throw new InvalidID("First you need to call the fetch() method");
+
+    // Cache data
+    if (!this._alerts) {
+      // Prepare the options to use for fetching the data
+      const options: IFetchOptions<IAlert> = {
+        url: urls.ALERTS,
+        selector: ALERT.LAST_PAGE,
+        parseFunction: fetchAlertElements
+      };
+
+      // Fetch data
+      this._alerts = await this.fetchElementsInPages(options);
+    }
+    return Promise.resolve(this._alerts);
+  }
+
+  async featuredGamesGetWrapper(): Promise<Game[]> {
+    // Checks if basic data has already been retrieved
+    if (!this.id)
+      throw new InvalidID("First you need to call the fetch() method");
+
+    // Cache data
+    if (!this._featuredGames) {
+      this._featuredGames = await this.fetchFeaturedGames();
+    }
+    return Promise.resolve(this._featuredGames);
+  }
+
+  //#endregion Getters async wrappers
 
   constructor() {
     super();
@@ -121,7 +181,15 @@ export default class UserProfile extends PlatformUser {
 
   //#region Public methods
 
-  public async fetch(): Promise<void> {
+  /**
+   * Gets the basic data relating to the object.
+   *
+   * @param extended
+   * If `true`, it also gets the threads followed
+   * by the user, the conversations, the favorites.
+   * Default: `false`
+   */
+  public async fetch(extended = false): Promise<void> {
     // Check login
     if (!shared.isLogged) throw new UserNotLogged(USER_NOT_LOGGED);
 
@@ -132,75 +200,28 @@ export default class UserProfile extends PlatformUser {
     // Than fetch the basic data
     await temp.fetch();
 
-    // Copy the property of the superior class to this instance
+    // Copy the property of the superior class (PlatformUser) to this instance
     const superprops = Object.getOwnPropertyNames(temp);
     superprops.map((p) => (this[p] = temp[p]));
 
-    // Fetch all the data in a list of this user
-    await this.fetchElementsWithinList();
+    // Fetch all the "extra" data of this user
+    if (extended) {
+      const promises = [
+        this.watchedThreadsGetWrapper(),
+        this.bookmarksGetWrapper(),
+        this.alertsGetWrapper(),
+        this.featuredGamesGetWrapper()
+      ];
 
-    // Fetch the games in the slider (if the option is enabled on the platform)
-    this._featuredGames = await this.fetchFeaturedGames();
+      // Await all the promises. We can use `any`
+      // because the values are saved inside the functions.
+      await Promise.all<any>(promises);
+    }
   }
 
   //#endregion Public methods
 
   //#region Private methods
-  /**
-   * Wrapper that encloses the search for all non-basic data
-   * that are in a list of the user who must be processed.
-   */
-  private async fetchElementsWithinList(): Promise<void> {
-    interface IData {
-      propertyName: string;
-      url: string;
-      selector: string;
-      parseFunction: (html: string) => Promise<TRequestedTypes[]>;
-    }
-
-    // Prepare the URL for the watched threads
-    const urlWatched = new URL(urls.WATCHED_THREADS);
-    urlWatched.searchParams.set("unread", "0");
-
-    const functionParametersMap: IData[] = [
-      {
-        propertyName: "_watched",
-        url: urlWatched.toString(),
-        selector: WATCHED_THREAD.LAST_PAGE,
-        parseFunction: this.fetchPageThreadElements
-      },
-      {
-        propertyName: "_bookmarks",
-        url: urls.BOOKMARKS,
-        selector: BOOKMARKED_POST.LAST_PAGE,
-        parseFunction: this.fetchBookmarkElements
-      },
-      {
-        propertyName: "_alerts",
-        url: urls.ALERTS,
-        selector: ALERT.LAST_PAGE,
-        parseFunction: fetchAlertElements
-      }
-    ];
-
-    // Execute the functions asynchronously
-    const results = functionParametersMap.map((data) => {
-      return {
-        name: data.propertyName,
-        elements: this.fetchElementsInPages(
-          data.url,
-          data.selector,
-          data.parseFunction
-        )
-      };
-    });
-
-    // Assign the values to the propeties of the class
-    for (const result of results) {
-      this[result.name] = await result.elements;
-    }
-  }
-
   /**
    * Gets the ID of the user currently logged.
    */
@@ -225,28 +246,23 @@ export default class UserProfile extends PlatformUser {
   /**
    * Gets all the elements that solve a specific
    * selector in a list on multiple web pages.
-   * @param url Page URL represented in `html`.
-   * @param lastPageSelector CSS selector of the button for the last page of the list.
-   * @param elementFunc Function that gets individual elements from the list in the web pages.
    */
-  private async fetchElementsInPages<T extends TRequestedTypes>(
-    url: string,
-    lastPageSelector: string,
-    parsingFunction: (html: string) => Promise<T[]>
+  private async fetchElementsInPages<T>(
+    options: IFetchOptions<T>
   ): Promise<T[]> {
     // Fetch page
-    const response = await fetchHTML(url);
+    const response = await fetchHTML(options.url);
     if (response.isFailure()) throw response.value;
 
     // Load page in cheerio
     const $ = cheerio.load(response.value);
 
     // Fetch the pages (select only the first selector if multiple are found)
-    const lastPageText = $(lastPageSelector).first().text().trim();
+    const lastPageText = $(options.selector).first().text().trim();
     const lastPage = lastPageText ? parseInt(lastPageText, 10) : 1;
 
     // Create the async iterator used to fetch the pages
-    const iter = this.fetchPages(url, lastPage);
+    const iter = this.fetchPages(options.url, lastPage);
     let curr = await iter.next();
 
     const promises: Promise<T[]>[] = [];
@@ -255,7 +271,7 @@ export default class UserProfile extends PlatformUser {
       const page = curr.value as string;
 
       // Parse elements but not resolve the promise
-      const elements = parsingFunction(page);
+      const elements = options.parseFunction(page);
       promises.push(elements);
 
       curr = await iter.next();
@@ -383,6 +399,11 @@ export default class UserProfile extends PlatformUser {
     return await Promise.all(promises);
   }
 
+  /**
+   * Fetch the game featured by the platform (if the option is enabled).
+   *
+   * The games are those highlighted in the carousel of the main page.
+   */
   private async fetchFeaturedGames(): Promise<Game[]> {
     // Local variables
     const url = new URL(urls.BASE).toString();
