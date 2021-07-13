@@ -16,7 +16,7 @@ import {
   WATCHED_THREAD
 } from "../../constants/css-selector";
 import { fetchHTML } from "../../network-helper";
-import { UserNotLogged, USER_NOT_LOGGED } from "../errors";
+import { InvalidID, UserNotLogged, USER_NOT_LOGGED } from "../errors";
 import shared from "../../shared";
 import Game from "../handiwork/game";
 import {
@@ -97,6 +97,10 @@ export default class UserProfile extends PlatformUser {
   //#region Getters async wrappers
 
   async watchedThreadsGetWrapper(): Promise<IWatchedThread[]> {
+    // Checks if basic data has already been retrieved
+    if (!this.id)
+      throw new InvalidID("First you need to call the fetch() method");
+
     // Cache data
     if (!this._watched) {
       // Prepare the url of the threads followed by
@@ -118,6 +122,10 @@ export default class UserProfile extends PlatformUser {
   }
 
   async bookmarksGetWrapper(): Promise<IBookmarkedPost[]> {
+    // Checks if basic data has already been retrieved
+    if (!this.id)
+      throw new InvalidID("First you need to call the fetch() method");
+
     // Cache data
     if (!this._bookmarks) {
       // Prepare the options to use for fetching the data
@@ -134,6 +142,10 @@ export default class UserProfile extends PlatformUser {
   }
 
   async alertsGetWrapper(): Promise<IAlert[]> {
+    // Checks if basic data has already been retrieved
+    if (!this.id)
+      throw new InvalidID("First you need to call the fetch() method");
+
     // Cache data
     if (!this._alerts) {
       // Prepare the options to use for fetching the data
@@ -150,6 +162,10 @@ export default class UserProfile extends PlatformUser {
   }
 
   async featuredGamesGetWrapper(): Promise<Game[]> {
+    // Checks if basic data has already been retrieved
+    if (!this.id)
+      throw new InvalidID("First you need to call the fetch() method");
+
     // Cache data
     if (!this._featuredGames) {
       this._featuredGames = await this.fetchFeaturedGames();
