@@ -19,49 +19,10 @@ import { fetchHTML } from "../../network-helper";
 import { UserNotLogged, USER_NOT_LOGGED } from "../errors";
 import shared from "../../shared";
 import Game from "../handiwork/game";
-import { IAlert } from "../../interfaces";
+import { IAlert, IBookmarkedPost, IWatchedThread } from "../../interfaces";
 import fetchAlertElements from "../../fetch-data/fetch-alert";
 import Thread from "./thread";
 import getHandiworkFromURL from "../../handiwork-from-url";
-
-// Interfaces
-interface IWatchedThread {
-  /**
-   * URL of the thread.
-   */
-  url: string;
-  /**
-   * Indicates whether the thread has any unread posts.
-   */
-  unread: boolean;
-  /**
-   * Specifies the forum to which the thread belongs.
-   */
-  forum: string;
-}
-
-interface IBookmarkedPost {
-  /**
-   * ID of the post.
-   */
-  id: number;
-  /**
-   * ID of the user that wrote this post.
-   */
-  userid: number;
-  /**
-   * When this post was saved.
-   */
-  savedate: Date;
-  /**
-   * Description of the post.
-   */
-  description: string;
-  /**
-   * List of user-defined labels for the post.
-   */
-  labels: string[];
-}
 
 type TRequestedTypes = IWatchedThread | IBookmarkedPost | IAlert;
 

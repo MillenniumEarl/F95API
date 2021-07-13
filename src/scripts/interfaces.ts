@@ -373,7 +373,7 @@ export interface ILazy {
 }
 
 /**
- * It represents a single alert message received by the currently logged in user.
+ * Represents a single alert message received by the currently logged in user.
  */
 export interface IAlert {
   /**
@@ -400,6 +400,50 @@ export interface IAlert {
    * True if the alert has been read.
    */
   read: boolean;
+}
+
+/**
+ * Represents a single thread followed by the currently logged in user..
+ */
+export interface IWatchedThread {
+  /**
+   * URL of the thread.
+   */
+  url: string;
+  /**
+   * Indicates whether the thread has any unread posts.
+   */
+  unread: boolean;
+  /**
+   * Specifies the forum to which the thread belongs.
+   */
+  forum: string;
+}
+
+/**
+ * Represents a single post saved as a favorite by the currently logged in user..
+ */
+export interface IBookmarkedPost {
+  /**
+   * ID of the post.
+   */
+  id: number;
+  /**
+   * ID of the user that wrote this post.
+   */
+  userid: number;
+  /**
+   * When this post was saved.
+   */
+  savedate: Date;
+  /**
+   * Description of the post.
+   */
+  description: string;
+  /**
+   * List of user-defined labels for the post.
+   */
+  labels: string[];
 }
 
 /**
