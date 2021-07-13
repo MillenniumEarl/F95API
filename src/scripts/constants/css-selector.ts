@@ -207,7 +207,7 @@ export const CONVERSATION = {
    *
    * For use within a `CONVERSATION.BODIES` selector.
    */
-  LAST_RECIPIENT:
+  LAST_RECIPIENTS:
     "div.structItem-cell--main > div.structItem-minor > ul.recipientsList > * a.username[data-user-id]",
   /**
    * Indicates the user who created the conversation, i.e. the one who sent the first message.
