@@ -15,7 +15,7 @@ import shared from "./shared";
  *
  * You **must** be logged in to the portal before calling this method.
  */
-export default async function getHandiworkFromURL<T extends IBasic>(
+export async function getHandiworkFromURL<T extends IBasic>(
   url: string
 ): Promise<T> {
   // Check if the user is logged
