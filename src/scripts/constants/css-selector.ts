@@ -250,7 +250,11 @@ export const CONVERSATION = {
    * For use within a `CONVERSATION.BODIES` selector.
    */
   LAST_RESPONSE_TIME:
-    "div.structItem-cell--latest > div.structItem-minor > a.username[data-user-id]"
+    "div.structItem-cell--latest > div.structItem-minor > a.username[data-user-id]",
+  /**
+   * Index of the last page available as text.
+   */
+  LAST_PAGE: "ul.pageNav-main > li:last-child > a"
 };
 
 export const THREAD = {
