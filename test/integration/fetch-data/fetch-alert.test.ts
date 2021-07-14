@@ -11,7 +11,7 @@ import { join } from "path";
 import { expect } from "chai";
 
 // Modules from file
-import fetchAlertElements from "../../../src/scripts/fetch-data/fetch-alert";
+import fetchAlertElements from "../../../src/scripts/fetch-data/user-data/fetch-alert";
 
 export function suite(): void {
   it("Parse alert - quoted post", async function () {

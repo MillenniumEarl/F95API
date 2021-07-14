@@ -8,7 +8,7 @@ import { expect } from "chai";
 
 // Modules from file
 import { USER_NOT_LOGGED } from "../../src/scripts/classes/errors";
-import getHandiworkFromURL from "../../src/scripts/handiwork-from-url";
+import { getHandiworkFromURL } from "../../src/scripts/handiwork-from-url";
 import Shared from "../../src/scripts/shared";
 
 export function suite(): void {
