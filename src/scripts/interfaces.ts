@@ -448,6 +448,10 @@ export interface IBookmarkedPost {
 
 export interface IConversation {
   /**
+   * Conversation's URL.
+   */
+  url: string;
+  /**
    * Title of the conversation.
    */
   title: string;
