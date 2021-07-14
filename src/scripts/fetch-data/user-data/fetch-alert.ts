@@ -7,10 +7,10 @@
 import cheerio, { CheerioAPI, Node } from "cheerio";
 
 // Modules from files
-import { ALERT } from "../constants/css-selector";
-import { urls } from "../constants/url";
-import { IAlert, TAlertReactionType, TAlertType } from "../interfaces";
-import { fetchHTML } from "../network-helper";
+import { ALERT } from "../../constants/css-selector";
+import { urls } from "../../constants/url";
+import { IAlert, TAlertReactionType, TAlertType } from "../../interfaces";
+import { fetchHTML } from "../../network-helper";
 
 /**
  * Gets alert data starting from the source code of the page passed by parameter.
