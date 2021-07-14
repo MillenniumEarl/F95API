@@ -27,7 +27,6 @@
     "prettier-format": "prettier --config .prettierrc {src,test}/**/*.ts --write",
     "test": "mocha --require ts-node/register test/{unit,integration}/index.ts",
     "coverage": "nyc --reporter=lcov --reporter=text npm run test",
-    "publish": "tsc && npm publish",
     "run-example": "tsc && node --inspect ./dist/example.js"
   },
   "engines": {
