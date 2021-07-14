@@ -72,23 +72,30 @@ async function authenticate(): Promise<boolean> {
 async function fetchUserData(): Promise<void> {
   console.log("Fetching user data...");
 
+  // Fetch basic data + all the "extended" data of this logged user
   const userdata = new UserProfile();
-  await userdata.fetch();
+  await userdata.fetch(true); // Using "true" is quicker than load all the properties separately
 
+  // Assign the properties to local constants
+  // to avoid use "await property" every time
   const watchedThreads = await userdata.watched;
   const alerts = await userdata.alerts;
   const bookmarks = await userdata.bookmarks;
+  const conversations = await userdata.conversations;
 
+  // Do some queries on the properties
   const gameThreads = watchedThreads.filter((e) => e.forum === "Games");
   const unreadGameThreads = gameThreads.filter((e) => e.unread).length;
   const unreadAlerts = alerts.filter((i) => !i.read).length;
+  const unreadConversations = conversations.filter((i) => i.unread).length;
 
   console.log(`User: ${userdata.name}\n`);
   console.log(`Threads followed: ${watchedThreads.length}`);
   console.log(`Games followed: ${gameThreads.length}`);
   console.log(`Unread game threads: ${unreadGameThreads}`);
   console.log(`Number of bookmarks: ${bookmarks.length}`);
-  console.log(`Unread alerts: ${unreadAlerts}\n`);
+  console.log(`Unread alerts: ${unreadAlerts}`);
+  console.log(`Unread conversations: ${unreadConversations}\n`);
 }
 
 /**
