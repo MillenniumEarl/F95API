@@ -12,6 +12,7 @@ import { urls } from "../../constants/url";
 import {
   ALERT,
   BOOKMARKED_POST,
+  CONVERSATION,
   GENERIC,
   WATCHED_THREAD
 } from "../../constants/css-selector";
@@ -25,9 +26,10 @@ import {
   IConversation,
   IWatchedThread
 } from "../../interfaces";
-import fetchAlertElements from "../../fetch-data/fetch-alert";
+import fetchAlertElements from "../../fetch-data/user-data/fetch-alert";
 import Thread from "./thread";
-import getHandiworkFromURL from "../../handiwork-from-url";
+import { getHandiworkFromURL } from "../../handiwork-from-url";
+import fetchPageConversations from "../../fetch-data/user-data/fetch-conversation";
 
 interface IFetchOptions<T> {
   /**
@@ -78,13 +80,12 @@ export default class UserProfile extends PlatformUser {
   public get alerts(): Promise<IAlert[]> {
     return this.alertsGetWrapper();
   }
-  // /**
-  //  * List of conversations.
-  //  * @todo
-  //  */
-  // public get conversations(): Promise<string[]> {
-  //   return Promise.resolve([]);
-  // }
+  /**
+   * List of conversations.
+   */
+  public get conversations(): Promise<IConversation[]> {
+    return this.conversationsGetWrapper();
+  }
   /**
    * List of featured games from the platform.
    */
@@ -173,6 +174,26 @@ export default class UserProfile extends PlatformUser {
     return Promise.resolve(this._featuredGames);
   }
 
+  async conversationsGetWrapper(): Promise<IConversation[]> {
+    // Checks if basic data has already been retrieved
+    if (!this.id)
+      throw new InvalidID("First you need to call the fetch() method");
+
+    // Cache data
+    if (!this._conversations) {
+      // Prepare the options to use for fetching the data
+      const options: IFetchOptions<IConversation> = {
+        url: urls.CONVERSATIONS,
+        selector: CONVERSATION.LAST_PAGE,
+        parseFunction: fetchPageConversations
+      };
+
+      // Fetch data
+      this._conversations = await this.fetchElementsInPages(options);
+    }
+    return Promise.resolve(this._conversations);
+  }
+
   //#endregion Getters async wrappers
 
   constructor() {
@@ -210,7 +231,8 @@ export default class UserProfile extends PlatformUser {
         this.watchedThreadsGetWrapper(),
         this.bookmarksGetWrapper(),
         this.alertsGetWrapper(),
-        this.featuredGamesGetWrapper()
+        this.featuredGamesGetWrapper(),
+        this.conversationsGetWrapper()
       ];
 
       // Await all the promises. We can use `any`
