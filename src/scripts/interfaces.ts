@@ -484,6 +484,10 @@ export interface IConversation {
    */
   lastResponseTime: Date;
   /**
+   * `True` if there are unread messages.
+   */
+  unread: boolean;
+  /**
    * Messages exchanged by users.
    */
   //messages: IMessage[];
