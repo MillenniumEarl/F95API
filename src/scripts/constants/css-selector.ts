@@ -241,7 +241,8 @@ export const CONVERSATION = {
    *
    * For use within a `CONVERSATION.BODIES` selector.
    */
-  LAST_RESPONSE_USER: "div.structItem-cell--latest > a > time",
+  LAST_RESPONSE_USER:
+    "div.structItem-cell--latest > div.structItem-minor > a.username[data-user-id]",
   /**
    * Date of the last reply to the conversation.
    *
@@ -249,8 +250,7 @@ export const CONVERSATION = {
    *
    * For use within a `CONVERSATION.BODIES` selector.
    */
-  LAST_RESPONSE_TIME:
-    "div.structItem-cell--latest > div.structItem-minor > a.username[data-user-id]",
+  LAST_RESPONSE_TIME: "div.structItem-cell--latest > a > time",
   /**
    * Index of the last page available as text.
    */
