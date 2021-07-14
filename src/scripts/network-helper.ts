@@ -32,6 +32,7 @@ type TLookupMapCode = {
 type TProvider = "auto" | "totp" | "email";
 
 // Global variables
+const MAX_CONCURRENT_REQUESTS = 15;
 const USER_AGENT =
   "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15) " +
   "AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0 Safari/605.1.15";
@@ -231,12 +232,11 @@ export async function fetchGETResponse(
     const response = await api.get(url, commonConfig);
     return success(response);
   } catch (e) {
-    shared.logger.error(
-      `(GET) Error ${e.message} occurred while trying to fetch ${url}`
-    );
+    const err = `(GET) Error ${e.message} occurred while trying to fetch ${url}`;
+    shared.logger.error(err);
     const genericError = new GenericAxiosError({
       id: ERROR_CODE.CANNOT_FETCH_GET_RESPONSE,
-      message: `(GET) Error ${e.message} occurred while trying to fetch ${url}`,
+      message: err,
       error: e
     });
     return failure(genericError);
@@ -262,8 +262,7 @@ export async function fetchPOSTResponse(
 
   // Prepare the parameters for the POST request
   const urlParams = new URLSearchParams();
-  for (const [key, value] of Object.entries(params))
-    urlParams.append(key, value);
+  Object.entries(params).map(([key, value]) => urlParams.append(key, value));
 
   // Shallow copy of the common configuration object
   commonConfig.jar = shared.session.cookieJar;
@@ -280,11 +279,11 @@ export async function fetchPOSTResponse(
     const response = await api.post(url, urlParams, config);
     return success(response);
   } catch (e) {
-    const message = `(POST) Error ${e.message} occurred while trying to fetch ${url}`;
-    shared.logger.error(message);
+    const err = `(POST) Error ${e.message} occurred while trying to fetch ${url}`;
+    shared.logger.error(err);
     const genericError = new GenericAxiosError({
       id: ERROR_CODE.CANNOT_FETCH_POST_RESPONSE,
-      message: message,
+      message: err,
       error: e
     });
     return failure(genericError);
@@ -311,12 +310,11 @@ export async function fetchHEADResponse(
     const response = await api.head(url, commonConfig);
     return success(response);
   } catch (e) {
-    shared.logger.error(
-      `(HEAD) Error ${e.message} occurred while trying to fetch ${url}`
-    );
+    const err = `(HEAD) Error ${e.message} occurred while trying to fetch ${url}`;
+    shared.logger.error(err);
     const genericError = new GenericAxiosError({
       id: ERROR_CODE.CANNOT_FETCH_HEAD_RESPONSE,
-      message: `(HEAD) Error ${e.message} occurred while trying to fetch ${url}`,
+      message: err,
       error: e
     });
     return failure(genericError);
@@ -401,7 +399,7 @@ export async function getUrlRedirect(url: string): Promise<string> {
  */
 async function init(): Promise<void> {
   api = await configure();
-  semaphore = new Semaphore(15);
+  semaphore = new Semaphore(MAX_CONCURRENT_REQUESTS);
   initialized = true;
 }
 
