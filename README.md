@@ -62,7 +62,7 @@ const userdata = new UserProfile();
 await userdata.fetch();
 
 // Fetch all data (may take a while)
-await userdata.fetch(extended=true);
+await userdata.fetch(true);
 
 // Async properties
 const threads = await userdata.watched;
@@ -154,6 +154,7 @@ The user data currently connected through this API extends the [PlatformUser](ht
 | `watched`        | `Promise<IWatchedThread[]>` | List of followed thread data|
 | `bookmarks`      | `Promise<IBookmarkedPost[]>`| List of bookmarked posts data|
 | `alerts`         | `Promise<IAlert[]>`         | List of alerts|
+| `conversations`  | `Promise<IConversation[]>`  | List of conversations (only **without** labels)|
 | `featuredGames`  | `Promise<Game[]>`           | List of featured games from the platform (carousel, may not be available if disabled in settings)|
 
 ## Login results
