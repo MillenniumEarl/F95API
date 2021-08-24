@@ -109,11 +109,13 @@ export async function fetchHTML(
  * and token obtained previously. Save cookies on your
  * device after authentication.
  * @param {Credentials} credentials Platform access credentials
+ * @param {String} captchaToken reCAPTCHA token returned from Google after the correct interaction with the widget
  * @param {Boolean} force Specifies whether the request should be forced, ignoring any saved cookies
  * @returns {Promise<LoginResult>} Result of the operation
  */
 export async function authenticate(
   credentials: Credentials,
+  captchaToken?: string,
   force: boolean = false
 ): Promise<LoginResult> {
   shared.logger.info(`Authenticating with user ${credentials.username}`);
@@ -133,7 +135,8 @@ export async function authenticate(
     remember: "1",
     _xfRedirect: "https://f95zone.to/",
     website_code: "",
-    _xfToken: credentials.token
+    _xfToken: credentials.token,
+    "g-recaptcha-response": captchaToken
   };
 
   // Try to log-in
