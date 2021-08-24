@@ -40,6 +40,8 @@ const AUTH_SUCCESSFUL_MESSAGE = "Authentication successful";
 const INVALID_2FA_CODE_MESSAGE =
   "The two-step verification value could not be confirmed. Please try again";
 const INCORRECT_CREDENTIALS_MESSAGE = "Incorrect password. Please try again.";
+const REQUIRE_CAPTCHA_VERIFICATION =
+  "You did not complete the CAPTCHA verification properly. Please try again.";
 
 /**
  * Common configuration used to send request via Axios.
@@ -474,6 +476,10 @@ function messageToCode(message: string): number {
     {
       code: LoginResult.INCORRECT_2FA_CODE,
       message: INVALID_2FA_CODE_MESSAGE
+    },
+    {
+      code: LoginResult.REQUIRE_CAPTCHA,
+      message: REQUIRE_CAPTCHA_VERIFICATION
     }
   ];
 

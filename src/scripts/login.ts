@@ -123,7 +123,13 @@ async function loginInTheRemotePlatform(
   cb2fa?: () => Promise<number>
 ): Promise<LoginResult> {
   shared.logger.trace(`Authentication for ${creds.username}`);
-  let result = await authenticate(creds, await captchaToken());
+  let result = await authenticate(creds);
+
+  // Captcha is required, ask for token
+  if (result.code === LoginResult.REQUIRE_CAPTCHA) {
+    const token = await captchaToken();
+    result = await authenticate(creds, token);
+  }
 
   // 2FA Authentication is required, fetch OTP
   if (result.code === LoginResult.REQUIRE_2FA) {
