@@ -26,7 +26,8 @@ import {
   LatestSearchQuery,
   Game,
   searchHandiwork,
-  HandiworkSearchQuery
+  HandiworkSearchQuery,
+  logout
 } from "./index";
 
 // Configure the .env reader
@@ -50,6 +51,20 @@ async function insert2faCode(): Promise<number> {
   return answers.code as number;
 }
 
+async function retrieveCaptchaToken(): Promise<string> {
+  const questions = [
+    {
+      type: "input",
+      name: "token",
+      message: "Insert reCAPTCHA token:"
+    }
+  ];
+
+  // Prompt the user to insert the code
+  const answers = await inquirer.prompt(questions);
+  return answers.token as string;
+}
+
 /**
  * Authenticate on the platform.
  */
@@ -59,6 +74,7 @@ async function authenticate(): Promise<boolean> {
   const result = await login(
     process.env.F95_USERNAME,
     process.env.F95_PASSWORD,
+    retrieveCaptchaToken,
     insert2faCode
   );
   console.log(`Authentication result: ${result.message}\n`);
@@ -152,6 +168,8 @@ async function main() {
     // Get game data
     const gameList = ["City of broken dreamers", "Seeds of chaos", "MIST"];
     await fetchGameData(gameList);
+
+    await logout();
   } else console.log("Failed authentication, impossible to continue");
 }
 
