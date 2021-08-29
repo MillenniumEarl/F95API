@@ -17,6 +17,7 @@ F95_PASSWORD = YOUR_PASSWORD
 // Public modules from npm
 import inquirer from "inquirer";
 import dotenv from "dotenv";
+import { CaptchaHarvest } from "recaptcha-harvester";
 
 // Modules from file
 import {
@@ -52,17 +53,25 @@ async function insert2faCode(): Promise<number> {
 }
 
 async function retrieveCaptchaToken(): Promise<string> {
-  const questions = [
-    {
-      type: "input",
-      name: "token",
-      message: "Insert reCAPTCHA token:"
-    }
-  ];
+  // Local variables
+  const website = "https://f95zone.to";
+  const sitekey = "6LcwQ5kUAAAAAAI-_CXQtlnhdMjmFDt-MruZ2gov";
 
-  // Prompt the user to insert the code
-  const answers = await inquirer.prompt(questions);
-  return answers.token as string;
+  // Start the harvester
+  const harvester = new CaptchaHarvest();
+  await harvester.start();
+
+  // Fetch token
+  try {
+    const token = await harvester.getCaptchaToken(website, sitekey);
+    return token.token;
+  } catch (e) {
+    console.log(`Error while retrieving CAPTCHA token:\n${e}`);
+    return retrieveCaptchaToken();
+  } finally {
+    // Stop harvester
+    harvester.stop();
+  }
 }
 
 /**
