@@ -17,7 +17,7 @@ F95_PASSWORD = YOUR_PASSWORD
 // Public modules from npm
 import inquirer from "inquirer";
 import dotenv from "dotenv";
-import { CaptchaHarvest } from "recaptcha-harvester";
+import { CaptchaHarvest } from "@millenniumearl/recaptcha-harvester";
 
 // Modules from file
 import {
