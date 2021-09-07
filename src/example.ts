@@ -17,6 +17,7 @@ F95_PASSWORD = YOUR_PASSWORD
 // Public modules from npm
 import inquirer from "inquirer";
 import dotenv from "dotenv";
+import { CaptchaHarvest } from "@millenniumearl/recaptcha-harvester";
 
 // Modules from file
 import {
@@ -26,7 +27,8 @@ import {
   LatestSearchQuery,
   Game,
   searchHandiwork,
-  HandiworkSearchQuery
+  HandiworkSearchQuery,
+  logout
 } from "./index";
 
 // Configure the .env reader
@@ -50,6 +52,28 @@ async function insert2faCode(): Promise<number> {
   return answers.code as number;
 }
 
+async function retrieveCaptchaToken(): Promise<string> {
+  // Local variables
+  const website = "https://f95zone.to";
+  const sitekey = "6LcwQ5kUAAAAAAI-_CXQtlnhdMjmFDt-MruZ2gov";
+
+  // Start the harvester
+  const harvester = new CaptchaHarvest();
+  await harvester.start();
+
+  // Fetch token
+  try {
+    const token = await harvester.getCaptchaToken(website, sitekey);
+    return token.token;
+  } catch (e) {
+    console.log(`Error while retrieving CAPTCHA token:\n${e}`);
+    return retrieveCaptchaToken();
+  } finally {
+    // Stop harvester
+    harvester.stop();
+  }
+}
+
 /**
  * Authenticate on the platform.
  */
@@ -59,6 +83,7 @@ async function authenticate(): Promise<boolean> {
   const result = await login(
     process.env.F95_USERNAME,
     process.env.F95_PASSWORD,
+    retrieveCaptchaToken,
     insert2faCode
   );
   console.log(`Authentication result: ${result.message}\n`);
@@ -152,6 +177,8 @@ async function main() {
     // Get game data
     const gameList = ["City of broken dreamers", "Seeds of chaos", "MIST"];
     await fetchGameData(gameList);
+
+    await logout();
   } else console.log("Failed authentication, impossible to continue");
 }
 
