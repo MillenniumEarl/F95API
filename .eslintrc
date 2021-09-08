@@ -1,0 +1,32 @@
+{
+    "root": true,
+    "parser": "@typescript-eslint/parser",
+    "plugins": [
+        "@typescript-eslint",
+        "prettier"
+    ],
+    "extends": [
+        "eslint:recommended",
+        "plugin:@typescript-eslint/eslint-recommended",
+        "plugin:@typescript-eslint/recommended",
+        "prettier"
+    ],
+    "rules": {
+        "no-inferrable-types": "off",
+        "no-console": "warn",
+        "prettier/prettier": "error",
+        "@typescript-eslint/no-inferrable-types": "off",
+        "@typescript-eslint/no-explicit-any": "off",
+        "@typescript-eslint/ban-ts-comment": "warn",
+        "no-prototype-builtins": "warn"
+    },
+    "overrides": [
+        {
+            "files": [
+                "*/src/example.ts"
+            ],
+            "rules": {
+                "no-console": "off"
+            }
+        }]
+}

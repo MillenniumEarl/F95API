@@ -1,7 +1,6 @@
+dist/
 node_modules/
-f95cache/
-.nyc_output/
 .env
 F95API_NPM_AUTH_TOKEN.txt
-coverage.lcov
-dist/
+coverage
+.nyc_output/

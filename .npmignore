@@ -1,10 +1,20 @@
-test
-coverage.lcov
-.nyc_output
-.eslintrc.json
+# Dirs
+.github/
+.vscode/
+test/
+coverage/
+.nyc_output/
+src/
+
+# Files
+tsconfig.json
+.eslintignore
+.eslintrc
 .gitignore
-.gitattribute
-.github
-.vscode
-.deepsource.toml
+.gitattributes
 .env
+.prettierrc
+dist/tsconfig.tsbuildinfo
+
+# Example files
+dist/example.*

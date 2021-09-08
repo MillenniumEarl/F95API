@@ -1,0 +1,38 @@
+name: Publish Coverage
+
+# Run this action at every commit on every branch
+on: [push]
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v2
+
+      - name: Prepare NodeJS environment
+        uses: actions/setup-node@v2
+        with:
+          node-version: 14.x
+
+      - name: Cache npm dependencies
+        uses: actions/cache@v2.1.6
+        with:
+          path: '~/.npm'
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      # Install dependencies, than run tests and create coverage report
+      - name: Generate coverage report
+        run: |
+          npm install
+          npm run coverage
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          directory: ./coverage
+          name: codecov-umbrella

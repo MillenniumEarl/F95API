@@ -2,6 +2,7 @@
     "files.exclude": {
         "**/.nyc_output": true,
         "**/dist": true,
-        "**/node_modules": true
+        "**/node_modules": true,
+        "**/coverage": true
     }
 }

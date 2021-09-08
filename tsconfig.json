@@ -1,0 +1,23 @@
+{
+    "compileOnSave": true,
+    "compilerOptions": {
+        "experimentalDecorators": true,
+        "outDir": "./dist",
+        "allowJs": true,
+        "module": "commonjs",
+        "target": "ESNext",
+        "moduleResolution": "node",
+        "esModuleInterop": true,
+        "allowSyntheticDefaultImports": true,
+        "incremental": true,
+        "sourceMap": true,
+        "alwaysStrict": true,
+        "declaration": true,
+    },
+    "include": ["./src/**/*.ts"],
+    "exclude": [
+        "./test/",
+        "./node_modules/",
+        "./dist/"
+    ]
+}
