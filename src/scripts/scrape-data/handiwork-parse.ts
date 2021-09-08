@@ -268,7 +268,7 @@ function fillWithPostData(hw: HandiWork, elements: IPostElement[]): Handiwork {
   // Get the changelog
   const changelog = parseChangelog(elements);
 
-  const merged = Object.assign({ overview, cover, authors, changelog }, hw);
+  const merged = Object.assign(hw, { overview, cover, authors, changelog });
   return new Handiwork(merged);
 }
 
