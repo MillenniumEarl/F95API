@@ -467,13 +467,17 @@ function manageLoginPOSTResponse(response: AxiosResponse<any>) {
   }
 
   // Get the error message (if any) and remove the new line chars
-  const errorMessage = $("body")
+  let errorMessage = $("body")
     .find(GENERIC.LOGIN_MESSAGE_ERROR)
     .text()
     .replace(/\n/g, "");
 
+  // Check if the user ID is availbale
+  const availableUserID = $("body").find(GENERIC.CURRENT_USER_ID).length !== 0;
+  if (!availableUserID) errorMessage = "Successful request but user not logged in";
+
   // Return the result of the authentication
-  const result = errorMessage.trim() === "";
+  const result = errorMessage.trim() === "" && availableUserID;
   const message = result ? AUTH_SUCCESSFUL_MESSAGE : errorMessage;
   const code = messageToCode(message);
   return new LoginResult(result, code, message);
