@@ -4,7 +4,7 @@
 // https://opensource.org/licenses/MIT
 
 // Public modules from npm
-import { AxiosError, AxiosInstance, AxiosResponse } from "axios";
+import axios, { AxiosError, AxiosInstance, AxiosResponse } from "axios";
 import cheerio from "cheerio";
 import { Semaphore } from "await-semaphore";
 
@@ -21,7 +21,6 @@ import {
   UnexpectedResponseContentType
 } from "./classes/errors";
 import Credentials from "./classes/credentials";
-import configure from "./agent-configuration";
 
 // Types
 type TLookupMapCode = {
@@ -226,7 +225,7 @@ export async function fetchGETResponse(
   url: string
 ): Promise<Result<GenericAxiosError, AxiosResponse<any>>> {
   // Initialize the components if not ready
-  if (!initialized) await init();
+  if (!initialized) init();
 
   // Get a token from the semaphore
   const release = await semaphore.acquire();
@@ -263,7 +262,7 @@ export async function fetchPOSTResponse(
   force = false
 ): Promise<Result<GenericAxiosError, AxiosResponse<any>>> {
   // Initialize the components if not ready
-  if (!initialized) await init();
+  if (!initialized) init();
 
   // Prepare the parameters for the POST request
   const urlParams = new URLSearchParams();
@@ -305,7 +304,7 @@ export async function fetchHEADResponse(
   url: string
 ): Promise<Result<GenericAxiosError, AxiosResponse<any>>> {
   // Initialize the components if not ready
-  if (!initialized) await init();
+  if (!initialized) init();
 
   // Get a token from the semaphore
   const release = await semaphore.acquire();
@@ -402,8 +401,8 @@ export async function getUrlRedirect(url: string): Promise<string> {
 /**
  * Initializes the components used to manage requests to the network.
  */
-async function init(): Promise<void> {
-  api = await configure();
+function init(): void {
+  api = axios.create();
   semaphore = new Semaphore(MAX_CONCURRENT_REQUESTS);
   initialized = true;
 }
