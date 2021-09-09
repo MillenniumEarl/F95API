@@ -58,12 +58,14 @@ async function retrieveCaptchaToken(): Promise<string> {
   const sitekey = "6LcwQ5kUAAAAAAI-_CXQtlnhdMjmFDt-MruZ2gov";
 
   // Start the harvester
+  console.log("CAPTCHA token required...");
   const harvester = new CaptchaHarvest();
   await harvester.start();
 
   // Fetch token
   try {
     const token = await harvester.getCaptchaToken(website, sitekey);
+    console.log("CAPTCHA token retrived successfully");
     return token.token;
   } catch (e) {
     console.log(`Error while retrieving CAPTCHA token:\n${e}`);
