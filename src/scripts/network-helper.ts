@@ -7,6 +7,7 @@
 import axios, { AxiosError, AxiosInstance, AxiosResponse } from "axios";
 import cheerio from "cheerio";
 import { Semaphore } from "await-semaphore";
+import Cookie from "tough-cookie";
 
 // Modules from file
 import shared from "./shared";
@@ -60,7 +61,7 @@ const commonConfig = {
   /**
    * Jar of cookies to send along the request.
    */
-  jar: shared.session.cookieJar,
+  //jar: shared.session.cookieJar,
   validateStatus: function (status: number) {
     return status < 500; // Resolve only if the status code is less than 500
   },
@@ -232,8 +233,18 @@ export async function fetchGETResponse(
 
   try {
     // Fetch and return the response
-    commonConfig.jar = shared.session.cookieJar;
+    //commonConfig.jar = shared.session.cookieJar;
     const response = await api.get(url, commonConfig);
+
+    let cookies: Cookie.Cookie[];
+    if (response.headers["set-cookie"] instanceof Array)
+      cookies = response.headers["set-cookie"].map((c) => Cookie.parse(c));
+    else cookies = [Cookie.parse(response.headers["set-cookie"])];
+
+    const promises = cookies.map((cookie) => shared.session.cookieJar.setCookie(cookie, url));
+    await Promise.all(promises);
+    const retrieved = await shared.session.cookieJar.getCookies(url);
+
     return success(response);
   } catch (e) {
     const err = `(GET) Error ${e.message} occurred while trying to fetch ${url}`;
@@ -269,11 +280,11 @@ export async function fetchPOSTResponse(
   Object.entries(params).map(([key, value]) => urlParams.append(key, value));
 
   // Shallow copy of the common configuration object
-  commonConfig.jar = shared.session.cookieJar;
+  //commonConfig.jar = shared.session.cookieJar;
   const config = Object.assign({}, commonConfig);
 
   // Remove the cookies if forced
-  if (force) delete config.jar;
+  //if (force) delete config.jar;
 
   // Get a token from the semaphore
   const release = await semaphore.acquire();
@@ -310,7 +321,7 @@ export async function fetchHEADResponse(
   const release = await semaphore.acquire();
 
   try {
-    commonConfig.jar = shared.session.cookieJar;
+    //commonConfig.jar = shared.session.cookieJar;
     const response = await api.head(url, commonConfig);
     return success(response);
   } catch (e) {
@@ -405,6 +416,10 @@ function init(): void {
   api = axios.create();
   semaphore = new Semaphore(MAX_CONCURRENT_REQUESTS);
   initialized = true;
+}
+
+function interceptAxiosInstanceCookies(instance: AxiosInstance) {
+
 }
 
 /**
