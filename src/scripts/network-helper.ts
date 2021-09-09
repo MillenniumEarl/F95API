@@ -4,10 +4,9 @@
 // https://opensource.org/licenses/MIT
 
 // Public modules from npm
-import axios, { AxiosError, AxiosInstance, AxiosResponse } from "axios";
+import axios, { AxiosError, AxiosInstance, AxiosRequestConfig, AxiosResponse } from "axios";
 import cheerio from "cheerio";
 import { Semaphore } from "await-semaphore";
-import Cookie from "tough-cookie";
 
 // Modules from file
 import shared from "./shared";
@@ -46,7 +45,7 @@ const REQUIRE_CAPTCHA_VERIFICATION =
 /**
  * Common configuration used to send request via Axios.
  */
-const commonConfig = {
+const commonConfig: AxiosRequestConfig = {
   /**
    * Headers to add to the request.
    */
@@ -71,7 +70,7 @@ const commonConfig = {
 let initialized = false;
 
 // Agent used to send requests
-let api: AxiosInstance = null;
+let agent: AxiosInstance = null;
 
 // Semaphore used to avoid flooding the platform
 let semaphore: Semaphore = null;
@@ -117,8 +116,7 @@ export async function fetchHTML(
  */
 export async function authenticate(
   credentials: Credentials,
-  captchaToken?: string,
-  force: boolean = false
+  captchaToken?: string
 ): Promise<LoginResult> {
   shared.logger.info(`Authenticating with user ${credentials.username}`);
   if (!credentials.token)
@@ -145,7 +143,7 @@ export async function authenticate(
   let authResult: LoginResult = null;
 
   // Fetch the response to the login request
-  const response = await fetchPOSTResponse(secureURL, params, force);
+  const response = await fetchPOSTResponse(secureURL, params);
 
   // Parse the response
   const result = response.applyOnSuccess((r) => manageLoginPOSTResponse(r));
@@ -233,18 +231,7 @@ export async function fetchGETResponse(
 
   try {
     // Fetch and return the response
-    //commonConfig.jar = shared.session.cookieJar;
-    const response = await api.get(url, commonConfig);
-
-    let cookies: Cookie.Cookie[];
-    if (response.headers["set-cookie"] instanceof Array)
-      cookies = response.headers["set-cookie"].map((c) => Cookie.parse(c));
-    else cookies = [Cookie.parse(response.headers["set-cookie"])];
-
-    const promises = cookies.map((cookie) => shared.session.cookieJar.setCookie(cookie, url));
-    await Promise.all(promises);
-    const retrieved = await shared.session.cookieJar.getCookies(url);
-
+    const response = await agent.get(url, commonConfig);
     return success(response);
   } catch (e) {
     const err = `(GET) Error ${e.message} occurred while trying to fetch ${url}`;
@@ -265,12 +252,10 @@ export async function fetchGETResponse(
  * Performs a POST request through Axios.
  * @param url URL to request
  * @param params List of value pairs to send with the request
- * @param force If `true`, the request ignores the sending of cookies already present on the device.
  */
 export async function fetchPOSTResponse(
   url: string,
-  params: { [s: string]: string },
-  force = false
+  params: { [s: string]: string }
 ): Promise<Result<GenericAxiosError, AxiosResponse<any>>> {
   // Initialize the components if not ready
   if (!initialized) init();
@@ -280,18 +265,14 @@ export async function fetchPOSTResponse(
   Object.entries(params).map(([key, value]) => urlParams.append(key, value));
 
   // Shallow copy of the common configuration object
-  //commonConfig.jar = shared.session.cookieJar;
   const config = Object.assign({}, commonConfig);
-
-  // Remove the cookies if forced
-  //if (force) delete config.jar;
 
   // Get a token from the semaphore
   const release = await semaphore.acquire();
 
   // Send the POST request and await the response
   try {
-    const response = await api.post(url, urlParams, config);
+    const response = await agent.post(url, urlParams, config);
     return success(response);
   } catch (e) {
     const err = `(POST) Error ${e.message} occurred while trying to fetch ${url}`;
@@ -321,8 +302,7 @@ export async function fetchHEADResponse(
   const release = await semaphore.acquire();
 
   try {
-    //commonConfig.jar = shared.session.cookieJar;
-    const response = await api.head(url, commonConfig);
+    const response = await agent.head(url, commonConfig);
     return success(response);
   } catch (e) {
     const err = `(HEAD) Error ${e.message} occurred while trying to fetch ${url}`;
@@ -413,13 +393,40 @@ export async function getUrlRedirect(url: string): Promise<string> {
  * Initializes the components used to manage requests to the network.
  */
 function init(): void {
-  api = axios.create();
+  // Ctìreate a new Axios instance
+  agent = axios.create();
+
+  // Add a request interceptor for sending the cookies
+  agent.interceptors.request.use((config) => {
+    // Get all the available cookies for this URL
+    const cookieHeader = shared.session.cookieJar.getCookieStringSync(config.url);
+
+    // Set the cookies for this request
+    if (cookieHeader) config.headers.cookie = cookieHeader; 
+
+    return config;
+  });
+
+  // Add a response interceptor for fetching the cookies
+  agent.interceptors.response.use((response) => {
+    // Extract the returned cookie's string
+    const cookiesHeader: string[] | string = response.headers["set-cookie"];
+
+    if (cookiesHeader) {
+      const cookies: string[] =
+        cookiesHeader instanceof Array ? cookiesHeader : [cookiesHeader];
+
+      // Save the cookies in the cookiejar
+      cookies.map((cookie) =>
+        shared.session.cookieJar.setCookie(cookie, response.config.url)
+      );
+    }
+    
+    return response;
+  });
+
   semaphore = new Semaphore(MAX_CONCURRENT_REQUESTS);
   initialized = true;
-}
-
-function interceptAxiosInstanceCookies(instance: AxiosInstance) {
-
 }
 
 /**
