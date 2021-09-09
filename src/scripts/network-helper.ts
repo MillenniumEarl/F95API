@@ -4,7 +4,12 @@
 // https://opensource.org/licenses/MIT
 
 // Public modules from npm
-import axios, { AxiosError, AxiosInstance, AxiosRequestConfig, AxiosResponse } from "axios";
+import axios, {
+  AxiosError,
+  AxiosInstance,
+  AxiosRequestConfig,
+  AxiosResponse
+} from "axios";
 import cheerio from "cheerio";
 import { Semaphore } from "await-semaphore";
 
@@ -343,7 +348,8 @@ export function isF95URL(url: string): boolean {
  */
 export function isStringAValidURL(url: string): boolean {
   // Many thanks to Daveo at StackOverflow (https://preview.tinyurl.com/y2f2e2pc)
-  const regex = /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_+.~#?&//=]*)/;
+  const regex =
+    /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_+.~#?&//=]*)/;
   return regex.test(url);
 }
 
@@ -399,10 +405,12 @@ function init(): void {
   // Add a request interceptor for sending the cookies
   agent.interceptors.request.use((config) => {
     // Get all the available cookies for this URL
-    const cookieHeader = shared.session.cookieJar.getCookieStringSync(config.url);
+    const cookieHeader = shared.session.cookieJar.getCookieStringSync(
+      config.url
+    );
 
     // Set the cookies for this request
-    if (cookieHeader) config.headers.cookie = cookieHeader; 
+    if (cookieHeader) config.headers.cookie = cookieHeader;
 
     return config;
   });
@@ -421,7 +429,7 @@ function init(): void {
         shared.session.cookieJar.setCookie(cookie, response.config.url)
       );
     }
-    
+
     return response;
   });
 
@@ -474,7 +482,8 @@ function manageLoginPOSTResponse(response: AxiosResponse<any>) {
 
   // Check if the user ID is availbale
   const availableUserID = $("body").find(GENERIC.CURRENT_USER_ID).length !== 0;
-  if (!availableUserID) errorMessage = "Successful request but user not logged in";
+  if (!availableUserID && !errorMessage)
+    errorMessage = "Successful request but user not logged in";
 
   // Return the result of the authentication
   const result = errorMessage.trim() === "" && availableUserID;
