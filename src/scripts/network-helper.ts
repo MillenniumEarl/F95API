@@ -10,6 +10,7 @@ import axios, {
   AxiosRequestConfig,
   AxiosResponse
 } from "axios";
+import { wrapper } from "axios-cookiejar-support";
 import cheerio from "cheerio";
 import { Semaphore } from "await-semaphore";
 
@@ -399,39 +400,39 @@ export async function getUrlRedirect(url: string): Promise<string> {
  * Initializes the components used to manage requests to the network.
  */
 function init(): void {
-  // Ctìreate a new Axios instance
-  agent = axios.create();
+  // Create a new Axios instance with cookies support
+  agent = wrapper(axios.create({ jar: shared.session.cookieJar }));
 
-  // Add a request interceptor for sending the cookies
-  agent.interceptors.request.use((config) => {
-    // Get all the available cookies for this URL
-    const cookieHeader = shared.session.cookieJar.getCookieStringSync(
-      config.url
-    );
+  // // Add a request interceptor for sending the cookies
+  // agent.interceptors.request.use((config) => {
+  //   // Get all the available cookies for this URL
+  //   const cookieHeader = shared.session.cookieJar.getCookieStringSync(
+  //     config.url
+  //   );
 
-    // Set the cookies for this request
-    if (cookieHeader) config.headers.cookie = cookieHeader;
+  //   // Set the cookies for this request
+  //   if (cookieHeader) config.headers.cookie = cookieHeader;
 
-    return config;
-  });
+  //   return config;
+  // });
 
-  // Add a response interceptor for fetching the cookies
-  agent.interceptors.response.use((response) => {
-    // Extract the returned cookie's string
-    const cookiesHeader: string[] | string = response.headers["set-cookie"];
+  // // Add a response interceptor for fetching the cookies
+  // agent.interceptors.response.use((response) => {
+  //   // Extract the returned cookie's string
+  //   const cookiesHeader: string[] | string = response.headers["set-cookie"];
 
-    if (cookiesHeader) {
-      const cookies: string[] =
-        cookiesHeader instanceof Array ? cookiesHeader : [cookiesHeader];
+  //   if (cookiesHeader) {
+  //     const cookies: string[] =
+  //       cookiesHeader instanceof Array ? cookiesHeader : [cookiesHeader];
 
-      // Save the cookies in the cookiejar
-      cookies.map((cookie) =>
-        shared.session.cookieJar.setCookie(cookie, response.config.url)
-      );
-    }
+  //     // Save the cookies in the cookiejar
+  //     cookies.map((cookie) =>
+  //       shared.session.cookieJar.setCookie(cookie, response.config.url)
+  //     );
+  //   }
 
-    return response;
-  });
+  //   return response;
+  // });
 
   semaphore = new Semaphore(MAX_CONCURRENT_REQUESTS);
   initialized = true;
