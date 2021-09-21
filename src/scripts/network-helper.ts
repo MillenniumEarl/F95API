@@ -78,13 +78,11 @@ const commonConfig: AxiosRequestConfig = {
   adapter: require("axios/lib/adapters/http")
 };
 
-let initialized = false;
-
 // Agent used to send requests
-let agent: AxiosInstance = null;
+const agent: AxiosInstance = wrapper(axios.create(commonConfig));
 
 // Semaphore used to avoid flooding the platform
-let semaphore: Semaphore = null;
+const semaphore: Semaphore = new Semaphore(MAX_CONCURRENT_REQUESTS);
 
 /**
  * Gets the HTML code of a page.
@@ -234,9 +232,6 @@ export async function getF95Token(): Promise<string> {
 export async function fetchGETResponse(
   url: string
 ): Promise<Result<GenericAxiosError, AxiosResponse<any>>> {
-  // Initialize the components if not ready
-  if (!initialized) init();
-
   // Get a token from the semaphore
   const release = await semaphore.acquire();
 
@@ -268,9 +263,6 @@ export async function fetchPOSTResponse(
   url: string,
   params: { [s: string]: string }
 ): Promise<Result<GenericAxiosError, AxiosResponse<any>>> {
-  // Initialize the components if not ready
-  if (!initialized) init();
-
   // Prepare the parameters for the POST request
   const urlParams = new URLSearchParams();
   Object.entries(params).map(([key, value]) => urlParams.append(key, value));
@@ -303,9 +295,6 @@ export async function fetchPOSTResponse(
 export async function fetchHEADResponse(
   url: string
 ): Promise<Result<GenericAxiosError, AxiosResponse<any>>> {
-  // Initialize the components if not ready
-  if (!initialized) init();
-
   // Get a token from the semaphore
   const release = await semaphore.acquire();
 
@@ -397,48 +386,6 @@ export async function getUrlRedirect(url: string): Promise<string> {
 //#endregion Utility methods
 
 //#region Private methods
-
-/**
- * Initializes the components used to manage requests to the network.
- */
-function init(): void {
-  // Create a new Axios instance with cookies support
-  agent = wrapper(axios.create(commonConfig));
-
-  // // Add a request interceptor for sending the cookies
-  // agent.interceptors.request.use((config) => {
-  //   // Get all the available cookies for this URL
-  //   const cookieHeader = shared.session.cookieJar.getCookieStringSync(
-  //     config.url
-  //   );
-
-  //   // Set the cookies for this request
-  //   if (cookieHeader) config.headers.cookie = cookieHeader;
-
-  //   return config;
-  // });
-
-  // // Add a response interceptor for fetching the cookies
-  // agent.interceptors.response.use((response) => {
-  //   // Extract the returned cookie's string
-  //   const cookiesHeader: string[] | string = response.headers["set-cookie"];
-
-  //   if (cookiesHeader) {
-  //     const cookies: string[] =
-  //       cookiesHeader instanceof Array ? cookiesHeader : [cookiesHeader];
-
-  //     // Save the cookies in the cookiejar
-  //     cookies.map((cookie) =>
-  //       shared.session.cookieJar.setCookie(cookie, response.config.url)
-  //     );
-  //   }
-
-  //   return response;
-  // });
-
-  semaphore = new Semaphore(MAX_CONCURRENT_REQUESTS);
-  initialized = true;
-}
 
 /**
  * Check with Axios if a URL exists.
