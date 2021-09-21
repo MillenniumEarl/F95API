@@ -66,11 +66,16 @@ const commonConfig: AxiosRequestConfig = {
   /**
    * Jar of cookies to send along the request.
    */
-  //jar: shared.session.cookieJar,
+  jar: shared.session.cookieJar,
   validateStatus: function (status: number) {
     return status < 500; // Resolve only if the status code is less than 500
   },
-  timeout: 30000
+  timeout: 30000,
+  /**
+   * Explicit the HTTP adapter otherwise on Electron the XHR adapter
+   * is used which is not supported by `axios-cookiejar-support`
+   */
+  adapter: require("axios/lib/adapters/http")
 };
 
 let initialized = false;
@@ -237,7 +242,7 @@ export async function fetchGETResponse(
 
   try {
     // Fetch and return the response
-    const response = await agent.get(url, commonConfig);
+    const response = await agent.get(url);
     return success(response);
   } catch (e) {
     const err = `(GET) Error ${e.message} occurred while trying to fetch ${url}`;
@@ -270,15 +275,12 @@ export async function fetchPOSTResponse(
   const urlParams = new URLSearchParams();
   Object.entries(params).map(([key, value]) => urlParams.append(key, value));
 
-  // Shallow copy of the common configuration object
-  const config = Object.assign({}, commonConfig);
-
   // Get a token from the semaphore
   const release = await semaphore.acquire();
 
   // Send the POST request and await the response
   try {
-    const response = await agent.post(url, urlParams, config);
+    const response = await agent.post(url, urlParams);
     return success(response);
   } catch (e) {
     const err = `(POST) Error ${e.message} occurred while trying to fetch ${url}`;
@@ -308,7 +310,7 @@ export async function fetchHEADResponse(
   const release = await semaphore.acquire();
 
   try {
-    const response = await agent.head(url, commonConfig);
+    const response = await agent.head(url);
     return success(response);
   } catch (e) {
     const err = `(HEAD) Error ${e.message} occurred while trying to fetch ${url}`;
@@ -401,7 +403,7 @@ export async function getUrlRedirect(url: string): Promise<string> {
  */
 function init(): void {
   // Create a new Axios instance with cookies support
-  agent = wrapper(axios.create({ jar: shared.session.cookieJar }));
+  agent = wrapper(axios.create(commonConfig));
 
   // // Add a request interceptor for sending the cookies
   // agent.interceptors.request.use((config) => {
