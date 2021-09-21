@@ -4,7 +4,13 @@
 // https://opensource.org/licenses/MIT
 
 // Public modules from npm
-import { AxiosError, AxiosInstance, AxiosResponse } from "axios";
+import axios, {
+  AxiosError,
+  AxiosInstance,
+  AxiosRequestConfig,
+  AxiosResponse
+} from "axios";
+import { wrapper } from "axios-cookiejar-support";
 import cheerio from "cheerio";
 import { Semaphore } from "await-semaphore";
 
@@ -21,7 +27,6 @@ import {
   UnexpectedResponseContentType
 } from "./classes/errors";
 import Credentials from "./classes/credentials";
-import configure from "./agent-configuration";
 
 // Types
 type TLookupMapCode = {
@@ -46,7 +51,7 @@ const REQUIRE_CAPTCHA_VERIFICATION =
 /**
  * Common configuration used to send request via Axios.
  */
-const commonConfig = {
+const commonConfig: AxiosRequestConfig = {
   /**
    * Headers to add to the request.
    */
@@ -65,16 +70,19 @@ const commonConfig = {
   validateStatus: function (status: number) {
     return status < 500; // Resolve only if the status code is less than 500
   },
-  timeout: 30000
+  timeout: 30000,
+  /**
+   * Explicit the HTTP adapter otherwise on Electron the XHR adapter
+   * is used which is not supported by `axios-cookiejar-support`
+   */
+  adapter: require("axios/lib/adapters/http")
 };
 
-let initialized = false;
-
 // Agent used to send requests
-let api: AxiosInstance = null;
+const agent: AxiosInstance = wrapper(axios.create(commonConfig));
 
 // Semaphore used to avoid flooding the platform
-let semaphore: Semaphore = null;
+const semaphore: Semaphore = new Semaphore(MAX_CONCURRENT_REQUESTS);
 
 /**
  * Gets the HTML code of a page.
@@ -117,8 +125,7 @@ export async function fetchHTML(
  */
 export async function authenticate(
   credentials: Credentials,
-  captchaToken?: string,
-  force: boolean = false
+  captchaToken?: string
 ): Promise<LoginResult> {
   shared.logger.info(`Authenticating with user ${credentials.username}`);
   if (!credentials.token)
@@ -145,7 +152,7 @@ export async function authenticate(
   let authResult: LoginResult = null;
 
   // Fetch the response to the login request
-  const response = await fetchPOSTResponse(secureURL, params, force);
+  const response = await fetchPOSTResponse(secureURL, params);
 
   // Parse the response
   const result = response.applyOnSuccess((r) => manageLoginPOSTResponse(r));
@@ -225,16 +232,12 @@ export async function getF95Token(): Promise<string> {
 export async function fetchGETResponse(
   url: string
 ): Promise<Result<GenericAxiosError, AxiosResponse<any>>> {
-  // Initialize the components if not ready
-  if (!initialized) await init();
-
   // Get a token from the semaphore
   const release = await semaphore.acquire();
 
   try {
     // Fetch and return the response
-    commonConfig.jar = shared.session.cookieJar;
-    const response = await api.get(url, commonConfig);
+    const response = await agent.get(url);
     return success(response);
   } catch (e) {
     const err = `(GET) Error ${e.message} occurred while trying to fetch ${url}`;
@@ -255,33 +258,21 @@ export async function fetchGETResponse(
  * Performs a POST request through Axios.
  * @param url URL to request
  * @param params List of value pairs to send with the request
- * @param force If `true`, the request ignores the sending of cookies already present on the device.
  */
 export async function fetchPOSTResponse(
   url: string,
-  params: { [s: string]: string },
-  force = false
+  params: { [s: string]: string }
 ): Promise<Result<GenericAxiosError, AxiosResponse<any>>> {
-  // Initialize the components if not ready
-  if (!initialized) await init();
-
   // Prepare the parameters for the POST request
   const urlParams = new URLSearchParams();
   Object.entries(params).map(([key, value]) => urlParams.append(key, value));
-
-  // Shallow copy of the common configuration object
-  commonConfig.jar = shared.session.cookieJar;
-  const config = Object.assign({}, commonConfig);
-
-  // Remove the cookies if forced
-  if (force) delete config.jar;
 
   // Get a token from the semaphore
   const release = await semaphore.acquire();
 
   // Send the POST request and await the response
   try {
-    const response = await api.post(url, urlParams, config);
+    const response = await agent.post(url, urlParams);
     return success(response);
   } catch (e) {
     const err = `(POST) Error ${e.message} occurred while trying to fetch ${url}`;
@@ -304,15 +295,11 @@ export async function fetchPOSTResponse(
 export async function fetchHEADResponse(
   url: string
 ): Promise<Result<GenericAxiosError, AxiosResponse<any>>> {
-  // Initialize the components if not ready
-  if (!initialized) await init();
-
   // Get a token from the semaphore
   const release = await semaphore.acquire();
 
   try {
-    commonConfig.jar = shared.session.cookieJar;
-    const response = await api.head(url, commonConfig);
+    const response = await agent.head(url);
     return success(response);
   } catch (e) {
     const err = `(HEAD) Error ${e.message} occurred while trying to fetch ${url}`;
@@ -353,7 +340,8 @@ export function isF95URL(url: string): boolean {
  */
 export function isStringAValidURL(url: string): boolean {
   // Many thanks to Daveo at StackOverflow (https://preview.tinyurl.com/y2f2e2pc)
-  const regex = /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_+.~#?&//=]*)/;
+  const regex =
+    /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_+.~#?&//=]*)/;
   return regex.test(url);
 }
 
@@ -400,15 +388,6 @@ export async function getUrlRedirect(url: string): Promise<string> {
 //#region Private methods
 
 /**
- * Initializes the components used to manage requests to the network.
- */
-async function init(): Promise<void> {
-  api = await configure();
-  semaphore = new Semaphore(MAX_CONCURRENT_REQUESTS);
-  initialized = true;
-}
-
-/**
  * Check with Axios if a URL exists.
  */
 async function axiosUrlExists(url: string): Promise<boolean> {
@@ -446,13 +425,18 @@ function manageLoginPOSTResponse(response: AxiosResponse<any>) {
   }
 
   // Get the error message (if any) and remove the new line chars
-  const errorMessage = $("body")
+  let errorMessage = $("body")
     .find(GENERIC.LOGIN_MESSAGE_ERROR)
     .text()
     .replace(/\n/g, "");
 
+  // Check if the user ID is availbale
+  const availableUserID = $("body").find(GENERIC.CURRENT_USER_ID).length !== 0;
+  if (!availableUserID && !errorMessage)
+    errorMessage = "Successful request but user not logged in";
+
   // Return the result of the authentication
-  const result = errorMessage.trim() === "";
+  const result = errorMessage.trim() === "" && availableUserID;
   const message = result ? AUTH_SUCCESSFUL_MESSAGE : errorMessage;
   const code = messageToCode(message);
   return new LoginResult(result, code, message);
