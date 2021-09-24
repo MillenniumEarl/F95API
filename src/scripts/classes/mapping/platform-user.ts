@@ -5,7 +5,7 @@
 
 // Public modules from npm
 import cheerio from "cheerio";
-import { DateTime } from "luxon";
+import { isValidISODateString } from "iso-datestring-validator";
 
 // Modules from files
 import { urls } from "../../constants/url";
@@ -198,10 +198,10 @@ export default class PlatformUser implements ILazy {
 
       // Parse date
       const joined = $(MEMBER.JOINED)?.attr("datetime");
-      if (DateTime.fromISO(joined).isValid) this._joined = new Date(joined);
+      if (isValidISODateString(joined)) this._joined = new Date(joined);
 
       const lastSeen = $(MEMBER.LAST_SEEN)?.attr("datetime");
-      if (DateTime.fromISO(lastSeen).isValid) this._joined = new Date(lastSeen);
+      if (isValidISODateString(lastSeen)) this._joined = new Date(lastSeen);
 
       // Parse donation
       const donation = $(MEMBER.AMOUNT_DONATED)?.text().replace("$", "");

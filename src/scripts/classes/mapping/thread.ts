@@ -5,7 +5,7 @@
 
 // Public modules from npm
 import cheerio from "cheerio";
-import { DateTime } from "luxon";
+import { isValidISODateString } from "iso-datestring-validator";
 
 // Modules from files
 import Post from "./post";
@@ -241,8 +241,8 @@ export default class Thread implements ILazy {
     this._category = JSONLD["articleSection"] as TCategory;
 
     // Validate the dates
-    if (DateTime.fromISO(modified).isValid) this._modified = new Date(modified);
-    if (DateTime.fromISO(published).isValid)
+    if (isValidISODateString(modified)) this._modified = new Date(modified);
+    if (isValidISODateString(published))
       this._publication = new Date(published);
   }
 

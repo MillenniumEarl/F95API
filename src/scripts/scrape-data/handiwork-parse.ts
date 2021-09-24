@@ -4,7 +4,7 @@
 // https://opensource.org/licenses/MIT
 
 // Public modules from npm
-import { DateTime } from "luxon";
+import { isValidISODateString } from "iso-datestring-validator";
 
 // Modules from files
 import HandiWork from "../classes/handiwork/handiwork";
@@ -253,8 +253,7 @@ function fillWithPostData(hw: HandiWork, elements: IPostElement[]): Handiwork {
 
   // Fill the dates
   const releaseDate = getPostElementByName(elements, "release date")?.text;
-  if (DateTime.fromISO(releaseDate).isValid)
-    hw.lastRelease = new Date(releaseDate);
+  if (isValidISODateString(releaseDate)) hw.lastRelease = new Date(releaseDate);
 
   //Get the overview
   const overview = getPostElementByName(elements, "overview")?.text;
