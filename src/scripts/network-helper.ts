@@ -237,7 +237,9 @@ export async function fetchGETResponse(
 
   try {
     // Fetch and return the response
-    const response = await agent.get(url);
+    const response = await agent.get(url, {
+      jar: shared.session.cookieJar
+    });
     return success(response);
   } catch (e) {
     const err = `(GET) Error ${e.message} occurred while trying to fetch ${url}`;
@@ -272,7 +274,9 @@ export async function fetchPOSTResponse(
 
   // Send the POST request and await the response
   try {
-    const response = await agent.post(url, urlParams);
+    const response = await agent.post(url, urlParams, {
+      jar: shared.session.cookieJar
+    });
     return success(response);
   } catch (e) {
     const err = `(POST) Error ${e.message} occurred while trying to fetch ${url}`;
@@ -299,7 +303,9 @@ export async function fetchHEADResponse(
   const release = await semaphore.acquire();
 
   try {
-    const response = await agent.head(url);
+    const response = await agent.head(url, {
+      jar: shared.session.cookieJar
+    });
     return success(response);
   } catch (e) {
     const err = `(HEAD) Error ${e.message} occurred while trying to fetch ${url}`;
