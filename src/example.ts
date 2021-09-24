@@ -60,7 +60,7 @@ async function retrieveCaptchaToken(): Promise<string> {
   // Start the harvester
   console.log("CAPTCHA token required...");
   const harvester = new CaptchaHarvest();
-  await harvester.start();
+  await harvester.start("reCAPTCHAv2");
 
   // Fetch token
   try {
