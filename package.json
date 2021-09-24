@@ -24,6 +24,7 @@
   ],
   "scripts": {
     "prettify": "prettier --config .prettierrc {src,test}/**/*.ts --write",
+    "pretest": "npm run build",
     "test": "mocha --require ts-node/register test/{unit,integration}/index.ts",
     "coverage": "nyc --reporter=lcov --reporter=text npm run test",
     "build": "tsc --project ./",
