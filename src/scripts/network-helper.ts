@@ -430,7 +430,7 @@ function manageLoginPOSTResponse(response: AxiosResponse<any>) {
     .text()
     .replace(/\n/g, "");
 
-  // Check if the user ID is availbale
+  // Check if the user ID is available
   const availableUserID = $("body").find(GENERIC.CURRENT_USER_ID).length !== 0;
   if (!availableUserID && !errorMessage)
     errorMessage = "Successful request but user not logged in";
