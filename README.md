@@ -12,6 +12,21 @@ These APIs have been developed to support [this application](https://github.com/
 
 A simple usage example can be found in [src/example.ts](https://github.com/MillenniumEarl/F95API/blob/2.0.0-ts/src/example.ts)
 
+# Table of Contents
+
+- [Main features](#main-features)
+- [Login](#login)
+- [Data scraping](#data-scraping)
+- [Classes](#classes)
+  - [Handiwork](#handiwork)
+    - [Basic properties](#basic-properties)
+    - [Mixed properties](#mixed-properties)
+  - [Platform user](#platform-user)
+  - [User data](#user-data)
+  - [Login result](#login-result)
+- [Logging](#logging)
+- [Guidelines for errors](#guidelines-for-errors)
+
 # Main features
 - Support for two-factor authentication
 - Structured and typed data of games, mods, comics, assets and animations
