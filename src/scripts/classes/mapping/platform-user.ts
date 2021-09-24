@@ -198,10 +198,12 @@ export default class PlatformUser implements ILazy {
 
       // Parse date
       const joined = $(MEMBER.JOINED)?.attr("datetime");
-      if (isValidISODateString(joined)) this._joined = new Date(joined);
+      if (joined && isValidISODateString(joined))
+        this._joined = new Date(joined);
 
       const lastSeen = $(MEMBER.LAST_SEEN)?.attr("datetime");
-      if (isValidISODateString(lastSeen)) this._joined = new Date(lastSeen);
+      if (lastSeen && isValidISODateString(lastSeen))
+        this._joined = new Date(lastSeen);
 
       // Parse donation
       const donation = $(MEMBER.AMOUNT_DONATED)?.text().replace("$", "");
