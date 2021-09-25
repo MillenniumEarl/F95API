@@ -241,8 +241,9 @@ export default class Thread implements ILazy {
     this._category = JSONLD["articleSection"] as TCategory;
 
     // Validate the dates
-    if (isValidISODateString(modified)) this._modified = new Date(modified);
-    if (isValidISODateString(published))
+    if (modified && isValidISODateString(modified))
+      this._modified = new Date(modified);
+    if (published && isValidISODateString(published))
       this._publication = new Date(published);
   }
 

@@ -72,16 +72,18 @@ function parseConversationElement(e: Cheerio<Node>): IConversation {
 
   // Parse dates
   const sCreationDate = e.find(CONVERSATION.START_DATE).attr("datetime");
-  conversation.creation = isValidISODateString(sCreationDate)
-    ? new Date(sCreationDate)
-    : null;
+  conversation.creation =
+    sCreationDate && isValidISODateString(sCreationDate)
+      ? new Date(sCreationDate)
+      : null;
 
   const sLastResponseDate = e
     .find(CONVERSATION.LAST_RESPONSE_TIME)
     .attr("datetime");
-  conversation.lastResponseTime = isValidISODateString(sLastResponseDate)
-    ? new Date(sLastResponseDate)
-    : null;
+  conversation.lastResponseTime =
+    sLastResponseDate && isValidISODateString(sLastResponseDate)
+      ? new Date(sLastResponseDate)
+      : null;
 
   return conversation;
 }

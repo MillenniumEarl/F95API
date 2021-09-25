@@ -253,7 +253,8 @@ function fillWithPostData(hw: HandiWork, elements: IPostElement[]): Handiwork {
 
   // Fill the dates
   const releaseDate = getPostElementByName(elements, "release date")?.text;
-  if (isValidISODateString(releaseDate)) hw.lastRelease = new Date(releaseDate);
+  if (releaseDate && isValidISODateString(releaseDate))
+    hw.lastRelease = new Date(releaseDate);
 
   //Get the overview
   const overview = getPostElementByName(elements, "overview")?.text;
