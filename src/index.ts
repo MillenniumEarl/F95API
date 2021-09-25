@@ -38,12 +38,23 @@ function setLoggerLevel(level: TLog4JSLevel): void {
   shared.logger.level = level;
 }
 
-setLoggerLevel("warn"); // By default log only the warn messages
+/**
+ * Indicates the current logging level.
+ */
+function loggerLevel(): TLog4JSLevel {
+  return shared.logger.level as TLog4JSLevel;
+}
 
-const isLogged = shared.isLogged;
-const loggerLevel = shared.logger.level;
+/**
+ * Indicates whether the current session is authenticated.
+ */
+function isLogged(): boolean {
+  return shared.isLogged;
+}
 
 export { isLogged, loggerLevel, setLoggerLevel };
+
+setLoggerLevel("warn"); // By default log only the warn messages
 
 //#endregion Export properties
 
