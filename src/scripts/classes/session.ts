@@ -18,7 +18,7 @@ export default class Session {
   /**
    * Max number of days the session is valid.
    */
-  private readonly SESSION_TIME: number = 1;
+  private readonly SESSION_TIME: number = 30;
   private readonly COOKIEJAR_FILENAME: string = "f95cookiejar.json";
   private _path: string;
   private _isMapped: boolean;
