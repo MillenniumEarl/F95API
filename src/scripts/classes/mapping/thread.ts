@@ -13,7 +13,11 @@ import PlatformUser from "./platform-user";
 import { ILazy, TCategory, TRating } from "../../interfaces";
 import { urls } from "../../constants/url";
 import { POST, THREAD } from "../../constants/css-selector";
-import { fetchHTML, fetchPOSTResponse } from "../../network-helper";
+import {
+  fetchHTML,
+  fetchPOSTResponse,
+  getUrlRedirect
+} from "../../network-helper";
 import Shared from "../../shared";
 import {
   InvalidID,
@@ -36,6 +40,7 @@ export default class Thread implements ILazy {
 
   private POST_FOR_PAGE: TPostsForPage = 20;
   private _id: number;
+  private _url: string;
   private _title: string;
   private _tags: string[];
   private _prefixes: string[];
@@ -61,8 +66,7 @@ export default class Thread implements ILazy {
    * It may vary depending on any versions of the contained product.
    */
   public get url(): string {
-    // Create the URL at runtime to save memory
-    return new URL(this.id.toString(), urls.THREADS).toString();
+    return this._url ?? new URL(this.id.toString(), urls.THREADS).toString();
   }
   /**
    * Thread title.
@@ -276,6 +280,9 @@ export default class Thread implements ILazy {
   public async fetch(): Promise<void> {
     // Check login
     if (!shared.isLogged) throw new UserNotLogged(USER_NOT_LOGGED);
+
+    // Get the actual URL of the thread
+    this._url = await getUrlRedirect(this.url);
 
     // Fetch the HTML source
     const response = await fetchHTML(this.url);
