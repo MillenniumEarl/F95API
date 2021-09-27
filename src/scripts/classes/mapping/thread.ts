@@ -66,7 +66,7 @@ export default class Thread implements ILazy {
    * It may vary depending on any versions of the contained product.
    */
   public get url(): string {
-    return this._url ?? new URL(this.id.toString(), urls.THREADS).toString();
+    return this._url ?? new URL(`${this.id}/`, urls.THREADS).toString();
   }
   /**
    * Thread title.
@@ -308,7 +308,7 @@ export default class Thread implements ILazy {
     const page = Math.ceil(index / this.POST_FOR_PAGE);
 
     // Fetch the page
-    const url = new URL(`page-${page}`, `${this.url}/`).toString();
+    const url = new URL(`page-${page}`, `${this.url}`).toString();
     const htmlResponse = await fetchHTML(url);
 
     if (htmlResponse.isSuccess()) {
