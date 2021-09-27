@@ -385,8 +385,11 @@ export async function urlExists(
 export async function getUrlRedirect(url: string): Promise<string> {
   const response = await fetchHEADResponse(url);
 
-  if (response.isSuccess()) return response.value.config.url;
-  else throw response.value;
+  if (response.isSuccess()) {
+    const r = response.value.request;
+    const redirect = new URL(r.path, `${r.protocol}//${r.host}`);
+    return redirect.toString();
+  } else throw response.value;
 }
 
 //#endregion Utility methods
