@@ -315,7 +315,7 @@ function parseAuthor(elements: IPostElement[]): TAuthor[] {
     // Sometimes there is only one "support" platform and no name of the author.
     // In these case, usually, the name on the platform is the author's name.
     if (author.name === "" && author.platforms.length === 1)
-      author.name === author.platforms[0].name;
+      author.name = author.platforms[0].name;
   }
 
   return [author];
