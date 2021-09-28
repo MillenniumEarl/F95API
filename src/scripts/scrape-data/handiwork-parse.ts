@@ -21,6 +21,7 @@ import {
 } from "../interfaces";
 import shared, { TPrefixDict } from "../shared";
 import Handiwork from "../classes/handiwork/handiwork";
+import { isF95URL } from "../network-helper";
 
 /**
  * Gets information of a particular handiwork from its thread.
@@ -305,6 +306,11 @@ function parseAuthor(elements: IPostElement[]): TAuthor[] {
 
         author.platforms.push(platform);
       });
+
+    // Sometimes the author has a profile on F95Zone and
+    // it will be saved under platforms, not in name.
+    const f95Profile = author.platforms.filter((p) => isF95URL(p.link)).shift();
+    if (author.name === "" && f95Profile) author.name = f95Profile.name;
   }
 
   return [author];
