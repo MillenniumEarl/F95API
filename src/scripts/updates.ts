@@ -58,7 +58,8 @@ export async function checkIfHandiworkHasUpdate(
 
   // F95 change URL at every game update,
   // so if the URL is different an update is available
-  if (await urlExists(hw.url, true)) {
+  const isTheSameURL = await urlExists(hw.url, true);
+  if (!isTheSameURL) {
     // Fetch the online handiwork
     const onlineHw = await getHandiworkFromURL<HandiWork>(hw.url);
 
