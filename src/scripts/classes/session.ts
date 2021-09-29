@@ -179,6 +179,9 @@ export default class Session {
         flag: "r"
       });
       this._cookieJar = await CookieJar.deserialize(JSON.parse(serializedJar));
+
+      // Remove session cookies (will be invalid)
+      await this.deleteSessionCookies();
     }
   }
 
@@ -193,6 +196,23 @@ export default class Session {
       // Delete the cookiejar
       await fs.unlink(this._cookieJarPath);
     }
+  }
+
+  /**
+   * Removes from memory the session cookies which
+   * will have to be recreated to each session.
+   */
+  async deleteSessionCookies(): Promise<void> {
+    // Get all the stored cookies
+    const cookies = await this._cookieJar.getCookies("https://f95zone.to");
+
+    // Get the user cookie, the only not session-based
+    const userCookie = cookies.find((cookie) => cookie.key === "xf_user");
+
+    // Remove all the cookies from the store and re-add the user cookie
+    await this._cookieJar.removeAllCookies();
+    if (userCookie)
+      await this._cookieJar.setCookie(userCookie, "https://f95zone.to");
   }
 
   /**
