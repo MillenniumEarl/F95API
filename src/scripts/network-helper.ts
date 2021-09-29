@@ -39,7 +39,7 @@ type TProvider = "auto" | "totp" | "email";
 
 // Global variables
 const MAX_CONCURRENT_REQUESTS = 15;
-const USER_AGENT = `F95API/${LIB_VERSION} (f95zone/@MillenniumEarl, https://github.com/MillenniumEarl/F95API)`;
+const USER_AGENT = `Mozilla/5.0 (compatible; F95API/${LIB_VERSION}; MillenniumEarl@f95zone; https://github.com/MillenniumEarl/F95API)`;
 const AUTH_SUCCESSFUL_MESSAGE = "Authentication successful";
 const INVALID_2FA_CODE_MESSAGE =
   "The two-step verification value could not be confirmed. Please try again";
