@@ -27,6 +27,7 @@ import {
   UnexpectedResponseContentType
 } from "./classes/errors";
 import Credentials from "./classes/credentials";
+import { LIB_VERSION } from "../version";
 
 // Types
 type TLookupMapCode = {
@@ -38,9 +39,7 @@ type TProvider = "auto" | "totp" | "email";
 
 // Global variables
 const MAX_CONCURRENT_REQUESTS = 15;
-const USER_AGENT =
-  "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15) " +
-  "AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0 Safari/605.1.15";
+const USER_AGENT = `F95API/${LIB_VERSION} (f95zone/@MillenniumEarl, https://github.com/MillenniumEarl/F95API)`;
 const AUTH_SUCCESSFUL_MESSAGE = "Authentication successful";
 const INVALID_2FA_CODE_MESSAGE =
   "The two-step verification value could not be confirmed. Please try again";
@@ -57,7 +56,9 @@ const commonConfig: AxiosRequestConfig = {
    */
   headers: {
     "User-Agent": USER_AGENT,
-    Connection: "keep-alive"
+    Connection: "keep-alive",
+    "Upgrade-Insecure-Requests": 1,
+    DNT: 1
   },
   /**
    * Specify if send credentials along the request.
