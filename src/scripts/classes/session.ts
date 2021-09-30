@@ -11,6 +11,7 @@ import path from "path";
 import { sha256 } from "js-sha256";
 import tough, { CookieJar } from "tough-cookie";
 import { ParameterError } from "./errors";
+import { urls } from "../constants/url";
 
 export default class Session {
   //#region Fields
@@ -204,15 +205,14 @@ export default class Session {
    */
   async deleteSessionCookies(): Promise<void> {
     // Get all the stored cookies
-    const cookies = await this._cookieJar.getCookies("https://f95zone.to");
+    const cookies = await this._cookieJar.getCookies(urls.BASE);
 
     // Get the user cookie, the only not session-based
     const userCookie = cookies.find((cookie) => cookie.key === "xf_user");
 
     // Remove all the cookies from the store and re-add the user cookie
     await this._cookieJar.removeAllCookies();
-    if (userCookie)
-      await this._cookieJar.setCookie(userCookie, "https://f95zone.to");
+    if (userCookie) await this._cookieJar.setCookie(userCookie, urls.BASE);
   }
 
   /**
@@ -231,9 +231,8 @@ export default class Session {
 
     // Search for expired cookies
     const jarValid =
-      this._cookieJar
-        .getCookiesSync("https://f95zone.to")
-        .filter((el) => el.TTL() === 0).length === 0;
+      this._cookieJar.getCookiesSync(urls.BASE).filter((el) => el.TTL() === 0)
+        .length === 0;
 
     return dateValid && hashValid && jarValid;
   }
