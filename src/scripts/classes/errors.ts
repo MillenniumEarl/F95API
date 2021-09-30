@@ -26,10 +26,13 @@ export const ERROR_CODE = {
   CANNOT_FETCH_GET_RESPONSE: 300,
   CANNOT_FETCH_POST_RESPONSE: 301,
   CANNOT_FETCH_HEAD_RESPONSE: 302,
-  UNEXPECTED_HTML_RESPONSE: 303
+  CANNOT_FETCH_SESSION_TOKENS: 304,
+  UNEXPECTED_HTML_RESPONSE: 305
 };
 
 export const USER_NOT_LOGGED = "User not authenticated, unable to continue";
+export const PREVIOUS_SESSION_NOT_EXISTENT =
+  "There is no reference to a previous session, please log in to continue";
 export const INVALID_USER_ID = "Invalid user ID";
 export const INVALID_POST_ID = "Invalid post ID";
 export const INVALID_THREAD_ID = "Invalid thread ID";
@@ -78,6 +81,8 @@ export class UnexpectedResponseContentType extends BaseAPIError {
 export class InvalidF95Token extends Error {}
 
 export class UserNotLogged extends Error {}
+
+export class NoPreviousSession extends Error {}
 
 export class InvalidID extends Error {}
 
