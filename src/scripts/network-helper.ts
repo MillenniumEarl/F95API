@@ -238,7 +238,10 @@ export async function fetchGETResponse(
   try {
     // Fetch and return the response
     const response = await agent.get(url, {
-      jar: shared.session.cookieJar
+      jar: shared.session.cookieJar,
+      headers: {
+        Cookie: await getUserCookieString()
+      }
     });
     return success(response);
   } catch (e) {
@@ -275,7 +278,10 @@ export async function fetchPOSTResponse(
   // Send the POST request and await the response
   try {
     const response = await agent.post(url, urlParams, {
-      jar: shared.session.cookieJar
+      jar: shared.session.cookieJar,
+      headers: {
+        Cookie: await getUserCookieString()
+      }
     });
     return success(response);
   } catch (e) {
@@ -304,7 +310,10 @@ export async function fetchHEADResponse(
 
   try {
     const response = await agent.head(url, {
-      jar: shared.session.cookieJar
+      jar: shared.session.cookieJar,
+      headers: {
+        Cookie: await getUserCookieString()
+      }
     });
     return success(response);
   } catch (e) {
@@ -395,6 +404,20 @@ export async function getUrlRedirect(url: string): Promise<string> {
 //#endregion Utility methods
 
 //#region Private methods
+
+/**
+ * Gets the string of the `xf_user` cookie to be
+ * sent to the platform via the `Cookie` header.
+ *
+ * This feature is temporary and will be removed
+ * once `axios-cookiejar-support` is fixed.
+ */
+async function getUserCookieString(): Promise<string> {
+  const cookies = await shared.session.cookieJar.getCookies(urls.BASE);
+  const userCookie = cookies.find((cookie) => cookie.key === "xf_user");
+
+  return userCookie ? userCookie.cookieString() : "";
+}
 
 /**
  * Check with Axios if a URL exists.
