@@ -57,8 +57,7 @@ const commonConfig: AxiosRequestConfig = {
   headers: {
     "User-Agent": USER_AGENT,
     Connection: "keep-alive",
-    "Upgrade-Insecure-Requests": 1,
-    DNT: 1
+    "Upgrade-Insecure-Requests": 1
   },
   /**
    * Specify if send credentials along the request.
