@@ -25,7 +25,7 @@ export default class Credentials {
    */
   public readonly password: string;
   /**
-   * One time token used during login.
+   * Token used in POST requests to the platform.
    */
   get token(): string {
     return this._token;
