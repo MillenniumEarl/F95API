@@ -24,6 +24,8 @@ import {
   ERROR_CODE,
   GenericAxiosError,
   InvalidF95Token,
+  NoPreviousSession,
+  PREVIOUS_SESSION_NOT_EXISTENT,
   UnexpectedResponseContentType
 } from "./classes/errors";
 import Credentials from "./classes/credentials";
@@ -211,6 +213,33 @@ export async function send2faCode(
 }
 
 /**
+ * Updates session cookies and the token used
+ * for POST requests which depends on them.
+ */
+export async function updateSession(): Promise<void> {
+  /*
+    Without this update, an xfToken token not synchronized
+    with the xf_csrf cookie generates a 400 Bad Request
+    (security error) in response to any POST.
+  */
+
+  // Check if the user had already authenticated in a previous session
+  const cookies = await shared.session.cookieJar.getCookies(urls.BASE);
+  const xfUser = cookies.find((c) => c.key === "xf_user");
+  if (!xfUser) throw new NoPreviousSession(PREVIOUS_SESSION_NOT_EXISTENT);
+
+  // First get the xf_session and xf_csrf cookies from F95Zone
+  shared.logger.info("Updating session cookies...");
+  await getSessionCookies();
+
+  // Then update the local _xfToken.
+  // This value depends on the current xf_csrf cookie value
+  shared.logger.info("Updating _xfToken...");
+  const token = await getF95Token();
+  shared.session.updateToken(token);
+}
+
+/**
  * Obtain the token used to authenticate the user to the platform.
  */
 export async function getF95Token(): Promise<string> {
@@ -238,10 +267,7 @@ export async function fetchGETResponse(
   try {
     // Fetch and return the response
     const response = await agent.get(url, {
-      jar: shared.session.cookieJar,
-      headers: {
-        Cookie: await getUserCookieString()
-      }
+      jar: shared.session.cookieJar
     });
     return success(response);
   } catch (e) {
@@ -278,10 +304,7 @@ export async function fetchPOSTResponse(
   // Send the POST request and await the response
   try {
     const response = await agent.post(url, urlParams, {
-      jar: shared.session.cookieJar,
-      headers: {
-        Cookie: await getUserCookieString()
-      }
+      jar: shared.session.cookieJar
     });
     return success(response);
   } catch (e) {
@@ -310,10 +333,7 @@ export async function fetchHEADResponse(
 
   try {
     const response = await agent.head(url, {
-      jar: shared.session.cookieJar,
-      headers: {
-        Cookie: await getUserCookieString()
-      }
+      jar: shared.session.cookieJar
     });
     return success(response);
   } catch (e) {
@@ -404,6 +424,34 @@ export async function getUrlRedirect(url: string): Promise<string> {
 //#endregion Utility methods
 
 //#region Private methods
+/**
+ * Makes a GET request to the platform to obtain
+ * the `xf_session` and `xf_csrf` session cookies.
+ *
+ * For the `xf_session` token, the `xf_user` cookie
+ * must be present, generated after successful authentication.
+ */
+async function getSessionCookies(): Promise<void> {
+  try {
+    // Send a GET request to fetch the cookies
+    // and save them in the jar
+    await agent.get(urls.BASE, {
+      jar: shared.session.cookieJar,
+      headers: {
+        Cookie: await getUserCookieString() // Force cookie header
+      }
+    });
+  } catch (e) {
+    const err = `(GET) Error ${e.message} occurred while trying to fetch session cookies`;
+    shared.logger.error(err);
+    const genericError = new GenericAxiosError({
+      id: ERROR_CODE.CANNOT_FETCH_SESSION_TOKENS,
+      message: err,
+      error: e
+    });
+    throw genericError;
+  }
+}
 
 /**
  * Gets the string of the `xf_user` cookie to be
