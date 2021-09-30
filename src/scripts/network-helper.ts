@@ -70,7 +70,7 @@ const commonConfig: AxiosRequestConfig = {
    */
   jar: shared.session.cookieJar,
   validateStatus: function (status: number) {
-    return status < 400; // Resolve only if the status code is less than 400
+    return status < 500; // Resolve only if the status code is less than 500
   },
   timeout: 30000,
   /**
