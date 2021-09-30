@@ -56,7 +56,7 @@ export default class Session {
     return this._hash;
   }
   /**
-   * Token used to login to F95Zone.
+   * Token used for POST requests to the platform.
    */
   public get token(): string {
     return this._token;
@@ -220,6 +220,13 @@ export default class Session {
         .length === 0;
 
     return dateValid && hashValid && jarValid;
+  }
+
+  /**
+   * Update the `_xfToken` token.
+   */
+  updateToken(token: string): void {
+    this._token = token;
   }
 
   //#endregion Public Methods
