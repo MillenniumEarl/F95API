@@ -6,6 +6,7 @@
 import * as fs from "fs";
 import { expect } from "chai";
 import Session from "../../../src/scripts/classes/session";
+import { urls } from "../../../src/scripts/constants/url";
 
 // Constants
 const USERNAME = "User";
@@ -85,6 +86,7 @@ export function suite(): void {
 
     // Method call
     const session = createSession(path);
+    session.cookieJar.setCookieSync("xf_user=test-token", urls.BASE);
     const result = session.isValid(USERNAME, PASSWORD);
 
     // Expect result
