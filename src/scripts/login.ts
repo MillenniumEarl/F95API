@@ -6,7 +6,7 @@
 // Modules from file
 import { UserNotLogged, USER_NOT_LOGGED } from "./classes/errors";
 import fetchPlatformData from "./fetch-data/fetch-platform-data";
-import { authenticate, send2faCode } from "./network-helper";
+import { authenticate, send2faCode, updateSession } from "./network-helper";
 import shared from "./shared";
 
 // Classes from file
@@ -43,6 +43,9 @@ export async function login(
   // If the session is valid, login from it
   if (shared.session.isValid(username, password)) {
     loginResult = loginFromLocalSession(username);
+
+    // We need to update cookies and token, otherwise no POST request will work
+    await updateSession();
   }
   // Otherwise login from the F95Zone platform
   else {
