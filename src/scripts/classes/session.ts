@@ -204,22 +204,32 @@ export default class Session {
    * Check if the session is valid.
    */
   isValid(username: string, password: string): boolean {
+    // Local variables
+    const now = new Date(Date.now());
+
     // Get the number of days from the file creation
-    const diff = this.dateDiffInDays(new Date(Date.now()), this.created);
+    const sessionDateDiff = this.dateDiffInDays(now, this.created);
 
     // The session is valid if the number of days is minor than SESSION_TIME
-    const dateValid = diff < this.SESSION_TIME;
+    const sessionDateValid = sessionDateDiff < this.SESSION_TIME;
 
     // Check the hash
     const value = `${username}%%%${password}`;
     const hashValid = sha256(value) === this._hash;
 
-    // Search for expired cookies
-    const jarValid =
-      this._cookieJar.getCookiesSync(urls.BASE).filter((el) => el.TTL() === 0)
-        .length === 0;
+    // Verify if the user cookie is valid
+    const xfUser = this._cookieJar
+      .getCookiesSync(urls.BASE)
+      .find((c) => c.key === "xf_user");
+    const cookieCreation = xfUser
+      ? xfUser.creation
+      : new Date(-8640000000000000); // This is the oldest date (BCE)
+    const cookieDateDiff = this.dateDiffInDays(now, cookieCreation);
 
-    return dateValid && hashValid && jarValid;
+    // The cookie has a validity of one year, however it is limited to SESSION_TIME
+    const cookieDateValid = cookieDateDiff < this.SESSION_TIME;
+
+    return sessionDateValid && hashValid && cookieDateValid;
   }
 
   /**
