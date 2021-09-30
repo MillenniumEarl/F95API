@@ -152,7 +152,7 @@ async function fetchGameData(games: string[]): Promise<void> {
     const query: HandiworkSearchQuery = new HandiworkSearchQuery();
     query.category = "games";
     query.keywords = gamename;
-    query.order = "likes"; // To find the most popular games
+    query.order = "likes"; // Find the most popular games
 
     // Fetch the first result
     const searchResult = await searchHandiwork<Game>(query, 1);
