@@ -5,7 +5,6 @@
 
 // Public modules from npm
 import cheerio from "cheerio";
-import { isValidDate } from "iso-datestring-validator";
 
 // Modules from files
 import Post from "./post";
@@ -232,8 +231,8 @@ export default class Thread implements ILazy {
     const tagArray = $(THREAD.TAGS).toArray();
     const prefixArray = $(THREAD.PREFIXES).toArray();
     const JSONLD = getJSONLD($("body"));
-    const published = JSONLD["datePublished"] as string;
-    const modified = JSONLD["dateModified"] as string;
+    const published = this.getDateFromString(JSONLD["datePublished"] as string);
+    const modified = this.getDateFromString(JSONLD["dateModified"] as string);
 
     // Parse the thread's data
     this._title = this.cleanHeadline(JSONLD["headline"] as string);
@@ -242,12 +241,12 @@ export default class Thread implements ILazy {
     this._owner = new PlatformUser(parseInt(ownerID, 10));
     await this._owner.fetch();
     this._rating = this.parseRating(JSONLD);
-    this._category = JSONLD["articleSection"] as TCategory;
+    const section = JSONLD["articleSection"].toString().toLowerCase();
+    this._category = section as TCategory;
 
     // Validate the dates
-    if (modified && isValidDate(modified)) this._modified = new Date(modified);
-    if (published && isValidDate(published))
-      this._publication = new Date(published);
+    if (modified) this._modified = modified;
+    if (published) this._publication = published;
   }
 
   /**
@@ -268,6 +267,30 @@ export default class Thread implements ILazy {
     }
 
     return id;
+  }
+
+  /**
+   * Gets all dates in the `YYYY-MM-DD` format and
+   * sorts them according to the `older` parameter.
+   */
+  private getDateFromString(
+    s: string,
+    order: "crescent" | "decrescent" = "decrescent"
+  ): Date | undefined {
+    // Use regex to find the date (if any)
+    const regex = /\d{4}[/-](0?[1-9]|1[012])[/-](3[01]|[12][0-9]|0?[1-9])/gim;
+    const match = s.match(regex);
+
+    // Sort the array of date using "order"
+    const orderCrescent = (a: Date, b: Date) => a.getTime() - b.getTime();
+    const orderDecrescent = (a: Date, b: Date) => b.getTime() - a.getTime();
+    const array = match.map((s) => new Date(s));
+    order === "decrescent"
+      ? array.sort(orderDecrescent)
+      : array.sort(orderCrescent);
+
+    // Return the first
+    return array.shift();
   }
 
   //#endregion Private methods

@@ -3,9 +3,6 @@
 // This software is released under the MIT License.
 // https://opensource.org/licenses/MIT
 
-// Public modules from npm
-import { isValidDate } from "iso-datestring-validator";
-
 // Modules from files
 import HandiWork from "../classes/handiwork/handiwork";
 import Thread from "../classes/mapping/thread";
@@ -235,9 +232,9 @@ function fillWithPostData(hw: HandiWork, elements: IPostElement[]): Handiwork {
     .filter((s) => s !== "");
 
   // Fill the dates
-  const releaseDate = getPostElementByName(elements, md.RELEASE)?.text;
-  if (releaseDate && isValidDate(releaseDate))
-    hw.lastRelease = new Date(releaseDate);
+  const releaseDateText = getPostElementByName(elements, md.RELEASE)?.text;
+  const releaseDate = getDateFromString(releaseDateText);
+  if (releaseDate) hw.lastRelease = releaseDate;
 
   //Get the overview
   const overview = getPostElementByName(elements, md.OVERVIEW)?.text;
@@ -345,6 +342,30 @@ function parseChangelog(elements: IPostElement[]): TChangelog[] {
   }
 
   return changelog;
+}
+
+/**
+ * Gets all dates in the `YYYY-MM-DD` format and
+ * sorts them according to the `older` parameter.
+ */
+function getDateFromString(
+  s: string,
+  order: "crescent" | "decrescent" = "decrescent"
+): Date | undefined {
+  // Use regex to find the date (if any)
+  const regex = /\d{4}[/-](0?[1-9]|1[012])[/-](3[01]|[12][0-9]|0?[1-9])/gim;
+  const match = s.match(regex);
+
+  // Sort the array of date using "order"
+  const orderCrescent = (a: Date, b: Date) => a.getTime() - b.getTime();
+  const orderDecrescent = (a: Date, b: Date) => b.getTime() - a.getTime();
+  const array = match.map((s) => new Date(s));
+  order === "decrescent"
+    ? array.sort(orderDecrescent)
+    : array.sort(orderCrescent);
+
+  // Return the first
+  return array.shift();
 }
 
 //#endregion Private methods
