@@ -22,6 +22,7 @@ import {
 import shared, { TPrefixDict } from "../shared";
 import Handiwork from "../classes/handiwork/handiwork";
 import { isF95URL } from "../network-helper";
+import { metadata as md } from "../constants/ot-metadata-values";
 
 /**
  * Gets information of a particular handiwork from its thread.
@@ -41,7 +42,6 @@ export default async function getHandiworkInformation<T extends IBasic>(
     thread = new Thread(id);
     await thread.fetch();
   } else thread = arg;
-
   shared.logger.info(`Obtaining handiwork from ${thread.url}`);
 
   // Convert the info from thread to handiwork
@@ -128,16 +128,6 @@ function stringToBoolean(s: string): boolean {
 }
 
 /**
- * Gets the element with the given name or `undefined`.
- *
- * Case-insensitive.
- */
-function getPostElementByName(
-  elements: IPostElement[],
-  name: string
-): IPostElement | undefined;
-
-/**
  * Gets the first non-null element having one of
  * the specified ones as a name or `undefined`.
  *
@@ -145,16 +135,8 @@ function getPostElementByName(
  */
 function getPostElementByName(
   elements: IPostElement[],
-  names: string[]
-): IPostElement | undefined;
-
-function getPostElementByName(
-  elements: IPostElement[],
-  searchValue: string | string[]
+  searchValue: string[]
 ): IPostElement | undefined {
-  // Check for the type of searchValue
-  const names = Array.isArray(searchValue) ? searchValue : [searchValue];
-
   // Inside function used to find the element with the given name
   function findElement(es: IPostElement[], name: string) {
     return es.find((e) => e.name.toUpperCase() === name.toUpperCase());
@@ -163,7 +145,7 @@ function getPostElementByName(
   // Find the elements with the given names, filter
   // for "undefined" and return the first element or
   // "undefined" if no element is found
-  return names
+  return searchValue
     .map((name) => findElement(elements, name))
     .filter((post) => post !== undefined)
     .shift();
@@ -227,41 +209,41 @@ function fillWithPrefixes(hw: HandiWork, prefixes: string[]) {
  */
 function fillWithPostData(hw: HandiWork, elements: IPostElement[]): Handiwork {
   // First fill the "simple" elements
-  hw.os = getPostElementByName(elements, "os")
+  hw.os = getPostElementByName(elements, md.OS)
     ?.text?.split(",")
     .map((s) => s.trim());
-  hw.language = getPostElementByName(elements, "language")
+  hw.language = getPostElementByName(elements, md.LANGUAGE)
     ?.text?.split(",")
     .map((s) => s.trim());
-  hw.version = getPostElementByName(elements, "version")?.text;
-  hw.installation = getPostElementByName(elements, "installation")?.text;
-  hw.pages = getPostElementByName(elements, "pages")?.text;
-  hw.resolution = getPostElementByName(elements, "resolution")
+  hw.version = getPostElementByName(elements, md.VERSION)?.text;
+  hw.installation = getPostElementByName(elements, md.INSTALLATION)?.text;
+  hw.pages = getPostElementByName(elements, md.PAGES)?.text;
+  hw.resolution = getPostElementByName(elements, md.RESOLUTION)
     ?.text?.split(",")
     .map((s) => s.trim());
-  hw.length = getPostElementByName(elements, "lenght")?.text;
+  hw.length = getPostElementByName(elements, md.LENGHT)?.text;
 
   // Parse the censorship
-  const censored = getPostElementByName(elements, ["censored", "censorship"]);
+  const censored = getPostElementByName(elements, md.CENSORED);
   if (censored) hw.censored = stringToBoolean(censored.text);
 
   // Get the genres
-  const genre = getPostElementByName(elements, "genre")?.text;
+  const genre = getPostElementByName(elements, md.GENRE)?.text;
   hw.genre = genre
     ?.split(",")
     .map((s) => s.trim())
     .filter((s) => s !== "");
 
   // Fill the dates
-  const releaseDate = getPostElementByName(elements, "release date")?.text;
+  const releaseDate = getPostElementByName(elements, md.RELEASE)?.text;
   if (releaseDate && isValidDate(releaseDate))
     hw.lastRelease = new Date(releaseDate);
 
   //Get the overview
-  const overview = getPostElementByName(elements, "overview")?.text;
+  const overview = getPostElementByName(elements, md.OVERVIEW)?.text;
 
   // Get the cover
-  const cover = (getPostElementByName(elements, "cover") as ILink)?.href;
+  const cover = (getPostElementByName(elements, md.COVER) as ILink)?.href;
 
   // Get the author
   const authors = parseAuthor(elements);
@@ -284,11 +266,7 @@ function parseAuthor(elements: IPostElement[]): TAuthor[] {
   };
 
   // Fetch the authors from the post data
-  const authorElement = getPostElementByName(elements, [
-    "developer",
-    "developer/publisher",
-    "artist"
-  ]);
+  const authorElement = getPostElementByName(elements, md.AUTHOR);
 
   if (authorElement) {
     // Set the author name
@@ -327,10 +305,7 @@ function parseAuthor(elements: IPostElement[]): TAuthor[] {
 function parseChangelog(elements: IPostElement[]): TChangelog[] {
   // Local variables
   const changelog = [];
-  const changelogElement = getPostElementByName(elements, [
-    "changelog",
-    "change-log"
-  ]);
+  const changelogElement = getPostElementByName(elements, md.CHANGELOG);
 
   if (changelogElement) {
     // Regex used to match version tags
