@@ -75,7 +75,7 @@ function extractIDFromURL(url: string): number {
 
   // URL are in the format https://f95zone.to/threads/GAMENAME-VERSION-DEVELOPER.ID/
   // or https://f95zone.to/threads/ID/
-  const match = url.match(/([0-9]+)(?=\/|\b)(?!-|\.)/);
+  const match = url.match(/((?<=\/|\.)(\d+)(?=\/{0,1}))(?!\w)/i);
   if (!match) return -1;
 
   // Parse and return number
