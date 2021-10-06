@@ -20,6 +20,7 @@ import {
 import Shared from "../../shared";
 import {
   InvalidID,
+  InvalidResponseParsing,
   INVALID_THREAD_CONSTRUCTOR_ARGUMENT,
   INVALID_THREAD_ID,
   ParameterError,
@@ -39,15 +40,15 @@ export default class Thread implements ILazy {
 
   private POST_FOR_PAGE: TPostsForPage = 20;
   private _id: number;
-  private _url: string;
-  private _title: string;
-  private _tags: string[];
-  private _prefixes: string[];
-  private _rating: TRating;
-  private _owner: PlatformUser;
-  private _publication: Date;
-  private _modified: Date;
-  private _category: TCategory;
+  private _url: string = "";
+  private _title: string = "";
+  private _tags: string[] = [];
+  private _prefixes: string[] = [];
+  private _rating: TRating = undefined as any;
+  private _owner: PlatformUser = undefined as any;
+  private _publication: Date = new Date(-8640000000000000);
+  private _modified: Date = new Date(-8640000000000000);
+  private _category: TCategory = undefined as any;
 
   //#endregion Fields
 
@@ -176,8 +177,10 @@ export default class Thread implements ILazy {
     const posts = $(THREAD.POSTS_IN_PAGE)
       .toArray()
       .map((el) => {
-        const id = $(el).find(POST.ID).attr("id").replace("post-", "");
-        return new Post(parseInt(id, 10));
+        // Force Typescript to accept "string" type instead of "undefined"
+        const element = $(el).find(POST.ID).attr("id") as string;
+        const id = parseInt(element.replace("post-", ""), 10);
+        return new Post(id);
       });
 
     // Fetch the data of the posts
@@ -234,6 +237,10 @@ export default class Thread implements ILazy {
     const published = this.getDateFromString(JSONLD["datePublished"] as string);
     const modified = this.getDateFromString(JSONLD["dateModified"] as string);
 
+    // Throws error if no ID is found
+    if (!ownerID)
+      throw new InvalidResponseParsing("Cannot get ID from HTML response");
+
     // Parse the thread's data
     this._title = this.cleanHeadline(JSONLD["headline"] as string);
     this._tags = tagArray.map((el) => $(el).text().trim());
@@ -261,8 +268,9 @@ export default class Thread implements ILazy {
     // + https://f95zone.to/threads/NAME.ID/
     // + https://f95zone.to/threads/ID/
     const regex = new RegExp(/(threads\/|\.)([0-9]+)/);
-    if (surl.match(regex)) {
-      const sid = surl.match(regex)[0].replace(".", "").replace("threads/", "");
+    const match = surl.match(regex);
+    if (match) {
+      const sid = match[0].replace(".", "").replace("threads/", "");
       id = parseInt(sid, 10);
     }
 
@@ -280,6 +288,7 @@ export default class Thread implements ILazy {
     // Use regex to find the date (if any)
     const regex = /\d{4}[/-](0?[1-9]|1[012])[/-](3[01]|[12][0-9]|0?[1-9])/gim;
     const match = s.match(regex);
+    if (!match) return;
 
     // Sort the array of date using "order"
     const orderCrescent = (a: Date, b: Date) => a.getTime() - b.getTime();
@@ -317,9 +326,9 @@ export default class Thread implements ILazy {
    * Gets the post in the `index` position with respect to the posts in the thread.
    *
    * `index` must be greater or equal to 1.
-   * If the post is not found, `null` is returned.
+   * If the post is not found, `undefined` is returned.
    */
-  public async getPost(index: number): Promise<Post | null> {
+  public async getPost(index: number): Promise<Post | undefined> {
     // Validate parameters
     if (index < 1)
       throw new ParameterError("Index must be greater or equal than 1");

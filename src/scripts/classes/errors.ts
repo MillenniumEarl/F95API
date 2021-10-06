@@ -87,3 +87,5 @@ export class NoPreviousSession extends Error {}
 export class InvalidID extends Error {}
 
 export class ParameterError extends Error {}
+
+export class InvalidResponseParsing extends Error {}

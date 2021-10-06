@@ -52,7 +52,7 @@ export function extractDataFromFirstThreadPost(
   let root = createTree($, post);
 
   // Remove all empty elements from the tree.
-  root = pruneTreeNode(root);
+  root = pruneTreeNode(root) as TreeNode; // Force TS to accept TreeNode as type
 
   // Clean all the nodes with a link element
   root = cleanLinkNode(root);
@@ -190,7 +190,7 @@ function purgeNode(node: TreeNode) {
 /**
  * Eliminates connection nodes that do not bring additional information to the tree.
  *
- * Returns the cleaned node or `null` is the has been purged.
+ * Returns the cleaned node or `null` is the node has been purged.
  */
 function pruneTreeNode(node: TreeNode): TreeNode | null {
   // Remove all the children that haven't a value AND other childrens
@@ -274,7 +274,7 @@ function isUninformativeNode(node: TreeNode): boolean {
  */
 function pairUpTitleWithContent(root: TreeNode): IPostElement[] {
   // Local variables
-  let lastActiveTitle: IPostElement = null;
+  let lastActiveTitle: IPostElement = null as any;
   const pairs: IPostElement[] = [];
   const rootClone = Object.assign({}, root);
 
@@ -386,7 +386,7 @@ function parseTitleElement(e: IPostElement): IPostElement {
   // the spoiler goes to the content of the clne, thant it
   // will be removed
   if (clone.content.length === 1 && clone.content[0].type === "Spoiler") {
-    const spoiler = clone.content.pop();
+    const spoiler = clone.content.pop() as IPostElement; // Force TS to accept IPostElement as type
     clone.content.push(...spoiler.content);
   }
 
@@ -414,7 +414,7 @@ function parseTitleElement(e: IPostElement): IPostElement {
  * Check if the `element` has the criteria to be considered a "title",
  * ie an element that identifies its content.
  */
-function isTitle(element: IPostElement, next: IPostElement): boolean {
+function isTitle(element: IPostElement, next: IPostElement | null): boolean {
   // Regex value used to check for colon at the ends of the text
   const RX_ENDS_COLON = /[:]$/gmu;
 

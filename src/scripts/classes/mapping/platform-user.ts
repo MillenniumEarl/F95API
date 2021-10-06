@@ -27,20 +27,20 @@ export default class PlatformUser implements ILazy {
   //#region Fields
 
   private _id: number;
-  private _name: string;
-  private _title: string;
-  private _banners: string[];
-  private _messages: number;
-  private _reactionScore: number;
-  private _points: number;
-  private _ratingsReceived: number;
-  private _joined: Date;
-  private _lastSeen: Date;
-  private _followed: boolean;
-  private _ignored: boolean;
-  private _private: boolean;
-  private _avatar: string;
-  private _amountDonated: number;
+  private _name: string = "";
+  private _title: string = "";
+  private _banners: string[] = [];
+  private _messages: number = 0;
+  private _reactionScore: number = 0;
+  private _points: number = 0;
+  private _ratingsReceived: number = 0;
+  private _joined: Date = new Date(-8640000000000000);
+  private _lastSeen: Date = new Date(-8640000000000000);
+  private _followed: boolean = false;
+  private _ignored: boolean = false;
+  private _private: boolean = false;
+  private _avatar: string = "";
+  private _amountDonated: number = 0;
 
   //#endregion Fields
 
@@ -140,7 +140,7 @@ export default class PlatformUser implements ILazy {
   //#endregion Getters
 
   constructor(id?: number) {
-    this._id = id;
+    this._id = id ?? 0;
   }
 
   //#region Public methods
@@ -188,7 +188,7 @@ export default class PlatformUser implements ILazy {
         .toArray()
         .map((el) => $(el).text().trim())
         .filter((el) => el);
-      this._avatar = $(MEMBER.AVATAR).attr("src");
+      this._avatar = $(MEMBER.AVATAR).attr("src") ?? "";
       this._followed = $(MEMBER.FOLLOWED).text() === "Unfollow";
       this._ignored = $(MEMBER.IGNORED).text() === "Unignore";
       this._messages = parseInt($(MEMBER.MESSAGES).text(), 10);
