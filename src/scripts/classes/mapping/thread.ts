@@ -210,7 +210,7 @@ export default class Thread implements ILazy {
   private cleanHeadline(headline: string): string {
     // From the title we can extract: Name, author and version
     // [PREFIXES] TITLE [VERSION] [AUTHOR]
-    const matches = headline.match(/\[(.*?)\]/g);
+    const matches = headline.match(/(?<=\[)(.*?)(?=\])/g);
 
     // Get the title name
     let name = headline;
