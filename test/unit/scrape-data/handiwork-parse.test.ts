@@ -48,6 +48,7 @@ class MockThread implements MockOf<Thread, "fetch"> {
   modified: Date = mockDate;
   category: TCategory = "games";
   url: string = "www.gameurl.com";
+  headline: string = "Test thread title [version] [author]";
   //#endregion Fields
 
   getPost(index: number): Promise<Post> {
