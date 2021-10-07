@@ -49,6 +49,7 @@ export default class Thread implements ILazy {
   private _publication: Date = new Date(-8640000000000000);
   private _modified: Date = new Date(-8640000000000000);
   private _category: TCategory = undefined as any;
+  private _headline: string = "";
 
   //#endregion Fields
 
@@ -66,7 +67,9 @@ export default class Thread implements ILazy {
    * It may vary depending on any versions of the contained product.
    */
   public get url(): string {
-    return this._url ?? new URL(`${this.id}/`, urls.THREADS).toString();
+    return this._url !== ""
+      ? this._url
+      : new URL(`${this.id}/`, urls.THREADS).toString();
   }
   /**
    * Thread title.
@@ -115,6 +118,15 @@ export default class Thread implements ILazy {
    */
   public get category(): TCategory {
     return this._category;
+  }
+  /**
+   * The title without status tags and graphics engine.
+   * It can be useful on old template threads when the
+   * version is missing and needs to be retrieved from
+   * the title.
+   */
+  public get headline(): string {
+    return this._headline;
   }
 
   //#endregion Getters
@@ -242,7 +254,8 @@ export default class Thread implements ILazy {
       throw new InvalidResponseParsing("Cannot get ID from HTML response");
 
     // Parse the thread's data
-    this._title = this.cleanHeadline(JSONLD["headline"] as string);
+    this._headline = JSONLD["headline"] as string;
+    this._title = this.cleanHeadline(this._headline);
     this._tags = tagArray.map((el) => $(el).text().trim());
     this._prefixes = prefixArray.map((el) => $(el).text().trim());
     this._owner = new PlatformUser(parseInt(ownerID, 10));
