@@ -187,7 +187,7 @@ function getVersionFromHeadline(headline: string, hw: Handiwork): string {
 
   // Remove trailing "v" if any
   version =
-    version.match(/^[v|V](?=\d)/i).length === 0
+    version.match(/^[v|V](?=\d)/i)?.length === 0
       ? version
       : version.replace("v", "");
 
