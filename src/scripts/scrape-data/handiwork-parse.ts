@@ -29,16 +29,8 @@ import { metadata as md } from "../constants/ot-metadata-values";
 export default async function getHandiworkInformation<T extends IBasic>(
   arg: string | Thread
 ): Promise<T> {
-  // Local variables
-  let thread: Thread = null;
-
-  /* istanbul ignore if */
-  if (typeof arg === "string") {
-    // Fetch thread data
-    const id = extractIDFromURL(arg);
-    thread = new Thread(id);
-    await thread.fetch();
-  } else thread = arg;
+  // Get thread
+  const thread = await getThread(arg);
   shared.logger.info(`Obtaining handiwork from ${thread.url}`);
 
   // Convert the info from thread to handiwork
@@ -58,6 +50,11 @@ export default async function getHandiworkInformation<T extends IBasic>(
   // Fetch info from first post
   const post = await thread.getPost(1);
   hw = fillWithPostData(hw, post.body);
+
+  // On older game template the version is not
+  // specified in the OP, so we need to parse
+  // it from the title
+  hw.version = hw.version ?? getVersionFromHeadline(thread.headline, hw);
 
   return <T>(<unknown>hw);
 }
@@ -151,6 +148,53 @@ function getPostElementByName(
 //#endregion Utilities
 
 /**
+ * Obtains the a `Thread` object from the argument.
+ */
+async function getThread(t: Thread | string): Promise<Thread> {
+  // Local variable
+  let thread = null;
+
+  // Fetch thread data
+  /* istanbul ignore if */
+  if (typeof t === "string") {
+    const id = extractIDFromURL(t);
+    thread = new Thread(id);
+    await thread.fetch();
+  } else thread = t as Thread;
+
+  return thread;
+}
+
+/**
+ * Given the headline of a thread, return the
+ * version without the trailing `v` (if any).
+ */
+function getVersionFromHeadline(headline: string, hw: Handiwork): string {
+  // Find all the elements in the square brackets (version and author)
+  const matches = headline.match(/(?<=\[)(.*?)(?=\])/g);
+
+  // Parse the matches to ignore the author
+  let version = matches
+    .map((match) => {
+      const isAuthor = hw.authors
+        .map((a) => a.name.toUpperCase()) // Get all the author's names
+        .some((name) => match.toUpperCase().includes(name)); // Check if the current match is an author
+
+      return isAuthor ? null : match;
+    })
+    .filter((v) => v !== null)
+    .shift();
+
+  // Remove trailing "v" if any
+  version =
+    version.match(/^[v|V](?=\d)/i).length === 0
+      ? version
+      : version.replace("v", "");
+
+  return version;
+}
+
+/**
  * Parse the post prefixes.
  *
  * In particular, it elaborates the following prefixes for games:
@@ -236,7 +280,7 @@ function fillWithPostData(hw: HandiWork, elements: IPostElement[]): Handiwork {
   const releaseDate = getDateFromString(releaseDateText);
   if (releaseDate) hw.lastRelease = releaseDate;
 
-  //Get the overview
+  // Get the overview
   const overview = getPostElementByName(elements, md.OVERVIEW)?.text;
 
   // Get the cover
