@@ -140,7 +140,7 @@ export default class PlatformUser implements ILazy {
   //#endregion Getters
 
   constructor(id?: number) {
-    this._id = id ?? 0;
+    this._id = id ?? -1;
   }
 
   //#region Public methods
