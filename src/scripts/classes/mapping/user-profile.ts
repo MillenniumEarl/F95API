@@ -52,11 +52,11 @@ interface IFetchOptions<T> {
 export default class UserProfile extends PlatformUser {
   //#region Fields
 
-  private _watched: IWatchedThread[] = null;
-  private _bookmarks: IBookmarkedPost[] = null;
-  private _alerts: IAlert[] = null;
-  private _conversations: IConversation[] = null;
-  private _featuredGames: Game[] = null;
+  private _watched: IWatchedThread[] = null as any;
+  private _bookmarks: IBookmarkedPost[] = null as any;
+  private _alerts: IAlert[] = null as any;
+  private _conversations: IConversation[] = null as any;
+  private _featuredGames: Game[] = null as any;
 
   //#endregion Fields
 
@@ -415,7 +415,7 @@ export default class UserProfile extends PlatformUser {
     }
 
     const promises = $(BOOKMARKED_POST.BODIES)
-      .map(async (_idx, el) => await parseElement(el))
+      .map((_idx, el) => parseElement(el))
       .get();
 
     return await Promise.all(promises);
