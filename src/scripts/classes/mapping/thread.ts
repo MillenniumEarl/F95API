@@ -30,6 +30,7 @@ import {
 import { getJSONLD, TJsonLD } from "../../scrape-data/json-ld";
 import shared from "../../shared";
 import { DEFAULT_DATE } from "../../constants/generic";
+import { getDateFromString } from "../../utils";
 
 type TPostsForPage = 20 | 40 | 60 | 100;
 
@@ -247,8 +248,8 @@ export default class Thread implements ILazy {
     const tagArray = $(THREAD.TAGS).toArray();
     const prefixArray = $(THREAD.PREFIXES).toArray();
     const JSONLD = getJSONLD($("body"));
-    const published = this.getDateFromString(JSONLD["datePublished"] as string);
-    const modified = this.getDateFromString(JSONLD["dateModified"] as string);
+    const published = getDateFromString(JSONLD["datePublished"] as string);
+    const modified = getDateFromString(JSONLD["dateModified"] as string);
 
     // Throws error if no ID is found
     if (!ownerID)
@@ -289,31 +290,6 @@ export default class Thread implements ILazy {
     }
 
     return id;
-  }
-
-  /**
-   * Gets all dates in the `YYYY-MM-DD` format and
-   * sorts them according to the `older` parameter.
-   */
-  private getDateFromString(
-    s: string,
-    order: "crescent" | "decrescent" = "decrescent"
-  ): Date | undefined {
-    // Use regex to find the date (if any)
-    const regex = /\d{4}[/-](0?[1-9]|1[012])[/-](3[01]|[12][0-9]|0?[1-9])/gim;
-    const match = s.match(regex);
-    if (!match) return;
-
-    // Sort the array of date using "order"
-    const orderCrescent = (a: Date, b: Date) => a.getTime() - b.getTime();
-    const orderDecrescent = (a: Date, b: Date) => b.getTime() - a.getTime();
-    const array = match.map((s) => new Date(s));
-    order === "decrescent"
-      ? array.sort(orderDecrescent)
-      : array.sort(orderCrescent);
-
-    // Return the first
-    return array.shift();
   }
 
   //#endregion Private methods
