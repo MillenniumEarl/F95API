@@ -10,6 +10,7 @@ import {
   ILink,
   IPostElement,
   TAuthor,
+  TCategory,
   TChangelog,
   TEngine,
   TExternalPlatform,
@@ -35,7 +36,23 @@ export default async function getHandiworkInformation<T extends Basic>(
   const thread = await getThread(arg);
   shared.logger.info(`Obtaining handiwork from ${thread.url}`);
 
-  // Convert the info from thread to handiwork
+  // Obtains the prefixes from the thread
+  const extracted = extractPrefixes(thread.prefixes, thread.category);
+
+  // Fetch info from opening post
+  const post = await thread.getPost(1);
+  const postData = extractPostData(post.body);
+
+  // On older game template the version is not
+  // specified in the OP, so we need to parse
+  // it from the title
+  if (!postData.version || postData.version === "") {
+    const authors = postData.authors as TAuthor[];
+    const version = getVersionFromHeadline(thread.headline, authors);
+    postData.version = version;
+  }
+
+  // Build the handiwork from the parsed and/or extracted data
   const hw: HandiWork = new Handiwork({
     id: thread.id,
     url: thread.url,
@@ -45,23 +62,24 @@ export default async function getHandiworkInformation<T extends Basic>(
     lastThreadUpdate: thread.modified,
     tags: thread.tags,
     rating: thread.rating,
-    prefixes: []
+    prefixes: extracted.prefixes,
+    status: extracted.status,
+    engine: extracted.engine,
+    version: postData.version as string,
+    overview: postData.overview as string,
+    os: postData.os as string[],
+    language: postData.language as string[],
+    installation: postData.installation as string,
+    pages: postData.pages as string,
+    resolution: postData.os as string[],
+    length: postData.length as string,
+    genre: postData.genre as string[],
+    censored: postData.censored as boolean,
+    lastRelease: postData.lastRelease as Date,
+    authors: postData.authors as TAuthor[],
+    changelog: postData.changelog as TChangelog[],
+    cover: postData.cover as string
   });
-
-  // Obtains the prefixes from the thread
-  fillWithPrefixes(hw, thread.prefixes);
-
-  // Fetch info from first post
-  const post = await thread.getPost(1);
-  fillWithPostData(hw, post.body);
-
-  // On older game template the version is not
-  // specified in the OP, so we need to parse
-  // it from the title
-  if (hw.version !== "") {
-    const version = getVersionFromHeadline(thread.headline, hw);
-    Object.assign(hw.version, version);
-  }
 
   // Cast and return the object
   const castingObject = new type();
@@ -180,14 +198,14 @@ async function getThread(t: Thread | string): Promise<Thread> {
  * Given the headline of a thread, return the
  * version without the trailing `v` (if any).
  */
-function getVersionFromHeadline(headline: string, hw: Handiwork): string {
+function getVersionFromHeadline(headline: string, authors: TAuthor[]): string {
   // Find all the elements in the square brackets (version and author)
   const matches = headline.match(/(?<=\[)(.*?)(?=\])/g);
 
   // Parse the matches to ignore the author
   let version = matches
     .map((match) => {
-      const isAuthor = hw.authors
+      const isAuthor = authors
         .map((a) => a.name.toUpperCase()) // Get all the author's names
         .some((name) => match.toUpperCase().includes(name)); // Check if the current match is an author
 
@@ -211,12 +229,13 @@ function getVersionFromHeadline(headline: string, hw: Handiwork): string {
  * In particular, it elaborates the following prefixes for games:
  * `Engine`, `Status`, `Mod`.
  */
-function fillWithPrefixes(hw: Handiwork, prefixes: string[]) {
+function extractPrefixes(prefixes: string[], category: TCategory) {
   shared.logger.trace("Parsing prefixes...");
 
   // Local variables
   let engine: TEngine = null;
   let status: TStatus = null;
+  const parsedPrefixes: string[] = [];
 
   prefixes.map((item) => {
     // Remove the square brackets
@@ -229,27 +248,38 @@ function fillWithPrefixes(hw: Handiwork, prefixes: string[]) {
       status = prefix as TStatus;
 
     // Anyway add the prefix to list
-    hw.prefixes.push(prefix);
+    parsedPrefixes.push(prefix);
   });
 
   // If the status is not set, then the game is in development (Ongoing)
-  status = status && hw.category === "games" ? status : "Ongoing";
+  status = status && category === "games" ? status : "Ongoing";
 
-  // Assign the parsed info
-  Object.assign(hw.status, status);
-  Object.assign(hw.engine, engine);
+  return {
+    status: status,
+    engine: engine,
+    prefixes: parsedPrefixes
+  };
 }
 
 /**
- * Compiles a HandiWork object with the data extracted
- * from the main post of the HandiWork page.
+ * Extract HandiWork data from the main post of the HandiWork's page.
  *
  * The values that will be added are:
  * `Overview`, `OS`, `Language`, `Version`, `Installation`,
  * `Pages`, `Resolution`, `Lenght`, `Genre`, `Censored`,
  * `LastRelease`, `Authors`, `Changelog`, `Cover`.
  */
-function fillWithPostData(hw: HandiWork, elements: IPostElement[]) {
+function extractPostData(elements: IPostElement[]) {
+  /**
+   * Types of value extracted from the post.
+   */
+  type content = string | string[] | boolean | Date | TAuthor[] | TChangelog[];
+
+  /**
+   * Groups the values extracted from the post.
+   */
+  const extracted: Record<string, content> = {};
+
   // Helper methods
   const getTextFromElement = (metadata: string[]) =>
     getPostElementByName(elements, metadata)?.text;
@@ -261,38 +291,35 @@ function fillWithPostData(hw: HandiWork, elements: IPostElement[]) {
       .filter((s) => s !== "");
 
   // First fill the "simple" elements
-  Object.assign(hw.os, parseArrayOfStrings(md.OS));
-  Object.assign(hw.language, parseArrayOfStrings(md.LANGUAGE));
-  Object.assign(hw.version, getTextFromElement(md.VERSION));
-  Object.assign(hw.installation, getTextFromElement(md.INSTALLATION));
-  Object.assign(hw.pages, getTextFromElement(md.PAGES));
-  Object.assign(hw.resolution, parseArrayOfStrings(md.RESOLUTION));
-  Object.assign(hw.length, getTextFromElement(md.LENGTH));
+  extracted.cover = (getPostElementByName(elements, md.COVER) as ILink)?.href;
+
+  extracted.version = getTextFromElement(md.VERSION);
+  extracted.installation = getTextFromElement(md.INSTALLATION);
+  extracted.pages = getTextFromElement(md.PAGES);
+  extracted.length = getTextFromElement(md.LENGTH);
+  extracted.overview = getTextFromElement(md.OVERVIEW);
+
+  extracted.os = parseArrayOfStrings(md.OS);
+  extracted.language = parseArrayOfStrings(md.LANGUAGE);
+  extracted.resolution = parseArrayOfStrings(md.RESOLUTION);
+  extracted.genre = parseArrayOfStrings(md.GENRE);
 
   // Parse the censorship
   const censored = getTextFromElement(md.CENSORED);
-  if (censored) Object.assign(hw.censored, stringToBoolean(censored));
+  if (censored) extracted.censored = stringToBoolean(censored);
 
-  // Get the genres
-  Object.assign(hw.genre, parseArrayOfStrings(md.GENRE));
-
-  // Fill the dates
+  // Get the release date
   const releaseDateText = getTextFromElement(md.RELEASE);
   const releaseDate = getDateFromString(releaseDateText);
-  if (releaseDate) Object.assign(hw.lastRelease, releaseDate);
-
-  // Get the overview
-  Object.assign(hw.overview, getTextFromElement(md.OVERVIEW));
-
-  // Get the cover
-  const cover = (getPostElementByName(elements, md.COVER) as ILink)?.href;
-  Object.assign(hw.cover, cover);
+  if (releaseDate) extracted.lastRelease = releaseDate;
 
   // Get the author
-  Object.assign(hw.authors, parseAuthor(elements));
+  extracted.authors = parseAuthor(elements);
 
   // Get the changelog
-  Object.assign(hw.changelog, parseChangelog(elements));
+  extracted.changelog = parseChangelog(elements);
+
+  return extracted;
 }
 
 /**
