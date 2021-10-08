@@ -50,8 +50,8 @@ export async function getLatestUpdates<T extends Basic>(
  *
  * You **must** be logged in to the portal before calling this method.
  */
-export async function checkIfHandiworkHasUpdate(
-  hw: HandiWork
+export async function checkIfHandiworkHasUpdate<T extends Basic>(
+  hw: T
 ): Promise<boolean> {
   // Local variables
   let hasUpdate = false;
@@ -66,8 +66,17 @@ export async function checkIfHandiworkHasUpdate(
     // Fetch the online handiwork
     const onlineHw = await getHandiworkFromURL<HandiWork>(hw.url, HandiWork);
 
-    // Compare the versions
-    hasUpdate = onlineHw.version?.toUpperCase() !== hw.version?.toUpperCase();
+    // Compare different values
+    if ("version" in hw) {
+      hasUpdate =
+        onlineHw.version.toUpperCase() !== hw["version"].toUpperCase();
+    } else if ("lastRelease" in hw) {
+      hasUpdate =
+        onlineHw.lastRelease?.getTime() !== hw["lastRelease"].getTime();
+    } else {
+      hasUpdate =
+        onlineHw.lastThreadUpdate.getTime() !== hw.lastThreadUpdate.getTime();
+    }
   }
 
   return hasUpdate;
