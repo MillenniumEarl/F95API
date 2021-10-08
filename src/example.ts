@@ -83,8 +83,8 @@ async function authenticate(): Promise<boolean> {
   // Log in the platform
   console.log("Authenticating...");
   const result = await login(
-    process.env.F95_USERNAME,
-    process.env.F95_PASSWORD,
+    process.env.F95_USERNAME as string,
+    process.env.F95_PASSWORD as string,
     retrieveCaptchaToken,
     insert2faCode
   );
