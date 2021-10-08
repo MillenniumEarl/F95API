@@ -11,6 +11,7 @@
         "allowSyntheticDefaultImports": true,
         "incremental": true,
         "sourceMap": true,
+        "strict": true,
         "alwaysStrict": true,
         "declaration": true,
     },
