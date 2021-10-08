@@ -14,19 +14,19 @@ import {
 
 export default class Basic implements IBasic {
   //#region Properties
-  readonly authors: TAuthor[];
-  readonly category: TCategory;
-  readonly changelog: TChangelog[];
-  readonly cover: string;
-  readonly id: number;
-  readonly lastThreadUpdate: Date;
-  readonly name: string;
-  readonly overview: string;
-  readonly prefixes: string[];
-  readonly rating: TRating;
-  readonly tags: string[];
-  readonly threadPublishingDate: Date;
-  readonly url: string;
+  readonly authors: TAuthor[] = [];
+  readonly category: TCategory = "games";
+  readonly changelog: TChangelog[] = [];
+  readonly cover: string = "";
+  readonly id: number = -1;
+  readonly lastThreadUpdate: Date = new Date(-8640000000000000);
+  readonly name: string = "";
+  readonly overview: string = "";
+  readonly prefixes: string[] = [];
+  readonly rating: TRating = null as any;
+  readonly tags: string[] = [];
+  readonly threadPublishingDate: Date = new Date(-8640000000000000);
+  readonly url: string = "";
   //#endregion Properties
 
   public constructor(init?: Partial<Basic>) {

@@ -9,13 +9,13 @@ import Basic from "./basic";
 
 export default class Animation extends Basic implements IAnimation {
   //#region Properties
-  readonly censored: boolean;
-  readonly genre: string[];
-  readonly installation: string;
-  readonly language: string[];
-  readonly length: string;
-  readonly pages: string;
-  readonly resolution: string[];
+  readonly censored: boolean = false;
+  readonly genre: string[] = [];
+  readonly installation: string = "";
+  readonly language: string[] = [];
+  readonly length: string = "";
+  readonly pages: string = "";
+  readonly resolution: string[] = [];
   //#endregion Properties
 
   public constructor(init?: Partial<Animation>) {
