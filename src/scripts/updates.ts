@@ -10,6 +10,7 @@ import { getHandiworkFromURL } from "./handiwork-from-url";
 import { urlExists } from "./network-helper";
 import getHandiworkInformation from "./scrape-data/handiwork-parse";
 import shared from "./shared";
+import { DEFAULT_DATE } from "./constants/generic";
 
 // Classes from file
 import HandiWork from "./classes/handiwork/handiwork";
@@ -66,13 +67,15 @@ export async function checkIfHandiworkHasUpdate<T extends Basic>(
     // Fetch the online handiwork
     const onlineHw = await getHandiworkFromURL<HandiWork>(hw.url, HandiWork);
 
+    // Check if properties exists in the object
+    const version = hw["version"] as string;
+    const lastRelease = hw["lastRelease"] as Date;
+
     // Compare different values
-    if ("version" in hw) {
-      hasUpdate =
-        onlineHw.version.toUpperCase() !== hw["version"].toUpperCase();
-    } else if ("lastRelease" in hw) {
-      hasUpdate =
-        onlineHw.lastRelease?.getTime() !== hw["lastRelease"].getTime();
+    if (version !== "") {
+      hasUpdate = onlineHw.version.toUpperCase() !== version.toUpperCase();
+    } else if (lastRelease != DEFAULT_DATE) {
+      hasUpdate = onlineHw.lastRelease.getTime() !== lastRelease.getTime();
     } else {
       hasUpdate =
         onlineHw.lastThreadUpdate.getTime() !== hw.lastThreadUpdate.getTime();

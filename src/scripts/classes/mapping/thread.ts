@@ -29,6 +29,7 @@ import {
 } from "../errors";
 import { getJSONLD, TJsonLD } from "../../scrape-data/json-ld";
 import shared from "../../shared";
+import { DEFAULT_DATE } from "../../constants/generic";
 
 type TPostsForPage = 20 | 40 | 60 | 100;
 
@@ -46,8 +47,8 @@ export default class Thread implements ILazy {
   private _prefixes: string[] = [];
   private _rating: TRating = undefined as any;
   private _owner: PlatformUser = undefined as any;
-  private _publication: Date = new Date(-8640000000000000);
-  private _modified: Date = new Date(-8640000000000000);
+  private _publication: Date = DEFAULT_DATE;
+  private _modified: Date = DEFAULT_DATE;
   private _category: TCategory = undefined as any;
   private _headline: string = "";
 

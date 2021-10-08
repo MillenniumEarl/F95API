@@ -4,6 +4,7 @@
 // https://opensource.org/licenses/MIT
 
 // Modules from files
+import { DEFAULT_DATE } from "../../constants/generic";
 import { IHandiwork, TEngine, TStatus } from "../../interfaces";
 import Animation from "./animation";
 import Asset from "./asset";
@@ -21,7 +22,7 @@ export default class HandiWork extends Basic implements IHandiwork {
   readonly genre: string[] = [];
   readonly installation: string = "";
   readonly language: string[] = [];
-  readonly lastRelease: Date = new Date(-8640000000000000);
+  readonly lastRelease: Date = DEFAULT_DATE;
   readonly os: string[] = [];
   readonly status: TStatus = "Ongoing";
   readonly version: string = "";

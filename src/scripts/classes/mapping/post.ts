@@ -20,6 +20,7 @@ import {
 } from "../errors";
 import { ILazy, IPostElement } from "../../interfaces";
 import { extractDataFromFirstThreadPost } from "../../scrape-data/post-parse-tree";
+import { DEFAULT_DATE } from "../../constants/generic";
 
 /**
  * Represents a post published by a user on the F95Zone platform.
@@ -27,14 +28,14 @@ import { extractDataFromFirstThreadPost } from "../../scrape-data/post-parse-tre
 export default class Post implements ILazy {
   //#region Fields
 
-  private _id: number;
-  private _number: number;
-  private _published: Date;
-  private _lastEdit: Date;
-  private _owner: PlatformUser;
-  private _bookmarked: boolean;
-  private _message: string;
-  private _body: IPostElement[];
+  private _id: number = -1;
+  private _number: number = -1;
+  private _published: Date = DEFAULT_DATE;
+  private _lastEdit: Date = DEFAULT_DATE;
+  private _owner: PlatformUser = null as any;
+  private _bookmarked: boolean = false;
+  private _message: string = "";
+  private _body: IPostElement[] = [];
 
   //#endregion Fields
 

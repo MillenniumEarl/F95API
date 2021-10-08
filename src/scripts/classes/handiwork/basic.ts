@@ -4,6 +4,7 @@
 // https://opensource.org/licenses/MIT
 
 // Modules from files
+import { DEFAULT_DATE } from "../../constants/generic";
 import {
   TAuthor,
   TRating,
@@ -19,13 +20,13 @@ export default class Basic implements IBasic {
   readonly changelog: TChangelog[] = [];
   readonly cover: string = "";
   readonly id: number = -1;
-  readonly lastThreadUpdate: Date = new Date(-8640000000000000);
+  readonly lastThreadUpdate: Date = DEFAULT_DATE;
   readonly name: string = "";
   readonly overview: string = "";
   readonly prefixes: string[] = [];
   readonly rating: TRating = null as any;
   readonly tags: string[] = [];
-  readonly threadPublishingDate: Date = new Date(-8640000000000000);
+  readonly threadPublishingDate: Date = DEFAULT_DATE;
   readonly url: string = "";
   //#endregion Properties
 

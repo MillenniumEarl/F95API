@@ -11,6 +11,7 @@ import { sha256 } from "js-sha256";
 import tough, { CookieJar } from "tough-cookie";
 import { ParameterError } from "./errors";
 import { urls } from "../constants/url";
+import { DEFAULT_DATE } from "../constants/generic";
 
 export default class Session {
   //#region Fields
@@ -221,9 +222,7 @@ export default class Session {
     const xfUser = this._cookieJar
       .getCookiesSync(urls.BASE)
       .find((c) => c.key === "xf_user");
-    const cookieCreation = xfUser
-      ? xfUser.creation
-      : new Date(-8640000000000000); // This is the oldest date (BCE)
+    const cookieCreation = xfUser ? xfUser.creation : DEFAULT_DATE;
     const cookieDateDiff = this.dateDiffInDays(now, cookieCreation);
 
     // The cookie has a validity of one year, however it is limited to SESSION_TIME

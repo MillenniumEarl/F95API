@@ -4,6 +4,7 @@
 // https://opensource.org/licenses/MIT
 
 // Modules from files
+import { DEFAULT_DATE } from "../../constants/generic";
 import { TEngine, IGame, TStatus } from "../../interfaces";
 import Basic from "./basic";
 
@@ -14,7 +15,7 @@ export default class Game extends Basic implements IGame {
   readonly genre: string[] = [];
   readonly installation: string = "";
   readonly language: string[] = [];
-  readonly lastRelease: Date = new Date(-8640000000000000);
+  readonly lastRelease: Date = DEFAULT_DATE;
   readonly os: string[] = [];
   readonly status: TStatus = "Ongoing";
   readonly version: string = "";

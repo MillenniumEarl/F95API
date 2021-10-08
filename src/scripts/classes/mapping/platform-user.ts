@@ -19,6 +19,7 @@ import {
   USER_NOT_LOGGED
 } from "../errors";
 import { ILazy } from "../../interfaces";
+import { DEFAULT_DATE } from "../../constants/generic";
 
 /**
  * Represents a generic user registered on the platform.
@@ -34,8 +35,8 @@ export default class PlatformUser implements ILazy {
   private _reactionScore: number = 0;
   private _points: number = 0;
   private _ratingsReceived: number = 0;
-  private _joined: Date = new Date(-8640000000000000);
-  private _lastSeen: Date = new Date(-8640000000000000);
+  private _joined: Date = DEFAULT_DATE;
+  private _lastSeen: Date = DEFAULT_DATE;
   private _followed: boolean = false;
   private _ignored: boolean = false;
   private _private: boolean = false;
