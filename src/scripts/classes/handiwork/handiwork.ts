@@ -4,6 +4,7 @@
 // https://opensource.org/licenses/MIT
 
 // Modules from files
+import { Handiwork } from "../../..";
 import { DEFAULT_DATE } from "../../constants/generic";
 import { IHandiwork, TEngine, TStatus } from "../../interfaces";
 import Basic from "./basic";
@@ -33,7 +34,7 @@ export default class HandiWork extends Basic implements IHandiwork {
   sku: string = "";
   //#endregion Properties
 
-  public constructor(init?: Partial<Basic>) {
+  public constructor(init?: Partial<Handiwork>) {
     super();
     Object.assign(this, init);
   }
