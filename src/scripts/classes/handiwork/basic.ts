@@ -15,19 +15,19 @@ import {
 
 export default class Basic implements IBasic {
   //#region Properties
-  readonly authors: TAuthor[] = [];
-  readonly category: TCategory = "games";
-  readonly changelog: TChangelog[] = [];
-  readonly cover: string = "";
-  readonly id: number = -1;
-  readonly lastThreadUpdate: Date = DEFAULT_DATE;
-  readonly name: string = "";
-  readonly overview: string = "";
-  readonly prefixes: string[] = [];
-  readonly rating: TRating = null as any;
-  readonly tags: string[] = [];
-  readonly threadPublishingDate: Date = DEFAULT_DATE;
-  readonly url: string = "";
+  authors: TAuthor[] = [];
+  category: TCategory = "games";
+  changelog: TChangelog[] = [];
+  cover: string = "";
+  id: number = -1;
+  lastThreadUpdate: Date = DEFAULT_DATE;
+  name: string = "";
+  overview: string = "";
+  prefixes: string[] = [];
+  rating: TRating = null as any;
+  tags: string[] = [];
+  threadPublishingDate: Date = DEFAULT_DATE;
+  url: string = "";
   //#endregion Properties
 
   public constructor(init?: Partial<Basic>) {
@@ -37,7 +37,7 @@ export default class Basic implements IBasic {
   public cast<T extends IBasic>(src: T): this {
     Object.entries(src) // Obtains all the key from the source object
       .filter(([key]) => key in this) // Get all the keys that are in both the objects
-      .map(([key, val]) => Object.assign(this[key], val)); // Save the key in this object
+      .map(([key, val]) => (this[key] = val)); // Save the key in this object
 
     return this;
   }

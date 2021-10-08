@@ -9,12 +9,12 @@ import Basic from "./basic";
 
 export default class Asset extends Basic implements IAsset {
   //#region Properties
-  readonly assetLink: string = "";
-  readonly associatedAssets: string[] = [];
-  readonly compatibleSoftware: string = "";
-  readonly includedAssets: string[] = [];
-  readonly officialLinks: string[] = [];
-  readonly sku: string = "";
+  assetLink: string = "";
+  associatedAssets: string[] = [];
+  compatibleSoftware: string = "";
+  includedAssets: string[] = [];
+  officialLinks: string[] = [];
+  sku: string = "";
   //#endregion Properties
 
   public constructor(init?: Partial<Asset>) {

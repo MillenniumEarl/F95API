@@ -17,24 +17,24 @@ import Game from "./game";
  */
 export default class HandiWork extends Basic implements IHandiwork {
   //#region Properties
-  readonly censored: boolean = false;
-  readonly engine: TEngine = "Ren'Py";
-  readonly genre: string[] = [];
-  readonly installation: string = "";
-  readonly language: string[] = [];
-  readonly lastRelease: Date = DEFAULT_DATE;
-  readonly os: string[] = [];
-  readonly status: TStatus = "Ongoing";
-  readonly version: string = "";
-  readonly pages: string = "";
-  readonly resolution: string[] = [];
-  readonly length: string = "";
-  readonly assetLink: string = "";
-  readonly associatedAssets: string[] = [];
-  readonly compatibleSoftware: string = "";
-  readonly includedAssets: string[] = [];
-  readonly officialLinks: string[] = [];
-  readonly sku: string = "";
+  censored: boolean = false;
+  engine: TEngine = "Ren'Py";
+  genre: string[] = [];
+  installation: string = "";
+  language: string[] = [];
+  lastRelease: Date = DEFAULT_DATE;
+  os: string[] = [];
+  status: TStatus = "Ongoing";
+  version: string = "";
+  pages: string = "";
+  resolution: string[] = [];
+  length: string = "";
+  assetLink: string = "";
+  associatedAssets: string[] = [];
+  compatibleSoftware: string = "";
+  includedAssets: string[] = [];
+  officialLinks: string[] = [];
+  sku: string = "";
   //#endregion Properties
 
   public constructor(

@@ -9,9 +9,9 @@ import Basic from "./basic";
 
 export default class Comic extends Basic implements IComic {
   //#region Properties
-  readonly genre: string[] = [];
-  readonly pages: string = "";
-  readonly resolution: string[] = [];
+  genre: string[] = [];
+  pages: string = "";
+  resolution: string[] = [];
   //#endregion Properties
 
   public constructor(init?: Partial<Comic>) {

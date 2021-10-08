@@ -10,15 +10,15 @@ import Basic from "./basic";
 
 export default class Game extends Basic implements IGame {
   //#region Properties
-  readonly censored: boolean = false;
-  readonly engine: TEngine = "Ren'Py";
-  readonly genre: string[] = [];
-  readonly installation: string = "";
-  readonly language: string[] = [];
-  readonly lastRelease: Date = DEFAULT_DATE;
-  readonly os: string[] = [];
-  readonly status: TStatus = "Ongoing";
-  readonly version: string = "";
+  censored: boolean = false;
+  engine: TEngine = "Ren'Py";
+  genre: string[] = [];
+  installation: string = "";
+  language: string[] = [];
+  lastRelease: Date = DEFAULT_DATE;
+  os: string[] = [];
+  status: TStatus = "Ongoing";
+  version: string = "";
   //#endregion Properties
 
   public constructor(init?: Partial<Game>) {
