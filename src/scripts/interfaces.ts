@@ -155,7 +155,7 @@ export interface IBasic {
    */
   id: number;
   /**
-   * Last update of the opera thread.
+   * Last update of the opening thread.
    */
   lastThreadUpdate: Date;
   /**
