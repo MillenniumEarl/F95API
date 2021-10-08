@@ -5,7 +5,7 @@
 
 // Modules from file
 import { UserNotLogged, USER_NOT_LOGGED } from "./classes/errors";
-import { IBasic } from "./interfaces";
+import Basic from "./classes/handiwork/basic";
 import { urlExists, isF95URL } from "./network-helper";
 import getHandiworkInformation from "./scrape-data/handiwork-parse";
 import shared from "./shared";
@@ -15,8 +15,9 @@ import shared from "./shared";
  *
  * You **must** be logged in to the portal before calling this method.
  */
-export async function getHandiworkFromURL<T extends IBasic>(
-  url: string
+export async function getHandiworkFromURL<T extends Basic>(
+  url: string,
+  type: new () => T
 ): Promise<T> {
   // Check if the user is logged
   if (!shared.isLogged) throw new UserNotLogged(USER_NOT_LOGGED);
@@ -28,5 +29,5 @@ export async function getHandiworkFromURL<T extends IBasic>(
 
   // Get game data
   /* istanbul ignore next : Tested in another script */
-  return getHandiworkInformation<T>(url);
+  return getHandiworkInformation<T>(url, type);
 }

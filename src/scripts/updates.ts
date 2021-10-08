@@ -7,7 +7,6 @@
 import { UserNotLogged, USER_NOT_LOGGED } from "./classes/errors";
 import fetchLatestHandiworkURLs from "./fetch-data/fetch-latest";
 import { getHandiworkFromURL } from "./handiwork-from-url";
-import { IBasic } from "./interfaces";
 import { urlExists } from "./network-helper";
 import getHandiworkInformation from "./scrape-data/handiwork-parse";
 import shared from "./shared";
@@ -15,6 +14,7 @@ import shared from "./shared";
 // Classes from file
 import HandiWork from "./classes/handiwork/handiwork";
 import LatestSearchQuery from "./classes/query/latest-search-query";
+import Basic from "./classes/handiwork/basic";
 
 /**
  * Gets the latest updated games that match the specified parameters.
@@ -24,8 +24,9 @@ import LatestSearchQuery from "./classes/query/latest-search-query";
  * @param {LatestSearchQuery} query Parameters used for the search.
  * @param {Number} limit Maximum number of results. Default: 30
  */
-export async function getLatestUpdates<T extends IBasic>(
+export async function getLatestUpdates<T extends Basic>(
   query: LatestSearchQuery,
+  type: new () => T,
   limit: number = 30
 ): Promise<T[]> {
   // Check limit value
@@ -38,7 +39,9 @@ export async function getLatestUpdates<T extends IBasic>(
   const urls = await fetchLatestHandiworkURLs(query, limit);
 
   // Get the data from urls
-  const promiseList = urls.map((u: string) => getHandiworkInformation<T>(u));
+  const promiseList = urls.map((u: string) =>
+    getHandiworkInformation<T>(u, type)
+  );
   return Promise.all(promiseList);
 }
 
@@ -61,7 +64,7 @@ export async function checkIfHandiworkHasUpdate(
   const isTheSameURL = await urlExists(hw.url, true);
   if (!isTheSameURL) {
     // Fetch the online handiwork
-    const onlineHw = await getHandiworkFromURL<HandiWork>(hw.url);
+    const onlineHw = await getHandiworkFromURL<HandiWork>(hw.url, HandiWork);
 
     // Compare the versions
     hasUpdate = onlineHw.version?.toUpperCase() !== hw.version?.toUpperCase();

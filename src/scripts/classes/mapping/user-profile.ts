@@ -450,7 +450,7 @@ export default class UserProfile extends PlatformUser {
 
       // fetch the games
       const promises = gameURLs.map((url) => {
-        return getHandiworkFromURL<Game>(url);
+        return getHandiworkFromURL<Game>(url, Game);
       });
 
       return Promise.all(promises);

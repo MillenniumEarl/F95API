@@ -133,7 +133,7 @@ async function fetchLatestGameInfo(): Promise<void> {
   latestQuery.category = "games";
   latestQuery.includedTags = ["3d game"];
 
-  const latestUpdates = await getLatestUpdates<Game>(latestQuery, 1);
+  const latestUpdates = await getLatestUpdates<Game>(latestQuery, Game, 1);
   console.log(
     `"${
       latestUpdates.shift().name
@@ -155,7 +155,7 @@ async function fetchGameData(games: string[]): Promise<void> {
     query.order = "likes"; // Find the most popular games
 
     // Fetch the first result
-    const searchResult = await searchHandiwork<Game>(query, 1);
+    const searchResult = await searchHandiwork<Game>(query, Game, 1);
 
     if (searchResult.length !== 0) {
       // Extract first game
