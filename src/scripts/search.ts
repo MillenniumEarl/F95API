@@ -21,6 +21,7 @@ import Basic from "./classes/handiwork/basic";
  *
  * You *must* be logged.
  * @param {IQuery} query Parameters used for the search.
+ * @param {new () => T} type Handiwork class to use for casting the result.
  * @param {Number} limit Maximum number of items to get. Default: 30
  */
 export default async function search<T extends Basic>(

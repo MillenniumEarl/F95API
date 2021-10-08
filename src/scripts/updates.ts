@@ -23,6 +23,7 @@ import Basic from "./classes/handiwork/basic";
  * You **must** be logged in to the portal before calling this method.
  *
  * @param {LatestSearchQuery} query Parameters used for the search.
+ * @param {new () => T} type Handiwork class to use for casting the result.
  * @param {Number} limit Maximum number of results. Default: 30
  */
 export async function getLatestUpdates<T extends Basic>(

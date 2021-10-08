@@ -27,6 +27,7 @@ import { getDateFromString } from "../utils";
  * Gets information of a particular handiwork from its thread.
  *
  * If you don't want to specify the object type, use `HandiWork`.
+ * @param {new () => T} type Handiwork class to use for casting the result.
  */
 export default async function getHandiworkInformation<T extends Basic>(
   arg: string | Thread,

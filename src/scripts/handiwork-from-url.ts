@@ -14,6 +14,7 @@ import shared from "./shared";
  * Given the url, it gets all the information about the handiwork requested.
  *
  * You **must** be logged in to the portal before calling this method.
+ * @param {new () => T} type Handiwork class to use for casting the result.
  */
 export async function getHandiworkFromURL<T extends Basic>(
   url: string,
