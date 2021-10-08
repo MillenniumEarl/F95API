@@ -23,9 +23,10 @@ export type TNodeType =
  */
 export function nodeType($: CheerioAPI, node: Node): TNodeType {
   // !!! Cheerio Element type is a Node type with children !!!
+  const element = node as Element;
 
   // Function map
-  const functionMap = {
+  const functionMap: Record<string, (node: Element) => boolean> = {
     Text: (node: Element) =>
       isTextNode(node) && !isFormattingNode(node) && !isImageTextNode(node),
     Formatted: (node: Element) => isFormattingNode(node),
@@ -36,7 +37,7 @@ export function nodeType($: CheerioAPI, node: Node): TNodeType {
   };
 
   // Parse and return the type of the node
-  const result = Object.keys(functionMap).find((e) => functionMap[e](node));
+  const result = Object.keys(functionMap).find((e) => functionMap[e](element));
   return result ? (result as TNodeType) : "Unknown";
 }
 
