@@ -57,7 +57,7 @@ export default async function getHandiworkInformation<T extends Basic>(
   // On older game template the version is not
   // specified in the OP, so we need to parse
   // it from the title
-  if (!hw.version) {
+  if (hw.version !== "") {
     const version = getVersionFromHeadline(thread.headline, hw);
     Object.assign(hw.version, version);
   }
