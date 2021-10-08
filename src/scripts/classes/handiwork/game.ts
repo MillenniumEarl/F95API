@@ -15,7 +15,6 @@ export default class Game extends Basic implements IGame {
   readonly installation: string;
   readonly language: string[];
   readonly lastRelease: Date;
-  readonly mod: boolean;
   readonly os: string[];
   readonly status: TStatus;
   readonly version: string;

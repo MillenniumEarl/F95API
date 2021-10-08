@@ -22,7 +22,6 @@ export default class HandiWork extends Basic implements IHandiwork {
   installation: string;
   language: string[];
   lastRelease: Date;
-  mod: boolean;
   os: string[];
   status: TStatus;
   version: string;

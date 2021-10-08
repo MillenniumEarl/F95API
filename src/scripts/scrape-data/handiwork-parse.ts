@@ -204,17 +204,8 @@ function fillWithPrefixes(hw: HandiWork, prefixes: string[]) {
   shared.logger.trace("Parsing prefixes...");
 
   // Local variables
-  let mod = false;
   let engine: TEngine = null;
   let status: TStatus = null;
-
-  /**
-   * Emulated dictionary of mod prefixes.
-   */
-  const fakeModDict: TPrefixDict = {
-    0: "MOD",
-    1: "CHEAT MOD"
-  };
 
   prefixes.map((item) => {
     // Remove the square brackets
@@ -225,7 +216,6 @@ function fillWithPrefixes(hw: HandiWork, prefixes: string[]) {
       engine = prefix as TEngine;
     else if (stringInDict(prefix, shared.prefixes["statuses"]))
       status = prefix as TStatus;
-    else if (stringInDict(prefix, fakeModDict)) mod = true;
 
     // Anyway add the prefix to list
     hw.prefixes.push(prefix);
@@ -236,7 +226,6 @@ function fillWithPrefixes(hw: HandiWork, prefixes: string[]) {
 
   hw.engine = engine;
   hw.status = status;
-  hw.mod = mod;
 }
 
 /**

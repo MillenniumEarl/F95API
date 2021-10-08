@@ -218,10 +218,6 @@ export interface IGame extends IBasic {
    */
   lastRelease: Date;
   /**
-   * Indicates that this item represents a mod.
-   */
-  mod: boolean;
-  /**
    * List of OS for which the work is compatible.
    */
   os: string[];
