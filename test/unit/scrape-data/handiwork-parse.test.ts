@@ -182,14 +182,14 @@ export function suite(): void {
     const thread = new MockThread();
 
     // Act
-    const hw = await getHandiworkInformation<Game>(thread as Thread);
+    const hw = await getHandiworkInformation<Game>(thread as Thread, Game);
 
     // Assert
     expect(hw.censored).to.be.false;
     expect(hw.status).to.be.equal("Completed");
     expect(hw.engine).to.be.equal("Unity");
     expect(hw.cover).to.be.equal("https://website.com/cover.jpg");
-    expect(hw.mod).to.be.false;
+    expect(hw.category === "mods").to.be.false;
     expect(hw.os.length).to.be.equal(3);
     expect(hw.version).to.be.equal("2.0.0");
     expect(hw.authors.length).to.be.equal(1);
