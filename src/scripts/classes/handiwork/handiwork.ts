@@ -16,24 +16,24 @@ import Game from "./game";
  */
 export default class HandiWork extends Basic implements IHandiwork {
   //#region Properties
-  censored: boolean;
-  engine: TEngine;
-  genre: string[];
-  installation: string;
-  language: string[];
-  lastRelease: Date;
-  os: string[];
-  status: TStatus;
-  version: string;
-  pages: string;
-  resolution: string[];
-  length: string;
-  assetLink: string;
-  associatedAssets: string[];
-  compatibleSoftware: string;
-  includedAssets: string[];
-  officialLinks: string[];
-  sku: string;
+  readonly censored: boolean;
+  readonly engine: TEngine;
+  readonly genre: string[];
+  readonly installation: string;
+  readonly language: string[];
+  readonly lastRelease: Date;
+  readonly os: string[];
+  readonly status: TStatus;
+  readonly version: string;
+  readonly pages: string;
+  readonly resolution: string[];
+  readonly length: string;
+  readonly assetLink: string;
+  readonly associatedAssets: string[];
+  readonly compatibleSoftware: string;
+  readonly includedAssets: string[];
+  readonly officialLinks: string[];
+  readonly sku: string;
   //#endregion Properties
 
   public constructor(
