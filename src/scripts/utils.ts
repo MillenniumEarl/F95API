@@ -14,6 +14,7 @@ export function getDateFromString(
   // Use regex to find the date (if any)
   const regex = /\d{4}[/-](0?[1-9]|1[012])[/-](3[01]|[12][0-9]|0?[1-9])/gim;
   const match = s.match(regex);
+  if (!match) return;
 
   // Sort the array of date using "order"
   const orderCrescent = (a: Date, b: Date) => a.getTime() - b.getTime();
