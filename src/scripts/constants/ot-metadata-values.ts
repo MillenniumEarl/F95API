@@ -5,7 +5,7 @@
 
 export const metadata = {
   CENSORED: ["censored", "censorship"],
-  LENGHT: ["lenght"],
+  LENGTH: ["length"],
   OS: ["os"],
   LANGUAGE: ["language"],
   VERSION: ["version"],
