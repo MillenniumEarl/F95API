@@ -10,6 +10,7 @@ import axios, {
   AxiosRequestConfig,
   AxiosResponse
 } from "axios";
+import axiosRetry from "axios-retry";
 import { wrapper } from "axios-cookiejar-support";
 import cheerio from "cheerio";
 import { Semaphore } from "await-semaphore";
@@ -80,10 +81,20 @@ const commonConfig: AxiosRequestConfig = {
   adapter: require("axios/lib/adapters/http")
 };
 
-// Agent used to send requests
+/**
+ * Axios agent used to send requests.
+ */
 const agent: AxiosInstance = wrapper(axios.create(commonConfig));
 
-// Semaphore used to avoid flooding the platform
+// Enable Axios to retry a request in case of errors
+axiosRetry(agent, {
+  retryDelay: axiosRetry.exponentialDelay, // Use exponential back-off retry delay
+  shouldResetTimeout: true // Timer resets after every retry
+});
+
+/**
+ * Semaphore used to avoid flooding the platform.
+ */
 const semaphore: Semaphore = new Semaphore(MAX_CONCURRENT_REQUESTS);
 
 /**

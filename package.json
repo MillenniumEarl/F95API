@@ -57,6 +57,7 @@
     "@types/tough-cookie": "^4.0.1",
     "@typescript-eslint/eslint-plugin": "^4.33.0",
     "@typescript-eslint/parser": "^4.33.0",
+    "axios-retry": "^3.2.0",
     "chai": "^4.3.4",
     "chai-as-promised": "^7.1.1",
     "chai-spies": "^1.0.0",
