@@ -21,7 +21,7 @@ export default class Game extends Basic implements IGame {
   version: string = "";
   //#endregion Properties
 
-  public constructor(init?: Partial<Game>) {
+  public constructor(init?: Partial<Basic>) {
     super();
     Object.assign(this, init);
   }

@@ -18,7 +18,7 @@ export default class Animation extends Basic implements IAnimation {
   resolution: string[] = [];
   //#endregion Properties
 
-  public constructor(init?: Partial<Animation>) {
+  public constructor(init?: Partial<Basic>) {
     super();
     Object.assign(this, init);
   }

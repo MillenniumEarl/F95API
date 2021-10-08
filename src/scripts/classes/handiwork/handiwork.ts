@@ -6,11 +6,7 @@
 // Modules from files
 import { DEFAULT_DATE } from "../../constants/generic";
 import { IHandiwork, TEngine, TStatus } from "../../interfaces";
-import Animation from "./animation";
-import Asset from "./asset";
 import Basic from "./basic";
-import Comic from "./comic";
-import Game from "./game";
 
 /**
  * It represents a generic work, be it a game, a comic, an animation or an asset.
@@ -37,9 +33,7 @@ export default class HandiWork extends Basic implements IHandiwork {
   sku: string = "";
   //#endregion Properties
 
-  public constructor(
-    init?: Partial<HandiWork | Comic | Animation | Asset | Game>
-  ) {
+  public constructor(init?: Partial<Basic>) {
     super();
     Object.assign(this, init);
   }
