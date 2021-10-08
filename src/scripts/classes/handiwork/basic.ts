@@ -34,7 +34,7 @@ export default class Basic implements IBasic {
     Object.assign(this, init);
   }
 
-  public cast<T extends IBasic>(src: T): this {
+  public cast<T extends Basic>(src: Partial<T>): Partial<this> {
     Object.entries(src) // Obtains all the key from the source object
       .filter(([key]) => key in this) // Get all the keys that are in both the objects
       .map(([key, val]) => (this[key] = val)); // Save the key in this object
