@@ -404,7 +404,7 @@ export function isF95URL(url: string): boolean {
 export function isStringAValidURL(url: string): boolean {
   // Many thanks to Daveo at StackOverflow (https://preview.tinyurl.com/y2f2e2pc)
   const regex =
-    /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_+.~#?&//=]*)/;
+    /((https|http){0,1}:\/\/){0,1}(www\.){0,1}[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_+.~#?&//=]*)/;
   return regex.test(url);
 }
 
