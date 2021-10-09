@@ -18,7 +18,7 @@ import {
 } from "../interfaces";
 import shared, { TPrefixDict } from "../shared";
 import Handiwork from "../classes/handiwork/handiwork";
-import { isF95URL } from "../network-helper";
+import { isF95URL, isStringAValidURL } from "../network-helper";
 import { metadata as md } from "../constants/ot-metadata-values";
 import Basic from "../classes/handiwork/basic";
 import { getDateFromString } from "../utils";
@@ -42,6 +42,7 @@ export default async function getHandiworkInformation<T extends Basic>(
 
   // Fetch info from opening post
   const post = await thread.getPost(1);
+  if (!post) throw new Error("Cannot find opening thread");
   const postData = extractPostData(post.body);
 
   // On older game template the version is not
@@ -99,6 +100,9 @@ export default async function getHandiworkInformation<T extends Basic>(
 /* istanbul ignore next : it will not be called in tests*/
 function extractIDFromURL(url: string): number {
   shared.logger.trace("Extracting ID from URL...");
+
+  // Validate URL
+  if (isStringAValidURL(url)) throw new URIError(`'${url}' is not a valid URL`);
 
   // URL are in the format https://f95zone.to/threads/GAMENAME-VERSION-DEVELOPER.ID/
   // or https://f95zone.to/threads/ID/
@@ -198,10 +202,13 @@ async function getThread(t: Thread | string): Promise<Thread> {
 /**
  * Given the headline of a thread, return the
  * version without the trailing `v` (if any).
+ *
+ * If no version is found, return an empty string.
  */
 function getVersionFromHeadline(headline: string, authors: TAuthor[]): string {
   // Find all the elements in the square brackets (version and author)
   const matches = headline.match(/(?<=\[)(.*?)(?=\])/g);
+  if (!matches) return "";
 
   // Parse the matches to ignore the author
   let version = matches
@@ -216,10 +223,9 @@ function getVersionFromHeadline(headline: string, authors: TAuthor[]): string {
     .shift();
 
   // Remove trailing "v" if any
-  version =
-    version.match(/^[v|V](?=\d)/i)?.length === 0
-      ? version
-      : version.replace("v", "");
+  version = version ?? ""; // Avoid `null` version
+  const hasTrailingV = version?.match(/^[v|V](?=\d)/i)?.length !== 0;
+  version = hasTrailingV ? version : version.replace("v", "");
 
   return version;
 }
@@ -283,13 +289,13 @@ function extractPostData(elements: IPostElement[]) {
 
   // Helper methods
   const getTextFromElement = (metadata: string[]) =>
-    getPostElementByName(elements, metadata)?.text;
+    getPostElementByName(elements, metadata)?.text ?? "";
 
   const parseArrayOfStrings = (metadata: string[], separator = ",") =>
     getTextFromElement(metadata)
       ?.split(separator)
       .map((s) => s.trim())
-      .filter((s) => s !== "");
+      .filter((s) => s !== "") ?? [];
 
   // First fill the "simple" elements
   extracted.cover = (getPostElementByName(elements, md.COVER) as ILink)?.href;
@@ -342,12 +348,12 @@ function parseAuthor(elements: IPostElement[]): TAuthor[] {
 
     // Add the found platforms
     authorElement.content
-      .filter((e: ILink) => e.href)
-      .forEach((e: ILink) => {
+      .filter((e) => (e as ILink).href)
+      .forEach((e) => {
         // Create and push the new platform
         const platform: TExternalPlatform = {
           name: e.text,
-          link: e.href
+          link: (e as ILink).href
         };
 
         author.platforms.push(platform);
@@ -396,7 +402,10 @@ function parseChangelog(elements: IPostElement[]): TChangelog[] {
 
       // Fetch the group of data of this version tag
       const group = changelogElement.content.slice(i, diff);
-      versionChangelog.version = group.shift().text.replace("v", "").trim();
+      const hasElements = group.length !== 0;
+      versionChangelog.version = hasElements
+        ? group[0].text.replace("v", "").trim()
+        : "";
 
       // Parse the data
       group.forEach((e) => {
