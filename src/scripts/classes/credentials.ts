@@ -12,7 +12,7 @@ import { getF95Token } from "../network-helper";
 export default class Credentials {
   //#region Private fields
 
-  private _token: string = null;
+  private _token: string = "";
 
   //#endregion Private fields
 
