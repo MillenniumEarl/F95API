@@ -103,7 +103,7 @@ const semaphore: Semaphore = new Semaphore(MAX_CONCURRENT_REQUESTS);
 export async function fetchHTML(
   url: string
 ): Promise<Result<GenericAxiosError | UnexpectedResponseContentType, string>> {
-  // Secure the URL
+  // Secure (and validate) the URL
   const secureURL = enforceHttpsUrl(url);
 
   // Fetch the response of the platform
@@ -272,6 +272,9 @@ export async function getF95Token(): Promise<string> {
 export async function fetchGETResponse(
   url: string
 ): Promise<Result<GenericAxiosError, AxiosResponse<any>>> {
+  // Validate URL
+  if (isStringAValidURL(url)) throw new URIError(`'${url}' is not a valid URL`);
+
   // Get a token from the semaphore
   const release = await semaphore.acquire();
 
@@ -282,12 +285,13 @@ export async function fetchGETResponse(
     });
     return success(response);
   } catch (e) {
-    const err = `(GET) Error ${e.message} occurred while trying to fetch ${url}`;
-    shared.logger.error(err);
+    const err = e as Error;
+    const message = `(GET) Error ${err.message} occurred while trying to fetch ${url}`;
+    shared.logger.error(message);
     const genericError = new GenericAxiosError({
       id: ERROR_CODE.CANNOT_FETCH_GET_RESPONSE,
-      message: err,
-      error: e
+      message: message,
+      error: err
     });
     return failure(genericError);
   } finally {
@@ -305,6 +309,9 @@ export async function fetchPOSTResponse(
   url: string,
   params: { [s: string]: string }
 ): Promise<Result<GenericAxiosError, AxiosResponse<any>>> {
+  // Validate URL
+  if (isStringAValidURL(url)) throw new URIError(`'${url}' is not a valid URL`);
+
   // Prepare the parameters for the POST request
   const urlParams = new URLSearchParams();
   Object.entries(params).map(([key, value]) => urlParams.append(key, value));
@@ -339,6 +346,9 @@ export async function fetchPOSTResponse(
 export async function fetchHEADResponse(
   url: string
 ): Promise<Result<GenericAxiosError, AxiosResponse<any>>> {
+  // Validate URL
+  if (isStringAValidURL(url)) throw new URIError(`'${url}' is not a valid URL`);
+
   // Get a token from the semaphore
   const release = await semaphore.acquire();
 
@@ -367,13 +377,16 @@ export async function fetchHEADResponse(
  */
 export function enforceHttpsUrl(url: string): string {
   if (isStringAValidURL(url)) return url.replace(/^(https?:)?\/\//, "https://");
-  else throw new Error(`${url} is not a valid URL`);
+  else throw new URIError(`'${url}' is not a valid URL`);
 }
 
 /**
  * Check if the url belongs to the domain of the F95 platform.
  */
 export function isF95URL(url: string): boolean {
+  // Validate URL
+  if (isStringAValidURL(url)) throw new URIError(`'${url}' is not a valid URL`);
+
   return url.startsWith(urls.BASE);
 }
 
@@ -423,6 +436,9 @@ export async function urlExists(
  * @returns {Promise<String>} Redirect URL or the passed URL
  */
 export async function getUrlRedirect(url: string): Promise<string> {
+  // Validate URL
+  if (isStringAValidURL(url)) throw new URIError(`'${url}' is not a valid URL`);
+
   const response = await fetchHEADResponse(url);
 
   if (response.isSuccess()) {
@@ -482,18 +498,23 @@ async function getUserCookieString(): Promise<string> {
  * Check with Axios if a URL exists.
  */
 async function axiosUrlExists(url: string): Promise<boolean> {
+  // Validate URL
+  if (isStringAValidURL(url)) throw new URIError(`'${url}' is not a valid URL`);
+
   // Local variables
   const ERROR_CODES = ["ENOTFOUND", "ETIMEDOUT"];
   let valid = false;
 
   // Send a HEAD request
   const r = await fetchHEADResponse(url);
-  if (r.isSuccess())
-    valid = r.value && !/4\d\d/.test(r.value.status.toString());
-  else if (
-    r.isFailure() &&
-    !ERROR_CODES.includes((r.value.error as AxiosError<any>).code)
-  )
+
+  // Parse response
+  const status = (r.value as AxiosResponse<any>).status;
+  const error = (r.value as GenericAxiosError).error as AxiosError<any>;
+  const errorCode = error?.code ?? "";
+
+  if (r.isSuccess()) valid = r.value && !/4\d\d/.test(status.toString());
+  else if (r.isFailure() && !ERROR_CODES.includes(errorCode))
     throw r.value.error;
 
   return valid;
