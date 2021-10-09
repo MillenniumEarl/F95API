@@ -89,3 +89,5 @@ export class InvalidID extends Error {}
 export class ParameterError extends Error {}
 
 export class InvalidResponseParsing extends Error {}
+
+export class MissingOrInvalidParsingAttribute extends Error {}
