@@ -46,7 +46,7 @@
     "tough-cookie": "^4.0.0"
   },
   "devDependencies": {
-    "@millenniumearl/recaptcha-harvester": "^1.2.0",
+    "@millenniumearl/recaptcha-harvester": "^1.2.1",
     "@types/chai": "^4.2.22",
     "@types/chai-as-promised": "^7.1.4",
     "@types/chai-spies": "^1.0.3",
