@@ -5,6 +5,7 @@
 
 // Public modules from npm
 import cheerio, { Cheerio, CheerioAPI, Node } from "cheerio";
+import { isValidISODateString } from "iso-datestring-validator";
 
 // Modules from file
 import PlatformUser from "./platform-user";
@@ -15,6 +16,7 @@ import shared from "../../shared";
 import {
   InvalidID,
   INVALID_POST_ID,
+  MissingOrInvalidParsingAttribute,
   UserNotLogged,
   USER_NOT_LOGGED
 } from "../errors";
@@ -32,7 +34,7 @@ export default class Post implements ILazy {
   private _number: number = -1;
   private _published: Date = DEFAULT_DATE;
   private _lastEdit: Date = DEFAULT_DATE;
-  private _owner: PlatformUser = null as any;
+  private _owner: PlatformUser = undefined as any;
   private _bookmarked: boolean = false;
   private _message: string = "";
   private _body: IPostElement[] = [];
@@ -136,7 +138,9 @@ export default class Post implements ILazy {
       .toArray()
       .find((el) => {
         // Fetch the ID and check if it is what we are searching
-        const sid = $(el).find(POST.ID).attr("id").replace("post-", "").trim();
+        const sid = this.findAttribute($(el), POST.ID, "id")
+          .replace("post-", "")
+          .trim();
         const id = parseInt(sid, 10);
 
         if (id === this.id) return el;
@@ -148,7 +152,10 @@ export default class Post implements ILazy {
 
   private async parsePost($: CheerioAPI, post: Cheerio<Node>): Promise<void> {
     // Find post's ID
-    const sid: string = post.find(POST.ID).attr("id").replace("post-", "");
+    const sid: string = this.findAttribute(post, POST.ID, "id").replace(
+      "post-",
+      ""
+    );
     this._id = parseInt(sid, 10);
 
     // Find post's number
@@ -156,18 +163,27 @@ export default class Post implements ILazy {
     this._number = parseInt(sNumber, 10);
 
     // Find post's publishing date
-    const sPublishing: string = post.find(POST.PUBLISH_DATE).attr("datetime");
-    this._published = new Date(sPublishing);
+    const sPublishing: string = this.findAttribute(
+      post,
+      POST.PUBLISH_DATE,
+      "datetime"
+    );
+    if (isValidISODateString(sPublishing))
+      this._published = new Date(sPublishing);
 
     // Find post's last edit date
-    const sLastEdit: string = post.find(POST.LAST_EDIT).attr("datetime");
-    this._lastEdit = new Date(sLastEdit);
+    const sLastEdit: string = this.findAttribute(
+      post,
+      POST.LAST_EDIT,
+      "datetime"
+    );
+    if (isValidISODateString(sLastEdit)) this._lastEdit = new Date(sLastEdit);
 
     // Find post's owner (if no ID is found thant the user has been deleted)
     const ownerID = post.find(POST.OWNER_ID).attr("data-user-id");
     this._owner = ownerID
       ? new PlatformUser(parseInt(ownerID.trim(), 10))
-      : null;
+      : (undefined as any);
     if (this._owner) await this._owner.fetch();
 
     // Find if the post is bookmarked
@@ -179,6 +195,20 @@ export default class Post implements ILazy {
     // Parse post's body
     const body = post.find(POST.BODY).get()[0];
     this._body = extractDataFromFirstThreadPost($, body);
+  }
+
+  /**
+   * Make sure you get the attribute you are looking for or throw an exception.
+   */
+  private findAttribute(e: Cheerio<Node>, selector: string, attribute: string) {
+    // Extract the attribute
+    const extracted = e.find(selector).attr(attribute);
+
+    // Check if the attribute undefined
+    if (!extracted) {
+      const message = `Cannnot find ${attribute} attribute in element with selector ${selector}`;
+      throw new MissingOrInvalidParsingAttribute(message);
+    } else return extracted;
   }
 
   //#endregion
