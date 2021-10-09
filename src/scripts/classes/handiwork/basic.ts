@@ -24,7 +24,7 @@ export default class Basic implements IBasic {
   name: string = "";
   overview: string = "";
   prefixes: string[] = [];
-  rating: TRating = null as any;
+  rating: TRating = undefined as any;
   tags: string[] = [];
   threadPublishingDate: Date = DEFAULT_DATE;
   url: string = "";
@@ -37,7 +37,7 @@ export default class Basic implements IBasic {
   public cast<T extends Basic>(src: Partial<T>): Partial<this> {
     Object.entries(src) // Obtains all the key from the source object
       .filter(([key]) => key in this) // Get all the keys that are in both the objects
-      .map(([key, val]) => (this[key] = val)); // Save the key in this object
+      .map(([key, val]) => (this[key as keyof this] = val)); // Save the key in this object
 
     return this;
   }
