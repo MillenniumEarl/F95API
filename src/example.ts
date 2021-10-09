@@ -134,11 +134,15 @@ async function fetchLatestGameInfo(): Promise<void> {
   latestQuery.includedTags = ["3d game"];
 
   const latestUpdates = await getLatestUpdates<Game>(latestQuery, Game, 1);
-  console.log(
-    `"${
-      latestUpdates.shift().name
-    }" was the last "3d game" tagged game to be updated\n`
-  );
+
+  if (latestUpdates.length !== 0) {
+    const gamename = latestUpdates[0].name;
+    const tags = latestQuery.includedTags.join();
+
+    console.log(
+      `"${gamename}" was the last "${tags}" tagged game to be updated\n`
+    );
+  } else console.log("No game found with the specified tags");
 }
 
 /**
@@ -159,7 +163,7 @@ async function fetchGameData(games: string[]): Promise<void> {
 
     if (searchResult.length !== 0) {
       // Extract first game
-      const gamedata = searchResult.shift();
+      const gamedata = searchResult[0];
       const authors = gamedata.authors.map((a) => a.name).join(", ");
       console.log(
         `Found: ${gamedata.name} (${gamedata.version}) by ${authors}\n`
