@@ -102,7 +102,8 @@ function extractIDFromURL(url: string): number {
   shared.logger.trace("Extracting ID from URL...");
 
   // Validate URL
-  if (isStringAValidURL(url)) throw new URIError(`'${url}' is not a valid URL`);
+  if (!isStringAValidURL(url))
+    throw new URIError(`'${url}' is not a valid URL`);
 
   // URL are in the format https://f95zone.to/threads/GAMENAME-VERSION-DEVELOPER.ID/
   // or https://f95zone.to/threads/ID/

@@ -273,7 +273,8 @@ export async function fetchGETResponse(
   url: string
 ): Promise<Result<GenericAxiosError, AxiosResponse<any>>> {
   // Validate URL
-  if (isStringAValidURL(url)) throw new URIError(`'${url}' is not a valid URL`);
+  if (!isStringAValidURL(url))
+    throw new URIError(`'${url}' is not a valid URL`);
 
   // Get a token from the semaphore
   const release = await semaphore.acquire();
@@ -310,7 +311,8 @@ export async function fetchPOSTResponse(
   params: { [s: string]: string }
 ): Promise<Result<GenericAxiosError, AxiosResponse<any>>> {
   // Validate URL
-  if (isStringAValidURL(url)) throw new URIError(`'${url}' is not a valid URL`);
+  if (!isStringAValidURL(url))
+    throw new URIError(`'${url}' is not a valid URL`);
 
   // Prepare the parameters for the POST request
   const urlParams = new URLSearchParams();
@@ -347,7 +349,8 @@ export async function fetchHEADResponse(
   url: string
 ): Promise<Result<GenericAxiosError, AxiosResponse<any>>> {
   // Validate URL
-  if (isStringAValidURL(url)) throw new URIError(`'${url}' is not a valid URL`);
+  if (!isStringAValidURL(url))
+    throw new URIError(`'${url}' is not a valid URL`);
 
   // Get a token from the semaphore
   const release = await semaphore.acquire();
@@ -385,7 +388,8 @@ export function enforceHttpsUrl(url: string): string {
  */
 export function isF95URL(url: string): boolean {
   // Validate URL
-  if (isStringAValidURL(url)) throw new URIError(`'${url}' is not a valid URL`);
+  if (!isStringAValidURL(url))
+    throw new URIError(`'${url}' is not a valid URL`);
 
   return url.startsWith(urls.BASE);
 }
@@ -437,7 +441,8 @@ export async function urlExists(
  */
 export async function getUrlRedirect(url: string): Promise<string> {
   // Validate URL
-  if (isStringAValidURL(url)) throw new URIError(`'${url}' is not a valid URL`);
+  if (!isStringAValidURL(url))
+    throw new URIError(`'${url}' is not a valid URL`);
 
   const response = await fetchHEADResponse(url);
 
@@ -499,7 +504,8 @@ async function getUserCookieString(): Promise<string> {
  */
 async function axiosUrlExists(url: string): Promise<boolean> {
   // Validate URL
-  if (isStringAValidURL(url)) throw new URIError(`'${url}' is not a valid URL`);
+  if (!isStringAValidURL(url))
+    throw new URIError(`'${url}' is not a valid URL`);
 
   // Local variables
   const ERROR_CODES = ["ENOTFOUND", "ETIMEDOUT"];
