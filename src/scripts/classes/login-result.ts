@@ -44,6 +44,6 @@ export default class LoginResult {
   constructor(success: boolean, code: number, message?: string) {
     this.success = success;
     this.code = code;
-    this.message = message;
+    this.message = message ?? "";
   }
 }
