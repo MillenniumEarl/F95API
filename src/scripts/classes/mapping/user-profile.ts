@@ -484,14 +484,21 @@ export default class UserProfile extends PlatformUser {
 
 /**
  * Make sure you get the attribute you are looking for or throw an exception.
+ *
+ * Return empty string if no attribute is found and `raise` if false.
  */
-function findAttribute(e: Cheerio<Node>, selector: string, attribute: string) {
+function findAttribute(
+  e: Cheerio<Node>,
+  selector: string,
+  attribute: string,
+  raise: boolean = true
+): string | "" {
   // Extract the attribute
-  const extracted = e.find(selector).attr(attribute);
+  const extracted = e.find(selector).attr(attribute) ?? "";
 
-  // Check if the attribute undefined
-  if (!extracted) {
-    const message = `Cannnot find ${attribute} attribute in element with selector ${selector}`;
+  // Check if the attribute is undefined
+  if (!extracted && raise) {
+    const message = `Cannnot find '${attribute}' attribute in element with selector '${selector}'`;
     throw new MissingOrInvalidParsingAttribute(message);
   } else return extracted;
 }
