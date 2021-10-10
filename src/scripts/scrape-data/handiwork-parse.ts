@@ -369,6 +369,10 @@ function parseAuthor(elements: IPostElement[]): TAuthor[] {
     // In these case, usually, the name of the first platform is the author's name.
     if (author.name === "" && author.platforms.length >= 1)
       author.name = author.platforms[0].name;
+
+    // Clean the author name from special chars at the end
+    const regex = /(?<=\w\b)[\s-/]+$/gi;
+    if (regex.test(author.name)) author.name = author.name.replace(regex, "");
   }
 
   return [author];
