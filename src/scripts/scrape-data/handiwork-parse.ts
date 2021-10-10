@@ -365,9 +365,9 @@ function parseAuthor(elements: IPostElement[]): TAuthor[] {
     const f95Profile = author.platforms.filter((p) => isF95URL(p.link)).shift();
     if (author.name === "" && f95Profile) author.name = f95Profile.name;
 
-    // Sometimes there is only one "support" platform and no name of the author.
-    // In these case, usually, the name on the platform is the author's name.
-    if (author.name === "" && author.platforms.length === 1)
+    // Sometimes there are multiple "support" platform but no name of the author.
+    // In these case, usually, the name of the first platform is the author's name.
+    if (author.name === "" && author.platforms.length >= 1)
       author.name = author.platforms[0].name;
   }
 
