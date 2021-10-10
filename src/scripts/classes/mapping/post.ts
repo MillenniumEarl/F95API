@@ -176,6 +176,7 @@ export default class Post implements ILazy {
     // Find post's last edit date (could not exists if the post was never edited)
     const sLastEdit = findAttribute(post, POST.LAST_EDIT, "datetime", false);
     if (isValidISODateString(sLastEdit)) this._lastEdit = new Date(sLastEdit);
+    else this._lastEdit = this._published;
 
     // Find post's owner (if no ID is found than the user has been deleted)
     const ownerID = findAttribute(post, POST.OWNER_ID, "data-user-id", false);
