@@ -43,7 +43,8 @@
     "class-validator": "^0.13.1",
     "iso-datestring-validator": "^2.2.0",
     "js-sha256": "^0.9.0",
-    "tough-cookie": "^4.0.0"
+    "tough-cookie": "^4.0.0",
+    "axios-retry": "^3.2.0"
   },
   "devDependencies": {
     "@millenniumearl/recaptcha-harvester": "^1.2.1",
@@ -57,7 +58,6 @@
     "@types/tough-cookie": "^4.0.1",
     "@typescript-eslint/eslint-plugin": "^4.33.0",
     "@typescript-eslint/parser": "^4.33.0",
-    "axios-retry": "^3.2.0",
     "chai": "^4.3.4",
     "chai-as-promised": "^7.1.1",
     "chai-spies": "^1.0.0",
