@@ -4,15 +4,15 @@
 // https://opensource.org/licenses/MIT
 
 // Public modules from npm
-import { ArrayMaxSize, IsInt, Min, validateSync } from "class-validator";
+import { AxiosResponse } from "axios";
 
 // Modules from file
-import { urls } from "../../constants/url";
-import PrefixParser from "../prefix-parser";
-import { IQuery, TCategory, TQueryInterface } from "../../interfaces";
 import { fetchGETResponse } from "../../network-helper";
-import { AxiosResponse } from "axios";
+import { TCategory, TQueryInterface } from "../../types";
 import { GenericAxiosError } from "../errors";
+import PrefixParser from "../prefix-parser";
+import { urls } from "../../constants/url";
+import { IQuery } from "../../interfaces";
 import { Result } from "../result";
 
 // Type definitions
@@ -27,6 +27,9 @@ export default class LatestSearchQuery implements IQuery {
 
   private static MAX_TAGS = 5;
   private static MIN_PAGE = 1;
+  #page: number = LatestSearchQuery.MIN_PAGE;
+  #includedTags: string[] = [];
+  #itype: TQueryInterface = "LatestSearchQuery";
 
   //#endregion Private fields
 
@@ -46,38 +49,45 @@ export default class LatestSearchQuery implements IQuery {
    * Default: `null`
    */
   public date: TDate = null;
-
-  @ArrayMaxSize(LatestSearchQuery.MAX_TAGS, {
-    message: "Too many tags: $value instead of $constraint1"
-  })
-  public includedTags: string[] = [];
   public includedPrefixes: string[] = [];
-
-  @IsInt({
-    message: "$property expect an integer, received $value"
-  })
-  @Min(LatestSearchQuery.MIN_PAGE, {
-    message: "The minimum $property value must be $constraint1, received $value"
-  })
-  public page = LatestSearchQuery.MIN_PAGE;
-  itype: TQueryInterface = "LatestSearchQuery";
 
   //#endregion Properties
 
-  //#region Public methods
-
-  public validate(): boolean {
-    return validateSync(this).length === 0;
+  //#region Getters/Setters
+  public set page(v: number) {
+    if (v < LatestSearchQuery.MIN_PAGE)
+      throw new Error(
+        `Page must be greater or equal to ${LatestSearchQuery.MIN_PAGE}`
+      );
   }
+
+  public get page(): number {
+    return this.#page;
+  }
+
+  public set includedTags(v: string[]) {
+    if (v.length > LatestSearchQuery.MAX_TAGS)
+      throw new Error(
+        `The included tags must be less or equal to ${LatestSearchQuery.MAX_TAGS}`
+      );
+
+    this.#includedTags = v;
+  }
+
+  public get includedTags(): string[] {
+    return this.#includedTags;
+  }
+
+  public get itype(): TQueryInterface {
+    return this.#itype;
+  }
+  //#endregion Getters/Setters
+
+  //#region Public methods
 
   public async execute(): Promise<
     Result<GenericAxiosError, AxiosResponse<any>>
   > {
-    // Check if the query is valid
-    if (!this.validate()) {
-      throw new Error(`Invalid query: ${validateSync(this).join("\n")}`);
-    }
-
     // Prepare the URL
     const url = this.prepareGETurl();
     const decoded = decodeURIComponent(url.toString());

@@ -4,11 +4,11 @@
 // https://opensource.org/licenses/MIT
 
 // Public modules from npm
-import { IsInt, Min, validateSync } from "class-validator";
 import { AxiosResponse } from "axios";
 
 // Module from files
-import { IQuery, TCategory, TQueryInterface } from "../../interfaces";
+import { IQuery } from "../../interfaces";
+import { TQueryInterface, TCategory } from "../../types";
 import { GenericAxiosError } from "../errors";
 import { Result } from "../result";
 import LatestSearchQuery, { TLatestOrder } from "./latest-search-query";
@@ -46,6 +46,8 @@ export default class HandiworkSearchQuery implements IQuery {
   //#region Private fields
 
   static MIN_PAGE = 1;
+  #itype: TQueryInterface = "HandiworkSearchQuery";
+  #page: number = HandiworkSearchQuery.MIN_PAGE;
 
   //#endregion Private fields
 
@@ -74,16 +76,25 @@ export default class HandiworkSearchQuery implements IQuery {
    * Results presentation order.
    */
   public order: THandiworkOrder = "relevance";
-  @IsInt({
-    message: "$property expect an integer, received $value"
-  })
-  @Min(HandiworkSearchQuery.MIN_PAGE, {
-    message: "The minimum $property value must be $constraint1, received $value"
-  })
-  public page = 1;
-  itype: TQueryInterface = "HandiworkSearchQuery";
 
   //#endregion Properties
+
+  //#region Getters/Setters
+  public set page(v: number) {
+    if (v < HandiworkSearchQuery.MIN_PAGE)
+      throw new Error(
+        `Page must be greater or equal to ${HandiworkSearchQuery.MIN_PAGE}`
+      );
+  }
+
+  public get page(): number {
+    return this.#page;
+  }
+
+  public get itype(): TQueryInterface {
+    return this.#itype;
+  }
+  //#endregion Getters/Setters
 
   //#region Public methods
 
@@ -106,18 +117,9 @@ export default class HandiworkSearchQuery implements IQuery {
     return DEFAULT_SEARCH_TYPE;
   }
 
-  public validate(): boolean {
-    return validateSync(this).length === 0;
-  }
-
   public async execute(): Promise<TExecuteResult> {
     // Local variables
     let response: TExecuteResult = null;
-
-    // Check if the query is valid
-    if (!this.validate()) {
-      throw new Error(`Invalid query: ${validateSync(this).join("\n")}`);
-    }
 
     // Convert the query
     if (this.selectSearchType() === "latest")

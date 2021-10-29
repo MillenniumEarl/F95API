@@ -4,15 +4,15 @@
 // https://opensource.org/licenses/MIT
 
 // Public modules from npm
-import { IsInt, Min, validateSync } from "class-validator";
+import { AxiosResponse } from "axios";
 
 // Module from files
-import { IQuery, TCategory, TQueryInterface } from "../../interfaces";
-import { urls } from "../../constants/url";
-import PrefixParser from "./../prefix-parser";
 import { fetchPOSTResponse } from "../../network-helper";
-import { AxiosResponse } from "axios";
+import { TQueryInterface, TCategory } from "../../types";
 import { GenericAxiosError } from "../errors";
+import PrefixParser from "./../prefix-parser";
+import { urls } from "../../constants/url";
+import { IQuery } from "../../interfaces";
 import { Result } from "../result";
 import Shared from "../../shared";
 
@@ -23,6 +23,8 @@ export default class ThreadSearchQuery implements IQuery {
   //#region Private fields
 
   static MIN_PAGE = 1;
+  #page: number = ThreadSearchQuery.MIN_PAGE;
+  #itype: TQueryInterface = "ThreadSearchQuery";
 
   //#endregion Private fields
 
@@ -59,31 +61,29 @@ export default class ThreadSearchQuery implements IQuery {
    * Results presentation order.
    */
   public order: TThreadOrder = "relevance";
-  @IsInt({
-    message: "$property expect an integer, received $value"
-  })
-  @Min(ThreadSearchQuery.MIN_PAGE, {
-    message: "The minimum $property value must be $constraint1, received $value"
-  })
-  public page = 1;
-  itype: TQueryInterface = "ThreadSearchQuery";
-
   //#endregion Properties
 
-  //#region Public methods
-
-  public validate(): boolean {
-    return validateSync(this).length === 0;
+  //#region Getters/Setters
+  public set page(v: number) {
+    if (v < ThreadSearchQuery.MIN_PAGE)
+      throw new Error(
+        `Page must be greater or equal to ${ThreadSearchQuery.MIN_PAGE}`
+      );
   }
 
+  public get page(): number {
+    return this.#page;
+  }
+
+  public get itype(): TQueryInterface {
+    return this.#itype;
+  }
+  //#endregion Getters/Setters
+
+  //#region Public methods
   public async execute(): Promise<
     Result<GenericAxiosError, AxiosResponse<any>>
   > {
-    // Check if the query is valid
-    if (!this.validate()) {
-      throw new Error(`Invalid query: ${validateSync(this).join("\n")}`);
-    }
-
     // Define the POST parameters
     const params = this.preparePOSTParameters();
 
