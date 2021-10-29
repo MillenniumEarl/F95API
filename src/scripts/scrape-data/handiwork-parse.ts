@@ -133,7 +133,7 @@ function toUpperCaseArray(a: string[]): string[] {
  */
 function stringInDict(s: string, a: TPrefixDict): boolean {
   // Make uppercase all the strings in the array
-  const values = toUpperCaseArray(Object.values(a));
+  const values = toUpperCaseArray(Array.from(a.values()));
 
   return values.includes(s.toUpperCase());
 }

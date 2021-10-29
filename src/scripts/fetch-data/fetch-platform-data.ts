@@ -39,8 +39,8 @@ interface ICategoryResource {
  * Represents the set of tags present on the platform.
  */
 interface ILatestResource {
-  prefixes: { [s: string]: ICategoryResource[] };
-  tags: TPrefixDict;
+  prefixes: Record<string, ICategoryResource[]>;
+  tags: Record<number, string>;
   options: string;
 }
 
@@ -94,12 +94,15 @@ async function readCache(path: string): Promise<boolean> {
 
   if (existsCache) {
     const data = await fs.readFile(path, { encoding: "utf-8", flag: "r" });
-    const json: { [s: string]: TPrefixDict } = JSON.parse(data);
+    const json: Record<string, Record<string, string>> = JSON.parse(data);
 
-    shared.setPrefixPair("engines", json.engines);
-    shared.setPrefixPair("statuses", json.statuses);
-    shared.setPrefixPair("tags", json.tags);
-    shared.setPrefixPair("others", json.others);
+    // Map objects don't natively support JSON conversion
+    // so they were saved as normal object and we need to
+    // re-covert them
+    shared.setPrefixPair("engines", objectToMap(json.engines));
+    shared.setPrefixPair("statuses", objectToMap(json.statuses));
+    shared.setPrefixPair("tags", objectToMap(json.tags));
+    shared.setPrefixPair("others", objectToMap(json.others));
 
     returnValue = true;
   }
@@ -110,11 +113,14 @@ async function readCache(path: string): Promise<boolean> {
  * Save the current platform variables to disk.
  */
 async function saveCache(path: string): Promise<void> {
-  const saveDict = {
-    engines: shared.prefixes["engines"],
-    statuses: shared.prefixes["statuses"],
-    tags: shared.prefixes["tags"],
-    others: shared.prefixes["others"]
+  // Map objects don't natively support JSON conversion
+  // so we will convert them to normal object and than
+  // stringify them
+  const saveDict: Record<string, Record<string, string>> = {
+    engines: Object.fromEntries(shared.prefixes["engines"]),
+    statuses: Object.fromEntries(shared.prefixes["statuses"]),
+    tags: Object.fromEntries(shared.prefixes["tags"]),
+    others: Object.fromEntries(shared.prefixes["others"])
   };
   const json = JSON.stringify(saveDict);
   await fs.writeFile(path, json);
@@ -140,33 +146,50 @@ function parseLatestPlatformHTML(html: string): ILatestResource {
  */
 function assignLatestPlatformData(data: ILatestResource): void {
   // Local variables
-  const scrapedData = {};
+  const scrapedData = new Map<string, TPrefixDict>();
 
   // Parse and assign the values that are NOT tags
   for (const res of Object.values(data.prefixes).flat()) {
     // Prepare the dict
-    const dict: TPrefixDict = new Map<number, string>();
+    const dict = new Map<number, string>();
 
     // Assign values
     res.prefixes.map((e) => dict.set(e.id, e.name.replace("&#039;", "'")));
 
     // Merge the dicts ("Other"/"Status" field)
-    if (scrapedData[res.name]) {
-      const newKeys = Object.keys(dict)
-        .map((k) => parseInt(k, 10))
-        .filter((k) => !scrapedData[res.name][k]);
+    if (scrapedData.has(res.name)) {
+      for (const key of dict.keys()) {
+        const field = scrapedData.get(res.name);
 
-      newKeys.map((k) => (scrapedData[res.name][k] = dict[k]));
+        // Add ("Merge") value only if it isn't already present
+        if (!field.has(key)) {
+          const value = dict.get(key);
+          field.set(key, value);
+        }
+      }
     }
     // Assign the property
-    else scrapedData[res.name] = dict;
+    else scrapedData.set(res.name, dict);
   }
 
   // Save the values
-  shared.setPrefixPair("engines", Object.assign({}, scrapedData["Engine"]));
-  shared.setPrefixPair("statuses", Object.assign({}, scrapedData["Status"]));
-  shared.setPrefixPair("others", Object.assign({}, scrapedData["Other"]));
-  shared.setPrefixPair("tags", data.tags);
+  shared.setPrefixPair("engines", scrapedData.get("Engine"));
+  shared.setPrefixPair("statuses", scrapedData.get("Status"));
+  shared.setPrefixPair("others", scrapedData.get("Other"));
+  shared.setPrefixPair("tags", objectToMap(data.tags));
+}
+
+/**
+ * Convert a `Record` object to `Map` (`TPrefixDict`).
+ */
+function objectToMap(data: Record<number | string, string>) {
+  // file deepcode ignore CollectionUpdatedButNeverQueried: This map doesn't need to be queried here
+  const map = new Map<number, string>();
+  Object.entries(data).forEach(([key, value]) =>
+    map.set(parseInt(key, 10), value)
+  );
+
+  return map as TPrefixDict;
 }
 
 //#endregion

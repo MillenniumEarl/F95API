@@ -44,7 +44,7 @@ export default abstract class Shared {
   /**
    * List of platform prefixes and tags.
    */
-  static get prefixes(): { [s: string]: TPrefixDict } {
+  static get prefixes(): Record<string, TPrefixDict> {
     return this._prefixes;
   }
   /**
