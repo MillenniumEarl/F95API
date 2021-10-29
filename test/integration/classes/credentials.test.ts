@@ -40,7 +40,7 @@ export function suite(): void {
 //#region Private methods
 
 /**
- * Check if a string is a number.
+ * Check if a value is a number.
  * @author Jeremy
  * @see https://preview.tinyurl.com/y46jqwkt
  */
@@ -48,8 +48,9 @@ function isNumeric(num: any): boolean {
   const isNan = Number.isNaN(num);
   const isNum = typeof num === "number";
   const isValidString = typeof num === "string" && num.trim() !== "";
+  const isParsedNumber = isValidString ? !Number.isNaN(Number(num)) : false;
 
-  return (isNum || isValidString) && !isNan;
+  return (isNum || isParsedNumber) && !isNan;
 }
 
 //#endregion
