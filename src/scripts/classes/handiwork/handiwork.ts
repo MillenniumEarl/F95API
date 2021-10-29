@@ -6,7 +6,8 @@
 // Modules from files
 import { Handiwork } from "../../..";
 import { DEFAULT_DATE } from "../../constants/generic";
-import { IHandiwork, TEngine, TStatus } from "../../interfaces";
+import { IHandiwork } from "../../interfaces";
+import { TEngine, TStatus } from "../../types";
 import Basic from "./basic";
 
 /**

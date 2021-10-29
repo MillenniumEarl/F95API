@@ -6,22 +6,21 @@
 // Modules from files
 import HandiWork from "../classes/handiwork/handiwork";
 import Thread from "../classes/mapping/thread";
-import {
-  ILink,
-  IPostElement,
-  TAuthor,
-  TCategory,
-  TChangelog,
-  TEngine,
-  TExternalPlatform,
-  TStatus
-} from "../interfaces";
+import { ILink, IPostElement } from "../interfaces";
 import shared, { TPrefixDict } from "../shared";
 import Handiwork from "../classes/handiwork/handiwork";
 import { isF95URL, isStringAValidURL } from "../network-helper";
 import { metadata as md } from "../constants/ot-metadata-values";
 import Basic from "../classes/handiwork/basic";
 import { getDateFromString } from "../utils";
+import {
+  TAuthor,
+  TChangelog,
+  TCategory,
+  TEngine,
+  TStatus,
+  TExternalPlatform
+} from "../types";
 
 /**
  * Gets information of a particular handiwork from its thread.

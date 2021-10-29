@@ -9,7 +9,7 @@ import cheerio from "cheerio";
 // Modules from files
 import Post from "./post";
 import PlatformUser from "./platform-user";
-import { ILazy, TCategory, TRating } from "../../interfaces";
+import { ILazy } from "../../interfaces";
 import { urls } from "../../constants/url";
 import { POST, THREAD } from "../../constants/css-selector";
 import {
@@ -17,7 +17,6 @@ import {
   fetchPOSTResponse,
   getUrlRedirect
 } from "../../network-helper";
-import Shared from "../../shared";
 import {
   InvalidID,
   InvalidResponseParsing,
@@ -31,6 +30,7 @@ import { getJSONLD, TJsonLD } from "../../scrape-data/json-ld";
 import shared from "../../shared";
 import { DEFAULT_DATE } from "../../constants/generic";
 import { getDateFromString } from "../../utils";
+import { TRating, TCategory } from "../../types";
 
 type TPostsForPage = 20 | 40 | 60 | 100;
 
@@ -166,7 +166,7 @@ export default class Thread implements ILazy {
     const params = {
       _xfResponseType: "json",
       _xfRequestUri: `/account/dpp-update?content_type=thread&content_id=${this.id}`,
-      _xfToken: Shared.session.token,
+      _xfToken: shared.session.token,
       _xfWithData: "1",
       content_id: this.id.toString(),
       content_type: "thread",

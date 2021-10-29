@@ -5,7 +5,8 @@
 
 // Modules from files
 import { DEFAULT_DATE } from "../../constants/generic";
-import { TEngine, IGame, TStatus } from "../../interfaces";
+import { IGame } from "../../interfaces";
+import { TEngine, TStatus } from "../../types";
 import Basic from "./basic";
 
 export default class Game extends Basic implements IGame {

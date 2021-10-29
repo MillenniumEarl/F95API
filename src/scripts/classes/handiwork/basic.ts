@@ -5,13 +5,8 @@
 
 // Modules from files
 import { DEFAULT_DATE } from "../../constants/generic";
-import {
-  TAuthor,
-  TRating,
-  TCategory,
-  TChangelog,
-  IBasic
-} from "../../interfaces";
+import { IBasic } from "../../interfaces";
+import { TAuthor, TCategory, TChangelog, TRating } from "../../types";
 
 export default class Basic implements IBasic {
   //#region Properties

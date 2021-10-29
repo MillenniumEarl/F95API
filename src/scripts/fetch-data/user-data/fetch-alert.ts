@@ -7,9 +7,10 @@
 import cheerio, { CheerioAPI, Node } from "cheerio";
 
 // Modules from files
+import { TAlertType, TAlertReactionType } from "../../types";
 import { ALERT } from "../../constants/css-selector";
 import { urls } from "../../constants/url";
-import { IAlert, TAlertReactionType, TAlertType } from "../../interfaces";
+import { IAlert } from "../../interfaces";
 import { fetchHTML } from "../../network-helper";
 
 /**
