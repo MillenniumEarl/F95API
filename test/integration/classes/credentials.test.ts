@@ -45,7 +45,7 @@ export function suite(): void {
  * @see https://preview.tinyurl.com/y46jqwkt
  */
 function isNumeric(num: any): boolean {
-  const isNan = isNaN(num as number);
+  const isNan = Number.isNaN(num);
   const isNum = typeof num === "number";
   const isValidString = typeof num === "string" && num.trim() !== "";
 

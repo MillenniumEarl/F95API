@@ -245,7 +245,7 @@ function extractPrefixes(prefixes: string[], category: TCategory) {
   let status: TStatus = null;
   const parsedPrefixes: string[] = [];
 
-  prefixes.map((item) => {
+  for (const item of prefixes) {
     // Remove the square brackets
     const prefix = item.replace("[", "").replace("]", "");
 
@@ -257,7 +257,7 @@ function extractPrefixes(prefixes: string[], category: TCategory) {
 
     // Anyway add the prefix to list
     parsedPrefixes.push(prefix);
-  });
+  }
 
   // If the status is not set, then the game is in development (Ongoing)
   status = status && category === "games" ? status : "Ongoing";

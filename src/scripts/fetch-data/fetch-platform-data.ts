@@ -143,25 +143,23 @@ function assignLatestPlatformData(data: ILatestResource): void {
   const scrapedData = {};
 
   // Parse and assign the values that are NOT tags
-  for (const [, value] of Object.entries(data.prefixes)) {
-    for (const res of value) {
-      // Prepare the dict
-      const dict: TPrefixDict = {};
+  for (const res of Object.values(data.prefixes).flat()) {
+    // Prepare the dict
+    const dict: TPrefixDict = new Map<number, string>();
 
-      // Assign values
-      res.prefixes.map((e) => (dict[e.id] = e.name.replace("&#039;", "'")));
+    // Assign values
+    res.prefixes.map((e) => dict.set(e.id, e.name.replace("&#039;", "'")));
 
-      // Merge the dicts ("Other"/"Status" field)
-      if (scrapedData[res.name]) {
-        const newKeys = Object.keys(dict)
-          .map((k) => parseInt(k, 10))
-          .filter((k) => !scrapedData[res.name][k]);
+    // Merge the dicts ("Other"/"Status" field)
+    if (scrapedData[res.name]) {
+      const newKeys = Object.keys(dict)
+        .map((k) => parseInt(k, 10))
+        .filter((k) => !scrapedData[res.name][k]);
 
-        newKeys.map((k) => (scrapedData[res.name][k] = dict[k]));
-      }
-      // Assign the property
-      else scrapedData[res.name] = dict;
+      newKeys.map((k) => (scrapedData[res.name][k] = dict[k]));
     }
+    // Assign the property
+    else scrapedData[res.name] = dict;
   }
 
   // Save the values

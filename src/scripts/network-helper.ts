@@ -554,7 +554,7 @@ function manageLoginPOSTResponse(response: AxiosResponse<any>) {
     errorMessage = "Successful request but user not logged in";
 
   // Return the result of the authentication
-  const result = errorMessage.trim() === "" && availableUserID;
+  const result = errorMessage.trim().length === 0 && availableUserID;
   const message = result ? AUTH_SUCCESSFUL_MESSAGE : errorMessage;
   const code = messageToCode(message);
   return new LoginResult(result, code, message);

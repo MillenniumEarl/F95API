@@ -114,19 +114,19 @@ function printTree(root: TreeNode, nindent = 0) {
 
   // Print the data of the children nodes
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  root.children.map((child) => printTree(child, nindent + 1));
+  root.children.forEach((child) => printTree(child, nindent + 1));
 }
 
 /* istanbul ignore next: Debug method */
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 function printPairs(pairs: IPostElement[]) {
-  pairs.map((e) => {
+  for (const pair of pairs) {
     const childData =
-      e.content.length > 0 ? `(children: ${e.content.length})` : "";
-    const text = e.text || "No Text";
+      pair.content.length > 0 ? `(children: ${pair.content.length})` : "";
+    const text = pair.text || "No Text";
     // eslint-disable-next-line no-console
-    console.log(`+ [${e.name}]: ${text} ${childData}`);
-  });
+    console.log(`+ [${pair.name}]: ${text} ${childData}`);
+  }
 }
 
 //#endregion Tree methods
@@ -154,7 +154,8 @@ function purgeNode(node: TreeNode) {
   let lastChildrenLength = node.parent.children.length;
   let addedChildren = 0;
   let newElementIndex = cloneIndex;
-  node.children.map((child) => {
+
+  for (const child of node.children) {
     // Change the parent of the children
     child.parent = node.parent;
 
@@ -184,7 +185,7 @@ function purgeNode(node: TreeNode) {
 
     // Save the actual length of the parent's children
     lastChildrenLength = node.parent.children.length;
-  });
+  }
 }
 
 /**
@@ -295,7 +296,7 @@ function pairUpTitleWithContent(root: TreeNode): IPostElement[] {
   //  + Textual element "TITLE"
   //  + Textual element ":"
   //  + Generic element CONTENT
-  rootClone.children.map((child, index, children) => {
+  rootClone.children.forEach((child, index, children) => {
     // Convert from TreeNode to IPostElement
     const e = elementsToContent(child);
 

@@ -215,7 +215,7 @@ function findAttribute(
 
   // Check if the attribute is undefined
   if (!extracted && raise) {
-    const message = `Cannnot find '${attribute}' attribute in element with selector '${selector}'`;
+    const message = `Cannot find '${attribute}' attribute in element with selector '${selector}'`;
     throw new MissingOrInvalidParsingAttribute(message);
   } else return extracted;
 }

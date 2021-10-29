@@ -4,6 +4,7 @@
 // https://opensource.org/licenses/MIT
 
 // Public modules from npm
+import { isValidISODateString } from "iso-datestring-validator";
 import cheerio, { Cheerio, Node } from "cheerio";
 
 // Modules from files
@@ -35,7 +36,6 @@ import fetchAlertElements from "../../fetch-data/user-data/fetch-alert";
 import Thread from "./thread";
 import { getHandiworkFromURL } from "../../handiwork-from-url";
 import fetchPageConversations from "../../fetch-data/user-data/fetch-conversation";
-import { isValidISODateString } from "iso-datestring-validator";
 import { DEFAULT_DATE } from "../../constants/generic";
 
 interface IFetchOptions<T> {
@@ -230,7 +230,10 @@ export default class UserProfile extends PlatformUser {
 
     // Copy the property of the superior class (PlatformUser) to this instance
     const superprops = Object.getOwnPropertyNames(temp);
-    superprops.map((p) => (this[p] = temp[p]));
+    superprops
+      .filter((p) => !p.includes("__proto__"))
+      // file deepcode ignore PrototypePollution: I already ignored __proto__ strings
+      .map((p) => (this[p] = temp[p]));
 
     // Fetch all the "extra" data of this user
     if (extended) {
@@ -498,7 +501,7 @@ function findAttribute(
 
   // Check if the attribute is undefined
   if (!extracted && raise) {
-    const message = `Cannnot find '${attribute}' attribute in element with selector '${selector}'`;
+    const message = `Cannot find '${attribute}' attribute in element with selector '${selector}'`;
     throw new MissingOrInvalidParsingAttribute(message);
   } else return extracted;
 }
