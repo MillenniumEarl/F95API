@@ -11,13 +11,9 @@ import getHandiworkInformation from "../../../src/scripts/scrape-data/handiwork-
 import Thread from "../../../src/scripts/classes/mapping/thread";
 import Post from "../../../src/scripts/classes/mapping/post";
 import PlatformUser from "../../../src/scripts/classes/mapping/platform-user";
-import {
-  TRating,
-  TCategory,
-  IPostElement,
-  ILink
-} from "../../../src/scripts/interfaces";
+import { IPostElement, ILink } from "../../../src/scripts/interfaces";
 import Game from "../../../src/scripts/classes/handiwork/game";
+import { TRating, TCategory } from "../../../src/scripts/types";
 
 //#region Mock Thread and Post classes
 const mockDate = new Date("2021-07-06T15:26:41Z");
