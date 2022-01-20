@@ -51,7 +51,7 @@
     "@types/chai-as-promised": "7.1.4",
     "@types/chai-spies": "1.0.3",
     "@types/inquirer": "8.1.3",
-    "@types/mocha": "9.0.0",
+    "@types/mocha": "9.1.0",
     "@types/node": "16.11.21",
     "@types/rewire": "2.5.28",
     "@types/tough-cookie": "4.0.1",
