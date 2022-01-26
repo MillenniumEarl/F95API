@@ -57,7 +57,7 @@
     "@types/tough-cookie": "4.0.1",
     "@typescript-eslint/eslint-plugin": "5.10.1",
     "@typescript-eslint/parser": "5.10.1",
-    "chai": "4.3.5",
+    "chai": "4.3.6",
     "chai-as-promised": "7.1.1",
     "chai-spies": "1.0.0",
     "dotenv": "10.0.0",
