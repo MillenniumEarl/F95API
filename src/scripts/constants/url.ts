@@ -24,11 +24,13 @@ export const urls = {
    * URL of the script used for searching for content
    * in the "Latest Updates" section of the platform.
    */
-  LATEST_PHP: "https://f95zone.to/new_latest.php",
+//   LATEST_PHP: "https://f95zone.to/new_latest.php",
+  LATEST_PHP: "https://f95zone.to/sam/latest_alpha/latest_data.php",
   /**
    * Page with the latest updated platform content.
    */
-  LATEST_UPDATES: "https://f95zone.to/latest",
+//   LATEST_UPDATES: "https://f95zone.to/latest",
+  LATEST_UPDATES: "https://f95zone.to/sam/latest_alpha",
   /**
    * Page used for user login.
    */
