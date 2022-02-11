@@ -52,7 +52,7 @@
     "@types/chai-spies": "1.0.3",
     "@types/inquirer": "8.2.0",
     "@types/mocha": "9.1.0",
-    "@types/node": "16.11.22",
+    "@types/node": "16.11.24",
     "@types/rewire": "2.5.28",
     "@types/tough-cookie": "4.0.1",
     "@typescript-eslint/eslint-plugin": "5.11.0",
