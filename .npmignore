@@ -7,16 +7,18 @@ coverage/
 src/
 
 # Files
+dist/tsconfig.tsbuildinfo
 CHANGELOG.md
 COOKIES.md
 tsconfig.json
+renovate.json
 .eslintignore
 .eslintrc
 .gitignore
 .gitattributes
 .env
 .prettierrc
-dist/tsconfig.tsbuildinfo
+.dccache
 
 # Example files
 dist/example.*
