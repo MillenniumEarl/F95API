@@ -221,9 +221,12 @@ export interface IQuery {
   category: TCategory;
   /**
    * Tags to be include in the search.
-   * Max. 5 tags
    */
   includedTags: string[];
+  /**
+   * Tags to exclude from the search.
+   */
+  excludedTags: string[];
   /**
    * Prefixes to include in the search.
    */

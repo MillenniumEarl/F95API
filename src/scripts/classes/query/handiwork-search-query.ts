@@ -66,9 +66,6 @@ export default class HandiworkSearchQuery implements IQuery {
    */
   public olderThan: Date = null;
   public includedTags: string[] = [];
-  /**
-   * Tags to exclude from the search.
-   */
   public excludedTags: string[] = [];
   public includedPrefixes: string[] = [];
   public category: TCategory = null;
@@ -159,6 +156,9 @@ export default class HandiworkSearchQuery implements IQuery {
         query[key] = this[key];
       }
     });
+
+    // Adapt keyword
+    query.title = this.keywords;
 
     // Adapt order filter
     let orderFilter = this.order as string;

@@ -47,9 +47,6 @@ export default class ThreadSearchQuery implements IQuery {
    */
   public olderThan: Date = null;
   public includedTags: string[] = [];
-  /**
-   * Tags to exclude from the search.
-   */
   public excludedTags: string[] = [];
   /**
    * Minimum number of answers that the thread must possess.
