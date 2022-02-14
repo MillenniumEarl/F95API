@@ -60,26 +60,8 @@ export default class LatestSearchQuery implements IQuery {
    * Maximum number of items viewable per page.
    */
   public itemsPerPage: 15 | 30 | 45 | 60 | 75 | 90 = 30;
-
-  @ArrayMaxSize(LatestSearchQuery.MAX_TAGS, {
-    message: "Too many tags: $value instead of $constraint1"
-  })
-  public includedTags: string[] = [];
   public includedPrefixes: string[] = [];
-
-  @ArrayMaxSize(LatestSearchQuery.MAX_TAGS, {
-    message: "Too many tags: $value instead of $constraint1"
-  })
   public excludedTags: string[] = [];
-
-  @IsInt({
-    message: "$property expect an integer, received $value"
-  })
-  @Min(LatestSearchQuery.MIN_PAGE, {
-    message: "The minimum $property value must be $constraint1, received $value"
-  })
-  public page = LatestSearchQuery.MIN_PAGE;
-  itype: TQueryInterface = "LatestSearchQuery";
   //#endregion Properties
 
   //#region Getters/Setters
