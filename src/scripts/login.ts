@@ -6,7 +6,7 @@
 // Modules from file
 import { UserNotLogged, USER_NOT_LOGGED } from "./classes/errors";
 import fetchPlatformData from "./fetch-data/fetch-platform-data";
-import { authenticate, send2faCode } from "./network-helper";
+import { authenticate, send2faCode, updateSession } from "./network-helper";
 import shared from "./shared";
 
 // Classes from file
@@ -20,6 +20,10 @@ import Credentials from "./classes/credentials";
  *
  * This **must** be the first operation performed before accessing any other script functions.
  *
+ * @param cbRecaptcha
+ * Callback used to get the verification token released by a
+ * Recaptcha widget after the interaction with the user
+ *
  * @param cb2fa
  * Callback used if two-factor authentication is required for the profile.
  * It must return he OTP code to use for the login.
@@ -27,6 +31,7 @@ import Credentials from "./classes/credentials";
 export async function login(
   username: string,
   password: string,
+  captchaToken?: () => Promise<string>,
   cb2fa?: () => Promise<number>
 ): Promise<LoginResult> {
   // Login result
@@ -38,11 +43,14 @@ export async function login(
   // If the session is valid, login from it
   if (shared.session.isValid(username, password)) {
     loginResult = loginFromLocalSession(username);
+
+    // We need to update cookies and token, otherwise no POST request will work
+    await updateSession();
   }
   // Otherwise login from the F95Zone platform
   else {
     const creds = await createCredentials(username, password);
-    loginResult = await loginInTheRemotePlatform(creds, cb2fa);
+    loginResult = await loginInTheRemotePlatform(creds, captchaToken, cb2fa);
 
     // Recreate the session, overwriting the old one
     if (loginResult.success) {
@@ -114,10 +122,17 @@ async function createCredentials(username: string, password: string) {
  */
 async function loginInTheRemotePlatform(
   creds: Credentials,
+  captchaToken?: () => Promise<string>,
   cb2fa?: () => Promise<number>
 ): Promise<LoginResult> {
   shared.logger.trace(`Authentication for ${creds.username}`);
   let result = await authenticate(creds);
+
+  // Captcha is required, ask for token
+  if (result.code === LoginResult.REQUIRE_CAPTCHA) {
+    const token = await captchaToken();
+    result = await authenticate(creds, token);
+  }
 
   // 2FA Authentication is required, fetch OTP
   if (result.code === LoginResult.REQUIRE_2FA) {

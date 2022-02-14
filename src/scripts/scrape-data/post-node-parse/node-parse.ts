@@ -23,7 +23,7 @@ export default function parseCheerioNode(
   node: Node
 ): IPostElement {
   // Function mapping
-  const functionMap = {
+  const functionMap: Record<string, (node: Cheerio<Node>) => IPostElement> = {
     Text: (node: Cheerio<Node>) => parseCheerioTextNode(node),
     Spoiler: (node: Cheerio<Node>) => parseCheerioSpoilerNode(node),
     Link: (node: Cheerio<Node>) => parseCheerioLinkNode(node)
@@ -33,7 +33,7 @@ export default function parseCheerioNode(
   const type = nodeType($, node);
 
   // Get the post based on the type of node
-  const obj = Object.keys(functionMap).includes(type)
+  const obj = Object.keys(functionMap).includes(type as string)
     ? (functionMap[type]($(node)) as IPostElement)
     : createEmptyElement();
 
@@ -85,11 +85,11 @@ function parseCheerioLinkNode(element: Cheerio<Node>): ILink {
   if (element.is("img")) {
     link.type = "Image";
     link.text = element.attr("alt") ?? "";
-    link.href = element.attr("data-src");
+    link.href = element.attr("data-src") as string;
   } else if (element.is("a")) {
     link.type = "Link";
     link.text = element.text().replace(/\s\s+/g, " ").trim();
-    link.href = element.attr("href");
+    link.href = element.attr("href") as string;
   }
 
   return link;

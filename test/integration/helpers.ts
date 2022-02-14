@@ -20,6 +20,7 @@ export async function auth(): Promise<LoginResult> {
   return login(
     process.env.F95_USERNAME,
     process.env.F95_PASSWORD,
+    insertCaptchaToken,
     insert2faCode
   );
 }
@@ -42,6 +43,10 @@ async function insert2faCode(): Promise<number> {
   // Prompt the user to insert the code
   const answers = await inquirer.prompt(questions);
   return answers.code as number;
+}
+
+async function insertCaptchaToken(): Promise<string> {
+  return "";
 }
 
 //#endregion Private methods

@@ -1,0 +1,18 @@
+{
+  "extends": [
+    "config:base"
+  ],
+  "packageRules": [
+    {
+      "description": "Automatically merge minor and patch-level updates",
+      "matchUpdateTypes": ["minor", "patch", "digest"],
+      "automerge": true,
+      "automergeType": "branch"
+    }
+  ],
+  "schedule": [
+    "after 10pm every weekday", 
+    "before 5am every weekday", 
+    "every weekend"
+  ]
+}

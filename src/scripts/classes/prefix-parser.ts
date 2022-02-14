@@ -13,38 +13,28 @@ export default class PrefixParser {
   //#region Private methods
   /**
    * Gets the key associated with a given value from a dictionary.
-   * @param {Object} object Dictionary to search
-   * @param {Any} value Value associated with the key
-   * @returns {String|undefined} Key found or `undefined`
+   * @param object Dictionary to search
+   * @param value Value associated with the key
+   * @returns Key found or `undefined`
    */
   private getKeyByValue(
     object: TPrefixDict,
     value: string
-  ): string | undefined {
-    return Object.keys(object).find((key) => object[key] === value);
-  }
-
-  /**
-   * Makes an array of strings uppercase.
-   */
-  private toUpperCaseArray(a: string[]): string[] {
-    /**
-     * Makes a string uppercase.
-     */
-    function toUpper(s: string): string {
-      return s.toUpperCase();
-    }
-    return a.map(toUpper);
+  ): number | undefined {
+    return Array.from(object.keys()).find((key) => object.get(key) === value);
   }
 
   /**
    * Check if `dict` contains `value` as a value.
    */
   private valueInDict(dict: TPrefixDict, value: string): boolean {
-    const array = Object.values(dict);
-    const upperArr = this.toUpperCaseArray(array);
     const element = value.toUpperCase();
-    return upperArr.includes(element);
+
+    for (const value of dict.values()) {
+      if (value.toUpperCase() === element) return true;
+    }
+
+    return false;
   }
 
   /**
@@ -66,9 +56,7 @@ export default class PrefixParser {
         this.valueInDict(subdict, element as string);
 
       // Check if the element is a key in the subdict
-      const keyInDict =
-        typeof element === "number" &&
-        Object.keys(subdict).includes(element.toString());
+      const keyInDict = typeof element === "number" && subdict.has(element);
 
       if (valueInDict || keyInDict) {
         dictName = key;
@@ -90,11 +78,8 @@ export default class PrefixParser {
       // Check what dict contains the value
       const dict = this.searchElementInPrefixes(p);
 
-      if (dict) {
-        // Extract the key from the dict
-        const key = this.getKeyByValue(dict, p);
-        ids.push(parseInt(key, 10));
-      }
+      // Extract the key from the dict
+      if (dict) ids.push(this.getKeyByValue(dict, p));
     }
     return ids;
   }
@@ -110,9 +95,7 @@ export default class PrefixParser {
       const dict = this.searchElementInPrefixes(id);
 
       // Add the key to the list
-      if (dict) {
-        prefixes.push(dict[id]);
-      }
+      if (dict) prefixes.push(dict.get(id));
     }
     return prefixes;
   }

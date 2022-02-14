@@ -10,6 +10,7 @@ export default class LoginResult {
   //#region Login result codes
 
   static REQUIRE_2FA = 100;
+  static REQUIRE_CAPTCHA = 101;
   static AUTH_SUCCESSFUL = 200;
   static AUTH_SUCCESSFUL_2FA = 201;
   static ALREADY_AUTHENTICATED = 202;
@@ -43,6 +44,6 @@ export default class LoginResult {
   constructor(success: boolean, code: number, message?: string) {
     this.success = success;
     this.code = code;
-    this.message = message;
+    this.message = message ?? "";
   }
 }

@@ -1,8 +1,8 @@
-[![CodeFactor](https://www.codefactor.io/repository/github/millenniumearl/f95api/badge/2.0.0-ts)](https://www.codefactor.io/repository/github/millenniumearl/f95api/overview/2.0.0-ts)
+[![CodeFactor](https://www.codefactor.io/repository/github/millenniumearl/f95api/badge)](https://www.codefactor.io/repository/github/millenniumearl/f95api)
 [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2FMillenniumEarl%2FF95API.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2FMillenniumEarl%2FF95API?ref=badge_shield)
 [![Known Vulnerabilities](https://snyk.io/test/github/MillenniumEarl/F95API/badge.svg)](https://snyk.io/test/github/MillenniumEarl/F95API)
-[![codecov](https://codecov.io/gh/MillenniumEarl/F95API/branch/2.0.0-ts/graph/badge.svg?token=KHN1TNIH7D)](https://codecov.io/gh/MillenniumEarl/F95API)
-[![npm](https://img.shields.io/npm/v/f95api.svg)](https://www.npmjs.com/package/f95api)
+[![codecov](https://codecov.io/gh/MillenniumEarl/F95API/branch/master/graph/badge.svg?token=KHN1TNIH7D)](https://codecov.io/gh/MillenniumEarl/F95API)
+[![npm](https://img.shields.io/npm/v/@millenniumearl/f95api.svg)](https://www.npmjs.com/package/@millenniumearl/f95api)
 
 # F95API
 
@@ -10,7 +10,22 @@ Unofficial Typescript API used for data scraping from the F95Zone platform.
 
 These APIs have been developed to support [this application](https://github.com/MillenniumEarl/YAM) and allow you to obtain data on games and mods on the platform [F95zone](https://f95zone.to/) (**NSFW**)
 
-A simple usage example can be found in [src/example.ts](https://github.com/MillenniumEarl/F95API/blob/2.0.0-ts/src/example.ts)
+A simple usage example can be found in [src/example.ts](https://github.com/MillenniumEarl/F95API/blob/master/src/example.ts)
+
+# Table of Contents
+
+- [Main features](#main-features)
+- [Login](#login)
+- [Data scraping](#data-scraping)
+- [Classes](#classes)
+  - [Handiwork](#handiwork)
+    - [Basic properties](#basic-properties)
+    - [Mixed properties](#mixed-properties)
+  - [Platform user](#platform-user)
+  - [User data](#user-data)
+  - [Login result](#login-result)
+- [Logging](#logging)
+- [Guidelines for errors](#guidelines-for-errors)
 
 # Main features
 - Support for two-factor authentication
@@ -32,7 +47,7 @@ let 2faCallback = function () => Promise<number>;
 let result = await F95API.login(username, password, 2faCallback);
 ````
 
-Refer to [src/example.ts](https://github.com/MillenniumEarl/F95API/blob/2.0.0-ts/src/example.ts#L35-L67) (lines 35-67) for a working example.
+Refer to [src/example.ts](https://github.com/MillenniumEarl/F95API/blob/master/src/example.ts#L35-L67) (lines 35-67) for a working example.
 
 # Data scraping
 Each game, mod, comic, animation or asset is identified as handiwork and obtaining this element is generic, it will then be up to the user to decide which property to use based on the type of handiwork that has been requested.
@@ -73,7 +88,7 @@ const games = await userdata.featuredGames;
 
 # Classes
 ## Handiwork
-Information about games, mods, etc... are stored in a [Handiwork](https://github.com/MillenniumEarl/F95API/blob/2.0.0-ts/src/scripts/classes/handiwork/handiwork.ts) object with the following fields:
+Information about games, mods, etc... are stored in a [Handiwork](https://github.com/MillenniumEarl/F95API/blob/master/src/scripts/classes/handiwork/handiwork.ts) object with the following fields:
 
 ### Basic properties
 
@@ -125,7 +140,7 @@ The serialization/deserialization in JSON format of this object is possible thro
 
 ## Platform user
 
-A generic user registered on the platform is represented by a [PlatformUser](https://github.com/MillenniumEarl/F95API/blob/2.0.0-ts/src/scripts/classes/mapping/platform-user.ts) object with the following fields:
+A generic user registered on the platform is represented by a [PlatformUser](https://github.com/MillenniumEarl/F95API/blob/master/src/scripts/classes/mapping/platform-user.ts) object with the following fields:
 
 | Property         | Type      | Description   |
 | :---------------:|:---------:|:--------------|
@@ -147,7 +162,7 @@ A generic user registered on the platform is represented by a [PlatformUser](htt
 
 ## User data
 
-The user data currently connected through this API extends the [PlatformUser](https://github.com/MillenniumEarl/F95API/blob/2.0.0-ts/src/scripts/classes/mapping/platform-user.ts) class via the class [UserProfile](https://github.com/MillenniumEarl/F95API/blob/2.0.0-ts/src/scripts/classes/mapping/user-profile.ts) and adds:
+The user data currently connected through this API extends the [PlatformUser](https://github.com/MillenniumEarl/F95API/blob/master/src/scripts/classes/mapping/platform-user.ts) class via the class [UserProfile](https://github.com/MillenniumEarl/F95API/blob/master/src/scripts/classes/mapping/user-profile.ts) and adds:
 
 | Property         | Type                        | Description   |
 | :---------------:|:---------------------------:|:--------------|
@@ -159,7 +174,7 @@ The user data currently connected through this API extends the [PlatformUser](ht
 
 ## Login results
 
-The outcome of the authentication process is represented by the [LoginResult](https://github.com/MillenniumEarl/F95API/blob/2.0.0-ts/src/scripts/classes/login-result.ts) object:
+The outcome of the authentication process is represented by the [LoginResult](https://github.com/MillenniumEarl/F95API/blob/master/src/scripts/classes/login-result.ts) object:
 
 
 | Property | Type     | Description   |

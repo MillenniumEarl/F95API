@@ -4,24 +4,25 @@
 // https://opensource.org/licenses/MIT
 
 // Modules from files
-import { TEngine, IGame, TStatus } from "../../interfaces";
+import { DEFAULT_DATE } from "../../constants/generic";
+import { IGame } from "../../interfaces";
+import { TEngine, TStatus } from "../../types";
 import Basic from "./basic";
 
 export default class Game extends Basic implements IGame {
   //#region Properties
-  readonly censored: boolean;
-  readonly engine: TEngine;
-  readonly genre: string[];
-  readonly installation: string;
-  readonly language: string[];
-  readonly lastRelease: Date;
-  readonly mod: boolean;
-  readonly os: string[];
-  readonly status: TStatus;
-  readonly version: string;
+  censored: boolean = false;
+  engine: TEngine = "Ren'Py";
+  genre: string[] = [];
+  installation: string = "";
+  language: string[] = [];
+  lastRelease: Date = DEFAULT_DATE;
+  os: string[] = [];
+  status: TStatus = "Ongoing";
+  version: string = "";
   //#endregion Properties
 
-  public constructor(init?: Partial<Game>) {
+  public constructor(init?: Partial<Basic>) {
     super();
     Object.assign(this, init);
   }

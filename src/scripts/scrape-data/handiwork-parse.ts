@@ -3,48 +3,58 @@
 // This software is released under the MIT License.
 // https://opensource.org/licenses/MIT
 
-// Public modules from npm
-import { DateTime } from "luxon";
-
 // Modules from files
 import HandiWork from "../classes/handiwork/handiwork";
 import Thread from "../classes/mapping/thread";
-import {
-  IBasic,
-  ILink,
-  IPostElement,
-  TAuthor,
-  TChangelog,
-  TEngine,
-  TExternalPlatform,
-  TStatus
-} from "../interfaces";
+import { ILink, IPostElement } from "../interfaces";
 import shared, { TPrefixDict } from "../shared";
 import Handiwork from "../classes/handiwork/handiwork";
+import { isF95URL, isStringAValidURL } from "../network-helper";
+import { metadata as md } from "../constants/ot-metadata-values";
+import Basic from "../classes/handiwork/basic";
+import { getDateFromString } from "../utils";
+import {
+  TAuthor,
+  TChangelog,
+  TCategory,
+  TEngine,
+  TStatus,
+  TExternalPlatform
+} from "../types";
 
 /**
  * Gets information of a particular handiwork from its thread.
  *
  * If you don't want to specify the object type, use `HandiWork`.
+ * @param {new () => T} type Handiwork class to use for casting the result.
  */
-export default async function getHandiworkInformation<T extends IBasic>(
-  arg: string | Thread
+export default async function getHandiworkInformation<T extends Basic>(
+  arg: string | Thread,
+  type: new () => T
 ): Promise<T> {
-  // Local variables
-  let thread: Thread = null;
-
-  /* istanbul ignore if */
-  if (typeof arg === "string") {
-    // Fetch thread data
-    const id = extractIDFromURL(arg);
-    thread = new Thread(id);
-    await thread.fetch();
-  } else thread = arg;
-
+  // Get thread
+  const thread = await getThread(arg);
   shared.logger.info(`Obtaining handiwork from ${thread.url}`);
 
-  // Convert the info from thread to handiwork
-  let hw: HandiWork = new Handiwork({
+  // Obtains the prefixes from the thread
+  const extracted = extractPrefixes(thread.prefixes, thread.category);
+
+  // Fetch info from opening post
+  const post = await thread.getPost(1);
+  if (!post) throw new Error("Cannot find opening thread");
+  const postData = extractPostData(post.body);
+
+  // On older game template the version is not
+  // specified in the OP, so we need to parse
+  // it from the title
+  if (!postData.version || postData.version === "") {
+    const authors = postData.authors as TAuthor[];
+    const version = getVersionFromHeadline(thread.headline, authors);
+    postData.version = version;
+  }
+
+  // Build the handiwork from the parsed and/or extracted data
+  const hw: HandiWork = new Handiwork({
     id: thread.id,
     url: thread.url,
     name: thread.title,
@@ -53,15 +63,30 @@ export default async function getHandiworkInformation<T extends IBasic>(
     lastThreadUpdate: thread.modified,
     tags: thread.tags,
     rating: thread.rating,
-    prefixes: []
+    prefixes: extracted.prefixes,
+    status: extracted.status,
+    engine: extracted.engine,
+    version: postData.version as string,
+    overview: postData.overview as string,
+    os: postData.os as string[],
+    language: postData.language as string[],
+    installation: postData.installation as string,
+    pages: postData.pages as string,
+    resolution: postData.os as string[],
+    length: postData.length as string,
+    genre: postData.genre as string[],
+    censored: postData.censored as boolean,
+    lastRelease: postData.lastRelease as Date,
+    authors: postData.authors as TAuthor[],
+    changelog: postData.changelog as TChangelog[],
+    cover: postData.cover as string
   });
-  fillWithPrefixes(hw, thread.prefixes);
 
-  // Fetch info from first post
-  const post = await thread.getPost(1);
-  hw = fillWithPostData(hw, post.body);
+  // Cast and return the object
+  const castingObject = new type();
+  castingObject.cast(hw);
 
-  return <T>(<unknown>hw);
+  return castingObject;
 }
 
 //#region Private methods
@@ -75,9 +100,13 @@ export default async function getHandiworkInformation<T extends IBasic>(
 function extractIDFromURL(url: string): number {
   shared.logger.trace("Extracting ID from URL...");
 
+  // Validate URL
+  if (!isStringAValidURL(url))
+    throw new URIError(`'${url}' is not a valid URL`);
+
   // URL are in the format https://f95zone.to/threads/GAMENAME-VERSION-DEVELOPER.ID/
   // or https://f95zone.to/threads/ID/
-  const match = url.match(/([0-9]+)(?=\/|\b)(?!-|\.)/);
+  const match = url.match(/((?<=\/|\.)(\d+)(?=\/{0,1}))(?!\w)/i);
   if (!match) return -1;
 
   // Parse and return number
@@ -104,7 +133,7 @@ function toUpperCaseArray(a: string[]): string[] {
  */
 function stringInDict(s: string, a: TPrefixDict): boolean {
   // Make uppercase all the strings in the array
-  const values = toUpperCaseArray(Object.values(a));
+  const values = toUpperCaseArray(Array.from(a.values()));
 
   return values.includes(s.toUpperCase());
 }
@@ -127,16 +156,6 @@ function stringToBoolean(s: string): boolean {
 }
 
 /**
- * Gets the element with the given name or `undefined`.
- *
- * Case-insensitive.
- */
-function getPostElementByName(
-  elements: IPostElement[],
-  name: string
-): IPostElement | undefined;
-
-/**
  * Gets the first non-null element having one of
  * the specified ones as a name or `undefined`.
  *
@@ -144,16 +163,8 @@ function getPostElementByName(
  */
 function getPostElementByName(
   elements: IPostElement[],
-  names: string[]
-): IPostElement | undefined;
-
-function getPostElementByName(
-  elements: IPostElement[],
-  searchValue: string | string[]
+  searchValue: string[]
 ): IPostElement | undefined {
-  // Check for the type of searchValue
-  const names = Array.isArray(searchValue) ? searchValue : [searchValue];
-
   // Inside function used to find the element with the given name
   function findElement(es: IPostElement[], name: string) {
     return es.find((e) => e.name.toUpperCase() === name.toUpperCase());
@@ -162,7 +173,7 @@ function getPostElementByName(
   // Find the elements with the given names, filter
   // for "undefined" and return the first element or
   // "undefined" if no element is found
-  return names
+  return searchValue
     .map((name) => findElement(elements, name))
     .filter((post) => post !== undefined)
     .shift();
@@ -171,28 +182,69 @@ function getPostElementByName(
 //#endregion Utilities
 
 /**
+ * Obtains the a `Thread` object from the argument.
+ */
+async function getThread(t: Thread | string): Promise<Thread> {
+  // Local variable
+  let thread = null;
+
+  // Fetch thread data
+  /* istanbul ignore if */
+  if (typeof t === "string") {
+    const id = extractIDFromURL(t);
+    thread = new Thread(id);
+    await thread.fetch();
+  } else thread = t as Thread;
+
+  return thread;
+}
+
+/**
+ * Given the headline of a thread, return the
+ * version without the trailing `v` (if any).
+ *
+ * If no version is found, return an empty string.
+ */
+function getVersionFromHeadline(headline: string, authors: TAuthor[]): string {
+  // Find all the elements in the square brackets (version and author)
+  const matches = headline.match(/(?<=\[)(.*?)(?=\])/g);
+  if (!matches) return "";
+
+  // Parse the matches to ignore the author
+  let version = matches
+    .map((match) => {
+      const isAuthor = authors
+        .map((a) => a.name.toUpperCase()) // Get all the author's names
+        .some((name) => match.toUpperCase().includes(name)); // Check if the current match is an author
+
+      return isAuthor ? null : match;
+    })
+    .filter((v) => v !== null)
+    .shift();
+
+  // Remove trailing "v" if any
+  version = version ?? ""; // Avoid `null` version
+  const hasTrailingV = version?.match(/^[v|V](?=\d)/i)?.length !== 0;
+  version = hasTrailingV ? version : version.replace("v", "");
+
+  return version;
+}
+
+/**
  * Parse the post prefixes.
  *
  * In particular, it elaborates the following prefixes for games:
  * `Engine`, `Status`, `Mod`.
  */
-function fillWithPrefixes(hw: HandiWork, prefixes: string[]) {
+function extractPrefixes(prefixes: string[], category: TCategory) {
   shared.logger.trace("Parsing prefixes...");
 
   // Local variables
-  let mod = false;
   let engine: TEngine = null;
   let status: TStatus = null;
+  const parsedPrefixes: string[] = [];
 
-  /**
-   * Emulated dictionary of mod prefixes.
-   */
-  const fakeModDict: TPrefixDict = {
-    0: "MOD",
-    1: "CHEAT MOD"
-  };
-
-  prefixes.map((item) => {
+  for (const item of prefixes) {
     // Remove the square brackets
     const prefix = item.replace("[", "").replace("]", "");
 
@@ -201,75 +253,80 @@ function fillWithPrefixes(hw: HandiWork, prefixes: string[]) {
       engine = prefix as TEngine;
     else if (stringInDict(prefix, shared.prefixes["statuses"]))
       status = prefix as TStatus;
-    else if (stringInDict(prefix, fakeModDict)) mod = true;
 
     // Anyway add the prefix to list
-    hw.prefixes.push(prefix);
-  });
+    parsedPrefixes.push(prefix);
+  }
 
   // If the status is not set, then the game is in development (Ongoing)
-  status = status && hw.category === "games" ? status : "Ongoing";
+  status = status && category === "games" ? status : "Ongoing";
 
-  hw.engine = engine;
-  hw.status = status;
-  hw.mod = mod;
+  return {
+    status: status,
+    engine: engine,
+    prefixes: parsedPrefixes
+  };
 }
 
 /**
- * Compiles a HandiWork object with the data extracted
- * from the main post of the HandiWork page.
+ * Extract HandiWork data from the main post of the HandiWork's page.
  *
  * The values that will be added are:
  * `Overview`, `OS`, `Language`, `Version`, `Installation`,
  * `Pages`, `Resolution`, `Lenght`, `Genre`, `Censored`,
  * `LastRelease`, `Authors`, `Changelog`, `Cover`.
  */
-function fillWithPostData(hw: HandiWork, elements: IPostElement[]): Handiwork {
+function extractPostData(elements: IPostElement[]) {
+  /**
+   * Types of value extracted from the post.
+   */
+  type content = string | string[] | boolean | Date | TAuthor[] | TChangelog[];
+
+  /**
+   * Groups the values extracted from the post.
+   */
+  const extracted: Record<string, content> = {};
+
+  // Helper methods
+  const getTextFromElement = (metadata: string[]) =>
+    getPostElementByName(elements, metadata)?.text ?? "";
+
+  const parseArrayOfStrings = (metadata: string[], separator = ",") =>
+    getTextFromElement(metadata)
+      ?.split(separator)
+      .map((s) => s.trim())
+      .filter((s) => s !== "") ?? [];
+
   // First fill the "simple" elements
-  hw.os = getPostElementByName(elements, "os")
-    ?.text?.split(",")
-    .map((s) => s.trim());
-  hw.language = getPostElementByName(elements, "language")
-    ?.text?.split(",")
-    .map((s) => s.trim());
-  hw.version = getPostElementByName(elements, "version")?.text;
-  hw.installation = getPostElementByName(elements, "installation")?.text;
-  hw.pages = getPostElementByName(elements, "pages")?.text;
-  hw.resolution = getPostElementByName(elements, "resolution")
-    ?.text?.split(",")
-    .map((s) => s.trim());
-  hw.length = getPostElementByName(elements, "lenght")?.text;
+  extracted.cover = (getPostElementByName(elements, md.COVER) as ILink)?.href;
+
+  extracted.version = getTextFromElement(md.VERSION);
+  extracted.installation = getTextFromElement(md.INSTALLATION);
+  extracted.pages = getTextFromElement(md.PAGES);
+  extracted.length = getTextFromElement(md.LENGTH);
+  extracted.overview = getTextFromElement(md.OVERVIEW);
+
+  extracted.os = parseArrayOfStrings(md.OS);
+  extracted.language = parseArrayOfStrings(md.LANGUAGE);
+  extracted.resolution = parseArrayOfStrings(md.RESOLUTION);
+  extracted.genre = parseArrayOfStrings(md.GENRE);
 
   // Parse the censorship
-  const censored = getPostElementByName(elements, ["censored", "censorship"]);
-  if (censored) hw.censored = stringToBoolean(censored.text);
+  const censored = getTextFromElement(md.CENSORED);
+  if (censored) extracted.censored = stringToBoolean(censored);
 
-  // Get the genres
-  const genre = getPostElementByName(elements, "genre")?.text;
-  hw.genre = genre
-    ?.split(",")
-    .map((s) => s.trim())
-    .filter((s) => s !== "");
-
-  // Fill the dates
-  const releaseDate = getPostElementByName(elements, "release date")?.text;
-  if (DateTime.fromISO(releaseDate).isValid)
-    hw.lastRelease = new Date(releaseDate);
-
-  //Get the overview
-  const overview = getPostElementByName(elements, "overview")?.text;
-
-  // Get the cover
-  const cover = (getPostElementByName(elements, "cover") as ILink)?.href;
+  // Get the release date
+  const releaseDateText = getTextFromElement(md.RELEASE);
+  const releaseDate = getDateFromString(releaseDateText);
+  if (releaseDate) extracted.lastRelease = releaseDate;
 
   // Get the author
-  const authors = parseAuthor(elements);
+  extracted.authors = parseAuthor(elements);
 
   // Get the changelog
-  const changelog = parseChangelog(elements);
+  extracted.changelog = parseChangelog(elements);
 
-  const merged = Object.assign({ overview, cover, authors, changelog }, hw);
-  return new Handiwork(merged);
+  return extracted;
 }
 
 /**
@@ -283,11 +340,7 @@ function parseAuthor(elements: IPostElement[]): TAuthor[] {
   };
 
   // Fetch the authors from the post data
-  const authorElement = getPostElementByName(elements, [
-    "developer",
-    "developer/publisher",
-    "artist"
-  ]);
+  const authorElement = getPostElementByName(elements, md.AUTHOR);
 
   if (authorElement) {
     // Set the author name
@@ -295,16 +348,30 @@ function parseAuthor(elements: IPostElement[]): TAuthor[] {
 
     // Add the found platforms
     authorElement.content
-      .filter((e: ILink) => e.href)
-      .forEach((e: ILink) => {
+      .filter((e) => (e as ILink).href)
+      .forEach((e) => {
         // Create and push the new platform
         const platform: TExternalPlatform = {
           name: e.text,
-          link: e.href
+          link: (e as ILink).href
         };
 
         author.platforms.push(platform);
       });
+
+    // Sometimes the author has a profile on F95Zone and
+    // it will be saved under platforms, not in name.
+    const f95Profile = author.platforms.filter((p) => isF95URL(p.link)).shift();
+    if (author.name === "" && f95Profile) author.name = f95Profile.name;
+
+    // Sometimes there are multiple "support" platform but no name of the author.
+    // In these case, usually, the name of the first platform is the author's name.
+    if (author.name === "" && author.platforms.length >= 1)
+      author.name = author.platforms[0].name;
+
+    // Clean the author name from special chars at the end
+    const regex = /(?<=\w\b)[\s-/]+$/gi;
+    if (regex.test(author.name)) author.name = author.name.replace(regex, "");
   }
 
   return [author];
@@ -316,10 +383,7 @@ function parseAuthor(elements: IPostElement[]): TAuthor[] {
 function parseChangelog(elements: IPostElement[]): TChangelog[] {
   // Local variables
   const changelog = [];
-  const changelogElement = getPostElementByName(elements, [
-    "changelog",
-    "change-log"
-  ]);
+  const changelogElement = getPostElementByName(elements, md.CHANGELOG);
 
   if (changelogElement) {
     // Regex used to match version tags
@@ -342,7 +406,10 @@ function parseChangelog(elements: IPostElement[]): TChangelog[] {
 
       // Fetch the group of data of this version tag
       const group = changelogElement.content.slice(i, diff);
-      versionChangelog.version = group.shift().text.replace("v", "").trim();
+      const hasElements = group.length !== 0;
+      versionChangelog.version = hasElements
+        ? group[0].text.replace("v", "").trim()
+        : "";
 
       // Parse the data
       group.forEach((e) => {

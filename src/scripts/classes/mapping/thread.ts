@@ -5,18 +5,21 @@
 
 // Public modules from npm
 import cheerio from "cheerio";
-import { DateTime } from "luxon";
 
 // Modules from files
 import Post from "./post";
 import PlatformUser from "./platform-user";
-import { ILazy, TCategory, TRating } from "../../interfaces";
+import { ILazy } from "../../interfaces";
 import { urls } from "../../constants/url";
 import { POST, THREAD } from "../../constants/css-selector";
-import { fetchHTML, fetchPOSTResponse } from "../../network-helper";
-import Shared from "../../shared";
+import {
+  fetchHTML,
+  fetchPOSTResponse,
+  getUrlRedirect
+} from "../../network-helper";
 import {
   InvalidID,
+  InvalidResponseParsing,
   INVALID_THREAD_CONSTRUCTOR_ARGUMENT,
   INVALID_THREAD_ID,
   ParameterError,
@@ -25,6 +28,9 @@ import {
 } from "../errors";
 import { getJSONLD, TJsonLD } from "../../scrape-data/json-ld";
 import shared from "../../shared";
+import { DEFAULT_DATE } from "../../constants/generic";
+import { getDateFromString } from "../../utils";
+import { TRating, TCategory } from "../../types";
 
 type TPostsForPage = 20 | 40 | 60 | 100;
 
@@ -36,14 +42,16 @@ export default class Thread implements ILazy {
 
   private POST_FOR_PAGE: TPostsForPage = 20;
   private _id: number;
-  private _title: string;
-  private _tags: string[];
-  private _prefixes: string[];
-  private _rating: TRating;
-  private _owner: PlatformUser;
-  private _publication: Date;
-  private _modified: Date;
-  private _category: TCategory;
+  private _url: string = "";
+  private _title: string = "";
+  private _tags: string[] = [];
+  private _prefixes: string[] = [];
+  private _rating: TRating = undefined as any;
+  private _owner: PlatformUser = undefined as any;
+  private _publication: Date = DEFAULT_DATE;
+  private _modified: Date = DEFAULT_DATE;
+  private _category: TCategory = undefined as any;
+  private _headline: string = "";
 
   //#endregion Fields
 
@@ -61,8 +69,9 @@ export default class Thread implements ILazy {
    * It may vary depending on any versions of the contained product.
    */
   public get url(): string {
-    // Create the URL at runtime to save memory
-    return new URL(this.id.toString(), urls.THREADS).toString();
+    return this._url !== ""
+      ? this._url
+      : new URL(`${this.id}/`, urls.THREADS).toString();
   }
   /**
    * Thread title.
@@ -112,6 +121,15 @@ export default class Thread implements ILazy {
   public get category(): TCategory {
     return this._category;
   }
+  /**
+   * The title without status tags and graphics engine.
+   * It can be useful on old template threads when the
+   * version is missing and needs to be retrieved from
+   * the title.
+   */
+  public get headline(): string {
+    return this._headline;
+  }
 
   //#endregion Getters
 
@@ -148,7 +166,7 @@ export default class Thread implements ILazy {
     const params = {
       _xfResponseType: "json",
       _xfRequestUri: `/account/dpp-update?content_type=thread&content_id=${this.id}`,
-      _xfToken: Shared.session.token,
+      _xfToken: shared.session.token,
       _xfWithData: "1",
       content_id: this.id.toString(),
       content_type: "thread",
@@ -173,8 +191,10 @@ export default class Thread implements ILazy {
     const posts = $(THREAD.POSTS_IN_PAGE)
       .toArray()
       .map((el) => {
-        const id = $(el).find(POST.ID).attr("id").replace("post-", "");
-        return new Post(parseInt(id, 10));
+        // Force Typescript to accept "string" type instead of "undefined"
+        const element = $(el).find(POST.ID).attr("id") as string;
+        const id = parseInt(element.replace("post-", ""), 10);
+        return new Post(id);
       });
 
     // Fetch the data of the posts
@@ -207,7 +227,7 @@ export default class Thread implements ILazy {
   private cleanHeadline(headline: string): string {
     // From the title we can extract: Name, author and version
     // [PREFIXES] TITLE [VERSION] [AUTHOR]
-    const matches = headline.match(/\[(.*?)\]/g);
+    const matches = headline.match(/(?<=\s|^|\])\[.*?\](?=\s|$)/gi);
 
     // Get the title name
     let name = headline;
@@ -228,22 +248,27 @@ export default class Thread implements ILazy {
     const tagArray = $(THREAD.TAGS).toArray();
     const prefixArray = $(THREAD.PREFIXES).toArray();
     const JSONLD = getJSONLD($("body"));
-    const published = JSONLD["datePublished"] as string;
-    const modified = JSONLD["dateModified"] as string;
+    const published = getDateFromString(JSONLD["datePublished"] as string);
+    const modified = getDateFromString(JSONLD["dateModified"] as string);
+
+    // Throws error if no ID is found
+    if (!ownerID)
+      throw new InvalidResponseParsing("Cannot get ID from HTML response");
 
     // Parse the thread's data
-    this._title = this.cleanHeadline(JSONLD["headline"] as string);
+    this._headline = JSONLD["headline"] as string;
+    this._title = this.cleanHeadline(this._headline);
     this._tags = tagArray.map((el) => $(el).text().trim());
     this._prefixes = prefixArray.map((el) => $(el).text().trim());
     this._owner = new PlatformUser(parseInt(ownerID, 10));
     await this._owner.fetch();
     this._rating = this.parseRating(JSONLD);
-    this._category = JSONLD["articleSection"] as TCategory;
+    const section = JSONLD["articleSection"].toString().toLowerCase();
+    this._category = section as TCategory;
 
     // Validate the dates
-    if (DateTime.fromISO(modified).isValid) this._modified = new Date(modified);
-    if (DateTime.fromISO(published).isValid)
-      this._publication = new Date(published);
+    if (modified) this._modified = modified;
+    if (published) this._publication = published;
   }
 
   /**
@@ -258,8 +283,9 @@ export default class Thread implements ILazy {
     // + https://f95zone.to/threads/NAME.ID/
     // + https://f95zone.to/threads/ID/
     const regex = new RegExp(/(threads\/|\.)([0-9]+)/);
-    if (surl.match(regex)) {
-      const sid = surl.match(regex)[0].replace(".", "").replace("threads/", "");
+    const match = surl.match(regex);
+    if (match) {
+      const sid = match[0].replace(".", "").replace("threads/", "");
       id = parseInt(sid, 10);
     }
 
@@ -277,6 +303,9 @@ export default class Thread implements ILazy {
     // Check login
     if (!shared.isLogged) throw new UserNotLogged(USER_NOT_LOGGED);
 
+    // Get the actual URL of the thread
+    this._url = await getUrlRedirect(this.url);
+
     // Fetch the HTML source
     const response = await fetchHTML(this.url);
     if (response.isSuccess()) await this.elaborateResponse(response.value);
@@ -287,9 +316,9 @@ export default class Thread implements ILazy {
    * Gets the post in the `index` position with respect to the posts in the thread.
    *
    * `index` must be greater or equal to 1.
-   * If the post is not found, `null` is returned.
+   * If the post is not found, `undefined` is returned.
    */
-  public async getPost(index: number): Promise<Post | null> {
+  public async getPost(index: number): Promise<Post | undefined> {
     // Validate parameters
     if (index < 1)
       throw new ParameterError("Index must be greater or equal than 1");
@@ -301,7 +330,7 @@ export default class Thread implements ILazy {
     const page = Math.ceil(index / this.POST_FOR_PAGE);
 
     // Fetch the page
-    const url = new URL(`page-${page}`, `${this.url}/`).toString();
+    const url = new URL(`page-${page}`, `${this.url}`).toString();
     const htmlResponse = await fetchHTML(url);
 
     if (htmlResponse.isSuccess()) {

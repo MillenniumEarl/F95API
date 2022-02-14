@@ -6,12 +6,16 @@
             "request": "launch",
             "command": "npm run test",
             "cwd": "${workspaceFolder}",
+            "skipFiles": [
+                "${workspaceFolder}/node_modules/**/*",
+                "<node_internals>/**/*"
+            ]
         },
         {
             "type": "node-terminal",
             "name": "Example",
             "request": "launch",
-            "command": "npm run run-example",
+            "command": "npm run example",
             "cwd": "${workspaceFolder}",
             "skipFiles": [
                 "${workspaceFolder}/node_modules/**/*",

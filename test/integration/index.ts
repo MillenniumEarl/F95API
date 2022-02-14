@@ -12,6 +12,7 @@ import { suite as session } from "./classes/session.test";
 import { suite as handiworkfromurl } from "./handiwork-from-url.test";
 import { suite as postparsetree } from "./scrape-data/post-parse-tree.test";
 import { suite as fetchalert } from "./fetch-data/fetch-alert.test";
+import { suite as login } from "./login.test";
 
 describe("Integration Tests", function testBasic() {
   //#region Set-up
@@ -20,6 +21,7 @@ describe("Integration Tests", function testBasic() {
 
   //#endregion Set-up
 
+  describe("Test login", login.bind(this));
   describe("Test class Credentials", credentials.bind(this));
   describe("Test class PrefixParser", prefixParser.bind(this));
   describe("Test class Session", session.bind(this));

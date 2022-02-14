@@ -4,7 +4,8 @@
 // https://opensource.org/licenses/MIT
 
 // Public modules from npm
-import cheerio, { Node } from "cheerio";
+import { isValidISODateString } from "iso-datestring-validator";
+import cheerio, { Cheerio, Node } from "cheerio";
 
 // Modules from files
 import PlatformUser from "./platform-user";
@@ -17,7 +18,12 @@ import {
   WATCHED_THREAD
 } from "../../constants/css-selector";
 import { fetchHTML } from "../../network-helper";
-import { InvalidID, UserNotLogged, USER_NOT_LOGGED } from "../errors";
+import {
+  InvalidID,
+  MissingOrInvalidParsingAttribute,
+  UserNotLogged,
+  USER_NOT_LOGGED
+} from "../errors";
 import shared from "../../shared";
 import Game from "../handiwork/game";
 import {
@@ -30,6 +36,7 @@ import fetchAlertElements from "../../fetch-data/user-data/fetch-alert";
 import Thread from "./thread";
 import { getHandiworkFromURL } from "../../handiwork-from-url";
 import fetchPageConversations from "../../fetch-data/user-data/fetch-conversation";
+import { DEFAULT_DATE } from "../../constants/generic";
 
 interface IFetchOptions<T> {
   /**
@@ -52,11 +59,11 @@ interface IFetchOptions<T> {
 export default class UserProfile extends PlatformUser {
   //#region Fields
 
-  private _watched: IWatchedThread[] = null;
-  private _bookmarks: IBookmarkedPost[] = null;
-  private _alerts: IAlert[] = null;
-  private _conversations: IConversation[] = null;
-  private _featuredGames: Game[] = null;
+  private _watched: IWatchedThread[] = undefined as any;
+  private _bookmarks: IBookmarkedPost[] = undefined as any;
+  private _alerts: IAlert[] = undefined as any;
+  private _conversations: IConversation[] = undefined as any;
+  private _featuredGames: Game[] = undefined as any;
 
   //#endregion Fields
 
@@ -223,7 +230,10 @@ export default class UserProfile extends PlatformUser {
 
     // Copy the property of the superior class (PlatformUser) to this instance
     const superprops = Object.getOwnPropertyNames(temp);
-    superprops.map((p) => (this[p] = temp[p]));
+    superprops
+      .filter((p) => !p.includes("__proto__"))
+      // file deepcode ignore PrototypePollution: I already ignored __proto__ strings
+      .map((p) => (this[p] = temp[p]));
 
     // Fetch all the "extra" data of this user
     if (extended) {
@@ -244,6 +254,7 @@ export default class UserProfile extends PlatformUser {
   //#endregion Public methods
 
   //#region Private methods
+
   /**
    * Gets the ID of the user currently logged.
    */
@@ -257,8 +268,10 @@ export default class UserProfile extends PlatformUser {
       // Load page with cheerio
       const $ = cheerio.load(html);
 
-      const sid = $(GENERIC.CURRENT_USER_ID).attr("data-user-id").trim();
-      return parseInt(sid, 10);
+      const sid = $(GENERIC.CURRENT_USER_ID).attr("data-user-id");
+      if (!sid)
+        throw new MissingOrInvalidParsingAttribute("Cannot extract user's ID");
+      return parseInt(sid.trim(), 10);
     });
 
     if (result.isFailure()) throw result.value;
@@ -350,10 +363,11 @@ export default class UserProfile extends PlatformUser {
 
     function parseElement(el: Node) {
       // Parse the URL
-      const partialURL = $(el).find(WATCHED_THREAD.URL).attr("href");
+      const partialURL = findAttribute($(el), WATCHED_THREAD.URL, "href");
+
       const url = new URL(
         partialURL.replace("unread", ""),
-        `${urls.BASE}`
+        urls.BASE
       ).toString();
 
       return {
@@ -379,15 +393,16 @@ export default class UserProfile extends PlatformUser {
 
     async function parseElement(el: Node) {
       // Parse the URL
-      const url = $(el).find(BOOKMARKED_POST.URL).attr("href");
+      const url = findAttribute($(el), BOOKMARKED_POST.URL, "href");
 
       // Check if the URL contains a post ID and get it,
       // otherwise it represents the first post of a
       // thread so set the ID to 1
       const regex = new RegExp(/posts\/([0-9]+)/);
+      const match = url.match(regex);
       let foundID = null;
-      if (url.match(regex)) {
-        const sid = url.match(regex)[0].replace("posts/", "");
+      if (match) {
+        const sid = match[0].replace("posts/", "");
         foundID = parseInt(sid, 10);
       } else {
         const post = await new Thread(new URL(url)).getPost(1);
@@ -395,18 +410,26 @@ export default class UserProfile extends PlatformUser {
       }
 
       // Find the savedate
-      const sDate = $(el).find(BOOKMARKED_POST.BOOKMARK_TIME).attr("datetime");
+      const sDate = findAttribute(
+        $(el),
+        BOOKMARKED_POST.BOOKMARK_TIME,
+        "datetime"
+      );
 
       // Find the owner ID
-      const sOwnerID = $(el)
-        .find(BOOKMARKED_POST.OWNER_ID)
-        .attr("data-user-id");
+      const sOwnerID = findAttribute(
+        $(el),
+        BOOKMARKED_POST.OWNER_ID,
+        "data-user-id"
+      );
 
       return {
         id: foundID,
         userid: parseInt(sOwnerID, 10),
         description: $(el).find(BOOKMARKED_POST.DESCRIPTION).text().trim(),
-        savedate: new Date(sDate),
+        savedate: isValidISODateString(sDate)
+          ? new Date(sDate)
+          : new Date(DEFAULT_DATE),
         labels: $(el)
           .find(BOOKMARKED_POST.LABELS)
           .map((_, label) => $(label).text())
@@ -415,7 +438,7 @@ export default class UserProfile extends PlatformUser {
     }
 
     const promises = $(BOOKMARKED_POST.BODIES)
-      .map(async (_idx, el) => await parseElement(el))
+      .map((_idx, el) => parseElement(el))
       .get();
 
     return await Promise.all(promises);
@@ -441,7 +464,9 @@ export default class UserProfile extends PlatformUser {
       const slider = $(GENERIC.FEATURED_GAMES).toArray();
 
       // Extract the URL from the attribute
-      const partialURLs = slider.map((el) => $(el).attr("href").trim());
+      const partialURLs = slider
+        .map((el) => $(el).attr("href")?.trim())
+        .filter((url) => url !== undefined);
 
       // Prepare the unique URLs
       const gameURLs = [...new Set(partialURLs)].map((pu) =>
@@ -450,7 +475,7 @@ export default class UserProfile extends PlatformUser {
 
       // fetch the games
       const promises = gameURLs.map((url) => {
-        return getHandiworkFromURL<Game>(url);
+        return getHandiworkFromURL<Game>(url, Game);
       });
 
       return Promise.all(promises);
@@ -458,4 +483,25 @@ export default class UserProfile extends PlatformUser {
   }
 
   //#endregion Private methods
+}
+
+/**
+ * Make sure you get the attribute you are looking for or throw an exception.
+ *
+ * Return empty string if no attribute is found and `raise` if false.
+ */
+function findAttribute(
+  e: Cheerio<Node>,
+  selector: string,
+  attribute: string,
+  raise: boolean = true
+): string | "" {
+  // Extract the attribute
+  const extracted = e.find(selector).attr(attribute) ?? "";
+
+  // Check if the attribute is undefined
+  if (!extracted && raise) {
+    const message = `Cannot find '${attribute}' attribute in element with selector '${selector}'`;
+    throw new MissingOrInvalidParsingAttribute(message);
+  } else return extracted;
 }

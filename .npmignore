@@ -1,13 +1,22 @@
-test
+# Dirs
+.github/
+.vscode/
+test/
+coverage/
+.nyc_output/
+src/
+
+# Files
+CHANGELOG.md
+COOKIES.md
 tsconfig.json
-.coverage
 .eslintignore
 .eslintrc
 .gitignore
-.gitattribute
-.github
-.vscode
-.deepsource.toml
+.gitattributes
 .env
 .prettierrc
-.nyc_output
+dist/tsconfig.tsbuildinfo
+
+# Example files
+dist/example.*

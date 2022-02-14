@@ -16,7 +16,7 @@ import log4js from "@log4js-node/log4js-api";
 import Session from "./classes/session";
 
 // Types declaration
-export type TPrefixDict = { [n: number]: string };
+export type TPrefixDict = Map<number, string>;
 type TPrefixKey = "engines" | "statuses" | "tags" | "others";
 type TPrefixes = { [key in TPrefixKey]: TPrefixDict };
 
@@ -44,7 +44,7 @@ export default abstract class Shared {
   /**
    * List of platform prefixes and tags.
    */
-  static get prefixes(): { [s: string]: TPrefixDict } {
+  static get prefixes(): Record<string, TPrefixDict> {
     return this._prefixes;
   }
   /**

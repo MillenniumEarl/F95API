@@ -40,14 +40,14 @@ export default async function fetchLatestHandiworkURLs(
       const data: [{ thread_id: number }] = response.value.data.msg.data;
       const totalPages: number = response.value.data.msg.pagination.total;
 
-      data.map((e) => {
+      for (const e of data) {
         if (fetchedResults < limit) {
           const gameURL = new URL(e.thread_id.toString(), urls.THREADS).href;
           resultURLs.push(gameURL);
 
           fetchedResults += 1;
         }
-      });
+      }
 
       // Increment page and check for it's existence
       shallowQuery.page += 1;

@@ -5,7 +5,7 @@
 
 // Public modules from npm
 import cheerio, { Cheerio, Node } from "cheerio";
-import { DateTime } from "luxon";
+import { isValidISODateString } from "iso-datestring-validator";
 
 // Modules from files
 import { CONVERSATION } from "../../constants/css-selector";
@@ -72,16 +72,18 @@ function parseConversationElement(e: Cheerio<Node>): IConversation {
 
   // Parse dates
   const sCreationDate = e.find(CONVERSATION.START_DATE).attr("datetime");
-  conversation.creation = DateTime.fromISO(sCreationDate).isValid
-    ? new Date(sCreationDate)
-    : null;
+  conversation.creation =
+    sCreationDate && isValidISODateString(sCreationDate)
+      ? new Date(sCreationDate)
+      : null;
 
   const sLastResponseDate = e
     .find(CONVERSATION.LAST_RESPONSE_TIME)
     .attr("datetime");
-  conversation.lastResponseTime = DateTime.fromISO(sLastResponseDate).isValid
-    ? new Date(sLastResponseDate)
-    : null;
+  conversation.lastResponseTime =
+    sLastResponseDate && isValidISODateString(sLastResponseDate)
+      ? new Date(sLastResponseDate)
+      : null;
 
   return conversation;
 }

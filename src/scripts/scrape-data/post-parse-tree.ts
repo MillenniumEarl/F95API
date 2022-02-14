@@ -52,7 +52,7 @@ export function extractDataFromFirstThreadPost(
   let root = createTree($, post);
 
   // Remove all empty elements from the tree.
-  root = pruneTreeNode(root);
+  root = pruneTreeNode(root) as TreeNode; // Force TS to accept TreeNode as type
 
   // Clean all the nodes with a link element
   root = cleanLinkNode(root);
@@ -114,19 +114,19 @@ function printTree(root: TreeNode, nindent = 0) {
 
   // Print the data of the children nodes
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  root.children.map((child) => printTree(child, nindent + 1));
+  root.children.forEach((child) => printTree(child, nindent + 1));
 }
 
 /* istanbul ignore next: Debug method */
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 function printPairs(pairs: IPostElement[]) {
-  pairs.map((e) => {
+  for (const pair of pairs) {
     const childData =
-      e.content.length > 0 ? `(children: ${e.content.length})` : "";
-    const text = e.text || "No Text";
+      pair.content.length > 0 ? `(children: ${pair.content.length})` : "";
+    const text = pair.text || "No Text";
     // eslint-disable-next-line no-console
-    console.log(`+ [${e.name}]: ${text} ${childData}`);
-  });
+    console.log(`+ [${pair.name}]: ${text} ${childData}`);
+  }
 }
 
 //#endregion Tree methods
@@ -154,7 +154,8 @@ function purgeNode(node: TreeNode) {
   let lastChildrenLength = node.parent.children.length;
   let addedChildren = 0;
   let newElementIndex = cloneIndex;
-  node.children.map((child) => {
+
+  for (const child of node.children) {
     // Change the parent of the children
     child.parent = node.parent;
 
@@ -184,13 +185,13 @@ function purgeNode(node: TreeNode) {
 
     // Save the actual length of the parent's children
     lastChildrenLength = node.parent.children.length;
-  });
+  }
 }
 
 /**
  * Eliminates connection nodes that do not bring additional information to the tree.
  *
- * Returns the cleaned node or `null` is the has been purged.
+ * Returns the cleaned node or `null` is the node has been purged.
  */
 function pruneTreeNode(node: TreeNode): TreeNode | null {
   // Remove all the children that haven't a value AND other childrens
@@ -274,7 +275,7 @@ function isUninformativeNode(node: TreeNode): boolean {
  */
 function pairUpTitleWithContent(root: TreeNode): IPostElement[] {
   // Local variables
-  let lastActiveTitle: IPostElement = null;
+  let lastActiveTitle: IPostElement = null as any;
   const pairs: IPostElement[] = [];
   const rootClone = Object.assign({}, root);
 
@@ -295,7 +296,7 @@ function pairUpTitleWithContent(root: TreeNode): IPostElement[] {
   //  + Textual element "TITLE"
   //  + Textual element ":"
   //  + Generic element CONTENT
-  rootClone.children.map((child, index, children) => {
+  rootClone.children.forEach((child, index, children) => {
     // Convert from TreeNode to IPostElement
     const e = elementsToContent(child);
 
@@ -386,7 +387,7 @@ function parseTitleElement(e: IPostElement): IPostElement {
   // the spoiler goes to the content of the clne, thant it
   // will be removed
   if (clone.content.length === 1 && clone.content[0].type === "Spoiler") {
-    const spoiler = clone.content.pop();
+    const spoiler = clone.content.pop() as IPostElement; // Force TS to accept IPostElement as type
     clone.content.push(...spoiler.content);
   }
 
@@ -414,7 +415,7 @@ function parseTitleElement(e: IPostElement): IPostElement {
  * Check if the `element` has the criteria to be considered a "title",
  * ie an element that identifies its content.
  */
-function isTitle(element: IPostElement, next: IPostElement): boolean {
+function isTitle(element: IPostElement, next: IPostElement | null): boolean {
   // Regex value used to check for colon at the ends of the text
   const RX_ENDS_COLON = /[:]$/gmu;
 

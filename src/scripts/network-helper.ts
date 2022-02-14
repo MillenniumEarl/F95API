@@ -4,7 +4,14 @@
 // https://opensource.org/licenses/MIT
 
 // Public modules from npm
-import { AxiosError, AxiosInstance, AxiosResponse } from "axios";
+import axios, {
+  AxiosError,
+  AxiosInstance,
+  AxiosRequestConfig,
+  AxiosResponse
+} from "axios";
+import axiosRetry from "axios-retry";
+import { wrapper } from "axios-cookiejar-support";
 import cheerio from "cheerio";
 import { Semaphore } from "await-semaphore";
 
@@ -18,10 +25,12 @@ import {
   ERROR_CODE,
   GenericAxiosError,
   InvalidF95Token,
+  NoPreviousSession,
+  PREVIOUS_SESSION_NOT_EXISTENT,
   UnexpectedResponseContentType
 } from "./classes/errors";
 import Credentials from "./classes/credentials";
-import configure from "./agent-configuration";
+import { LIB_VERSION } from "../version";
 
 // Types
 type TLookupMapCode = {
@@ -33,24 +42,25 @@ type TProvider = "auto" | "totp" | "email";
 
 // Global variables
 const MAX_CONCURRENT_REQUESTS = 15;
-const USER_AGENT =
-  "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15) " +
-  "AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0 Safari/605.1.15";
+const USER_AGENT = `Mozilla/5.0 (compatible; F95API/${LIB_VERSION}; MillenniumEarl@f95zone; https://github.com/MillenniumEarl/F95API)`;
 const AUTH_SUCCESSFUL_MESSAGE = "Authentication successful";
 const INVALID_2FA_CODE_MESSAGE =
   "The two-step verification value could not be confirmed. Please try again";
 const INCORRECT_CREDENTIALS_MESSAGE = "Incorrect password. Please try again.";
+const REQUIRE_CAPTCHA_VERIFICATION =
+  "You did not complete the CAPTCHA verification properly. Please try again.";
 
 /**
  * Common configuration used to send request via Axios.
  */
-const commonConfig = {
+const commonConfig: AxiosRequestConfig = {
   /**
    * Headers to add to the request.
    */
   headers: {
     "User-Agent": USER_AGENT,
-    Connection: "keep-alive"
+    Connection: "keep-alive",
+    "Upgrade-Insecure-Requests": "1"
   },
   /**
    * Specify if send credentials along the request.
@@ -63,16 +73,29 @@ const commonConfig = {
   validateStatus: function (status: number) {
     return status < 500; // Resolve only if the status code is less than 500
   },
-  timeout: 30000
+  timeout: 30000,
+  /**
+   * Explicit the HTTP adapter otherwise on Electron the XHR adapter
+   * is used which is not supported by `axios-cookiejar-support`
+   */
+  adapter: require("axios/lib/adapters/http")
 };
 
-let initialized = false;
+/**
+ * Axios agent used to send requests.
+ */
+const agent: AxiosInstance = wrapper(axios.create(commonConfig));
 
-// Agent used to send requests
-let api: AxiosInstance = null;
+// Enable Axios to retry a request in case of errors
+axiosRetry(agent, {
+  retryDelay: axiosRetry.exponentialDelay, // Use exponential back-off retry delay
+  shouldResetTimeout: true // Timer resets after every retry
+});
 
-// Semaphore used to avoid flooding the platform
-let semaphore: Semaphore = null;
+/**
+ * Semaphore used to avoid flooding the platform.
+ */
+const semaphore: Semaphore = new Semaphore(MAX_CONCURRENT_REQUESTS);
 
 /**
  * Gets the HTML code of a page.
@@ -80,7 +103,7 @@ let semaphore: Semaphore = null;
 export async function fetchHTML(
   url: string
 ): Promise<Result<GenericAxiosError | UnexpectedResponseContentType, string>> {
-  // Secure the URL
+  // Secure (and validate) the URL
   const secureURL = enforceHttpsUrl(url);
 
   // Fetch the response of the platform
@@ -109,12 +132,13 @@ export async function fetchHTML(
  * and token obtained previously. Save cookies on your
  * device after authentication.
  * @param {Credentials} credentials Platform access credentials
+ * @param {String} captchaToken reCAPTCHA token returned from Google after the correct interaction with the widget
  * @param {Boolean} force Specifies whether the request should be forced, ignoring any saved cookies
  * @returns {Promise<LoginResult>} Result of the operation
  */
 export async function authenticate(
   credentials: Credentials,
-  force: boolean = false
+  captchaToken?: string
 ): Promise<LoginResult> {
   shared.logger.info(`Authenticating with user ${credentials.username}`);
   if (!credentials.token)
@@ -133,14 +157,15 @@ export async function authenticate(
     remember: "1",
     _xfRedirect: "https://f95zone.to/",
     website_code: "",
-    _xfToken: credentials.token
+    _xfToken: credentials.token,
+    "g-recaptcha-response": captchaToken
   };
 
   // Try to log-in
   let authResult: LoginResult = null;
 
   // Fetch the response to the login request
-  const response = await fetchPOSTResponse(secureURL, params, force);
+  const response = await fetchPOSTResponse(secureURL, params);
 
   // Parse the response
   const result = response.applyOnSuccess((r) => manageLoginPOSTResponse(r));
@@ -199,6 +224,33 @@ export async function send2faCode(
 }
 
 /**
+ * Updates session cookies and the token used
+ * for POST requests which depends on them.
+ */
+export async function updateSession(): Promise<void> {
+  /*
+    Without this update, an xfToken token not synchronized
+    with the xf_csrf cookie generates a 400 Bad Request
+    (security error) in response to any POST.
+  */
+
+  // Check if the user had already authenticated in a previous session
+  const cookies = await shared.session.cookieJar.getCookies(urls.BASE);
+  const xfUser = cookies.find((c) => c.key === "xf_user");
+  if (!xfUser) throw new NoPreviousSession(PREVIOUS_SESSION_NOT_EXISTENT);
+
+  // First get the xf_session and xf_csrf cookies from F95Zone
+  shared.logger.info("Updating session cookies...");
+  await getSessionCookies();
+
+  // Then update the local _xfToken.
+  // This value depends on the current xf_csrf cookie value
+  shared.logger.info("Updating _xfToken...");
+  const token = await getF95Token();
+  shared.session.updateToken(token);
+}
+
+/**
  * Obtain the token used to authenticate the user to the platform.
  */
 export async function getF95Token(): Promise<string> {
@@ -220,24 +272,27 @@ export async function getF95Token(): Promise<string> {
 export async function fetchGETResponse(
   url: string
 ): Promise<Result<GenericAxiosError, AxiosResponse<any>>> {
-  // Initialize the components if not ready
-  if (!initialized) await init();
+  // Validate URL
+  if (!isStringAValidURL(url))
+    throw new URIError(`'${url}' is not a valid URL`);
 
   // Get a token from the semaphore
   const release = await semaphore.acquire();
 
   try {
     // Fetch and return the response
-    commonConfig.jar = shared.session.cookieJar;
-    const response = await api.get(url, commonConfig);
+    const response = await agent.get(url, {
+      jar: shared.session.cookieJar
+    });
     return success(response);
   } catch (e) {
-    const err = `(GET) Error ${e.message} occurred while trying to fetch ${url}`;
-    shared.logger.error(err);
+    const err = e as Error;
+    const message = `(GET) Error ${err.message} occurred while trying to fetch ${url}`;
+    shared.logger.error(message);
     const genericError = new GenericAxiosError({
       id: ERROR_CODE.CANNOT_FETCH_GET_RESPONSE,
-      message: err,
-      error: e
+      message: message,
+      error: err
     });
     return failure(genericError);
   } finally {
@@ -250,33 +305,27 @@ export async function fetchGETResponse(
  * Performs a POST request through Axios.
  * @param url URL to request
  * @param params List of value pairs to send with the request
- * @param force If `true`, the request ignores the sending of cookies already present on the device.
  */
 export async function fetchPOSTResponse(
   url: string,
-  params: { [s: string]: string },
-  force = false
+  params: { [s: string]: string }
 ): Promise<Result<GenericAxiosError, AxiosResponse<any>>> {
-  // Initialize the components if not ready
-  if (!initialized) await init();
+  // Validate URL
+  if (!isStringAValidURL(url))
+    throw new URIError(`'${url}' is not a valid URL`);
 
   // Prepare the parameters for the POST request
   const urlParams = new URLSearchParams();
   Object.entries(params).map(([key, value]) => urlParams.append(key, value));
-
-  // Shallow copy of the common configuration object
-  commonConfig.jar = shared.session.cookieJar;
-  const config = Object.assign({}, commonConfig);
-
-  // Remove the cookies if forced
-  if (force) delete config.jar;
 
   // Get a token from the semaphore
   const release = await semaphore.acquire();
 
   // Send the POST request and await the response
   try {
-    const response = await api.post(url, urlParams, config);
+    const response = await agent.post(url, urlParams, {
+      jar: shared.session.cookieJar
+    });
     return success(response);
   } catch (e) {
     const err = `(POST) Error ${e.message} occurred while trying to fetch ${url}`;
@@ -299,15 +348,17 @@ export async function fetchPOSTResponse(
 export async function fetchHEADResponse(
   url: string
 ): Promise<Result<GenericAxiosError, AxiosResponse<any>>> {
-  // Initialize the components if not ready
-  if (!initialized) await init();
+  // Validate URL
+  if (!isStringAValidURL(url))
+    throw new URIError(`'${url}' is not a valid URL`);
 
   // Get a token from the semaphore
   const release = await semaphore.acquire();
 
   try {
-    commonConfig.jar = shared.session.cookieJar;
-    const response = await api.head(url, commonConfig);
+    const response = await agent.head(url, {
+      jar: shared.session.cookieJar
+    });
     return success(response);
   } catch (e) {
     const err = `(HEAD) Error ${e.message} occurred while trying to fetch ${url}`;
@@ -329,13 +380,17 @@ export async function fetchHEADResponse(
  */
 export function enforceHttpsUrl(url: string): string {
   if (isStringAValidURL(url)) return url.replace(/^(https?:)?\/\//, "https://");
-  else throw new Error(`${url} is not a valid URL`);
+  else throw new URIError(`'${url}' is not a valid URL`);
 }
 
 /**
  * Check if the url belongs to the domain of the F95 platform.
  */
 export function isF95URL(url: string): boolean {
+  // Validate URL
+  if (!isStringAValidURL(url))
+    throw new URIError(`'${url}' is not a valid URL`);
+
   return url.startsWith(urls.BASE);
 }
 
@@ -348,7 +403,8 @@ export function isF95URL(url: string): boolean {
  */
 export function isStringAValidURL(url: string): boolean {
   // Many thanks to Daveo at StackOverflow (https://preview.tinyurl.com/y2f2e2pc)
-  const regex = /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_+.~#?&//=]*)/;
+  const regex =
+    /((https|http){0,1}:\/\/){0,1}(www\.){0,1}[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_+.~#?&//=]*)/;
   return regex.test(url);
 }
 
@@ -384,41 +440,87 @@ export async function urlExists(
  * @returns {Promise<String>} Redirect URL or the passed URL
  */
 export async function getUrlRedirect(url: string): Promise<string> {
+  // Validate URL
+  if (!isStringAValidURL(url))
+    throw new URIError(`'${url}' is not a valid URL`);
+
   const response = await fetchHEADResponse(url);
 
-  if (response.isSuccess()) return response.value.config.url;
-  else throw response.value;
+  if (response.isSuccess()) {
+    const r = response.value.request;
+    const redirect = new URL(r.path, `${r.protocol}//${r.host}`);
+    return redirect.toString();
+  } else throw response.value;
 }
 
 //#endregion Utility methods
 
 //#region Private methods
+/**
+ * Makes a GET request to the platform to obtain
+ * the `xf_session` and `xf_csrf` session cookies.
+ *
+ * For the `xf_session` token, the `xf_user` cookie
+ * must be present, generated after successful authentication.
+ */
+async function getSessionCookies(): Promise<void> {
+  try {
+    // Send a GET request to fetch the cookies
+    // and save them in the jar
+    await agent.get(urls.BASE, {
+      jar: shared.session.cookieJar,
+      headers: {
+        Cookie: await getUserCookieString() // Force cookie header
+      }
+    });
+  } catch (e) {
+    const err = `(GET) Error ${e.message} occurred while trying to fetch session cookies`;
+    shared.logger.error(err);
+    const genericError = new GenericAxiosError({
+      id: ERROR_CODE.CANNOT_FETCH_SESSION_TOKENS,
+      message: err,
+      error: e
+    });
+    throw genericError;
+  }
+}
 
 /**
- * Initializes the components used to manage requests to the network.
+ * Gets the string of the `xf_user` cookie to be
+ * sent to the platform via the `Cookie` header.
+ *
+ * This feature is temporary and will be removed
+ * once `axios-cookiejar-support` is fixed.
  */
-async function init(): Promise<void> {
-  api = await configure();
-  semaphore = new Semaphore(MAX_CONCURRENT_REQUESTS);
-  initialized = true;
+async function getUserCookieString(): Promise<string> {
+  const cookies = await shared.session.cookieJar.getCookies(urls.BASE);
+  const userCookie = cookies.find((cookie) => cookie.key === "xf_user");
+
+  return userCookie ? userCookie.cookieString() : "";
 }
 
 /**
  * Check with Axios if a URL exists.
  */
 async function axiosUrlExists(url: string): Promise<boolean> {
+  // Validate URL
+  if (!isStringAValidURL(url))
+    throw new URIError(`'${url}' is not a valid URL`);
+
   // Local variables
   const ERROR_CODES = ["ENOTFOUND", "ETIMEDOUT"];
   let valid = false;
 
   // Send a HEAD request
   const r = await fetchHEADResponse(url);
-  if (r.isSuccess())
-    valid = r.value && !/4\d\d/.test(r.value.status.toString());
-  else if (
-    r.isFailure() &&
-    !ERROR_CODES.includes((r.value.error as AxiosError<any>).code)
-  )
+
+  // Parse response
+  const status = (r.value as AxiosResponse<any>).status;
+  const error = (r.value as GenericAxiosError).error as AxiosError<any>;
+  const errorCode = error?.code ?? "";
+
+  if (r.isSuccess()) valid = r.value && !/4\d\d/.test(status.toString());
+  else if (r.isFailure() && !ERROR_CODES.includes(errorCode))
     throw r.value.error;
 
   return valid;
@@ -441,13 +543,18 @@ function manageLoginPOSTResponse(response: AxiosResponse<any>) {
   }
 
   // Get the error message (if any) and remove the new line chars
-  const errorMessage = $("body")
+  let errorMessage = $("body")
     .find(GENERIC.LOGIN_MESSAGE_ERROR)
     .text()
     .replace(/\n/g, "");
 
+  // Check if the user ID is available
+  const availableUserID = $("body").find(GENERIC.CURRENT_USER_ID).length !== 0;
+  if (!availableUserID && !errorMessage)
+    errorMessage = "Successful request but user not logged in";
+
   // Return the result of the authentication
-  const result = errorMessage.trim() === "";
+  const result = errorMessage.trim().length === 0 && availableUserID;
   const message = result ? AUTH_SUCCESSFUL_MESSAGE : errorMessage;
   const code = messageToCode(message);
   return new LoginResult(result, code, message);
@@ -471,6 +578,10 @@ function messageToCode(message: string): number {
     {
       code: LoginResult.INCORRECT_2FA_CODE,
       message: INVALID_2FA_CODE_MESSAGE
+    },
+    {
+      code: LoginResult.REQUIRE_CAPTCHA,
+      message: REQUIRE_CAPTCHA_VERIFICATION
     }
   ];
 
