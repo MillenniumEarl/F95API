@@ -25,7 +25,7 @@ type TDate = 365 | 180 | 90 | 30 | 14 | 7 | 3 | 1;
 export default class LatestSearchQuery implements IQuery {
   //#region Private fields
 
-  private static MAX_TAGS = 5;
+  private static MAX_TAGS = 10;
   private static MIN_PAGE = 1;
   #page: number = LatestSearchQuery.MIN_PAGE;
   #includedTags: string[] = [];
@@ -34,7 +34,14 @@ export default class LatestSearchQuery implements IQuery {
   //#endregion Private fields
 
   //#region Properties
-
+  /**
+   * Name of the creator of the work.
+   */
+  public creator: string = null;
+  /**
+   * Title (or part of it) to search.
+   */
+  public title: string = null;
   public category: TCategory = "games";
   /**
    * Ordering type.
@@ -49,8 +56,12 @@ export default class LatestSearchQuery implements IQuery {
    * Default: `null`
    */
   public date: TDate = null;
+  /**
+   * Maximum number of items viewable per page.
+   */
+  public itemsPerPage: 15 | 30 | 45 | 60 | 75 | 90 = 30;
   public includedPrefixes: string[] = [];
-
+  public excludedTags: string[] = [];
   //#endregion Properties
 
   //#region Getters/Setters
@@ -123,25 +134,32 @@ export default class LatestSearchQuery implements IQuery {
     // Create the URL
     const url = new URL(urls.LATEST_PHP);
     url.searchParams.set("cmd", "list");
+    url.searchParams.set("ignored", "hide"); // Exclude ignored threads
 
     // Set the category
-    const cat: TCategory = this.category === "mods" ? "games" : this.category;
-    url.searchParams.set("cat", cat);
+    url.searchParams.set("cat", this.category);
 
     // Add tags and prefixes
     const parser = new PrefixParser();
-    for (const tag of parser.prefixesToIDs(this.includedTags)) {
-      url.searchParams.append("tags[]", tag.toString());
-    }
+    parser
+      .prefixesToIDs(this.includedTags)
+      .map((tag) => url.searchParams.append("tags[]", tag.toString()));
 
-    for (const p of parser.prefixesToIDs(this.includedPrefixes)) {
-      url.searchParams.append("prefixes[]", p.toString());
-    }
+    parser
+      .prefixesToIDs(this.excludedTags)
+      .map((tag) => url.searchParams.append("notags[]", tag.toString()));
+
+    parser
+      .prefixesToIDs(this.includedPrefixes)
+      .map((p) => url.searchParams.append("prefixes[]", p.toString()));
 
     // Set the other values
+    if (this.title) url.searchParams.set("search", this.title);
+    if (this.creator) url.searchParams.set("creator", this.creator);
+    if (this.date) url.searchParams.set("date", this.date.toString());
     url.searchParams.set("sort", this.order.toString());
     url.searchParams.set("page", this.page.toString());
-    if (this.date) url.searchParams.set("date", this.date.toString());
+    url.searchParams.set("rows", this.itemsPerPage.toString());
 
     return url;
   }

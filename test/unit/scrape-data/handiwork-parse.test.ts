@@ -14,6 +14,7 @@ import PlatformUser from "../../../src/scripts/classes/mapping/platform-user";
 import { IPostElement, ILink } from "../../../src/scripts/interfaces";
 import Game from "../../../src/scripts/classes/handiwork/game";
 import { TRating, TCategory } from "../../../src/scripts/types";
+import shared, { TPrefixDict } from "../../../src/scripts/shared";
 
 //#region Mock Thread and Post classes
 const mockDate = new Date("2021-07-06T15:26:41Z");
@@ -170,9 +171,31 @@ class MockPost implements MockOf<Post, "fetch"> {
   //#endregion Fields
 }
 
-//#region Mock Thread and Post classes
+//#endregion Mock Thread and Post classes
 
 export function suite(): void {
+  //#region Setup
+  before(function beforeAll() {
+    // Mock the fetching of the platform data from F95Zone
+    // Set only the test data (status/engines in MockThread)
+    const engines: TPrefixDict = new Map<number, string>();
+    const statuses: TPrefixDict = new Map<number, string>();
+    engines.set(3, "Unity");
+    statuses.set(18, "Completed");
+
+    // Set the test data
+    shared.setPrefixPair("engines", engines);
+    shared.setPrefixPair("statuses", statuses);
+  });
+  //#endregion Setup
+
+  //#region Tear Down
+  after(function afterAll() {
+    // Reset the various prefixes, engines, statuses...
+    shared["_prefixes"] = {} as any;
+  });
+  //#endregion Tear Down
+
   it("Create handiwork from game thread", async function () {
     // Arrange
     const thread = new MockThread();
