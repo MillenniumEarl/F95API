@@ -28,7 +28,9 @@ import {
   Game,
   searchHandiwork,
   HandiworkSearchQuery,
-  logout
+  logout,
+  loggerLevel,
+  setLoggerLevel
 } from "./index";
 
 // Configure the .env reader
@@ -173,6 +175,10 @@ async function fetchGameData(games: string[]): Promise<void> {
 }
 
 async function main() {
+  // Use log4js for info
+  setLoggerLevel("trace");
+  console.log(`Log level: ${loggerLevel()}`);
+
   if (await authenticate()) {
     // Fetch and log user data
     await fetchUserData();
