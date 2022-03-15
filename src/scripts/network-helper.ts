@@ -11,7 +11,7 @@ import axios, {
   AxiosResponse
 } from "axios";
 import axiosRetry from "axios-retry";
-import { wrapper } from "axios-cookiejar-support";
+import { wrapper as addCookieJarSupport } from "axios-cookiejar-support";
 import cheerio from "cheerio";
 import { Semaphore } from "await-semaphore";
 
@@ -31,6 +31,7 @@ import {
 } from "./classes/errors";
 import Credentials from "./classes/credentials";
 import { LIB_VERSION } from "../version";
+import addDDoSSupport from "./ddos-guard-bypass";
 
 // Types
 type TLookupMapCode = {
@@ -84,7 +85,8 @@ const commonConfig: AxiosRequestConfig = {
 /**
  * Axios agent used to send requests.
  */
-const agent: AxiosInstance = wrapper(axios.create(commonConfig));
+const agent: AxiosInstance = addCookieJarSupport(axios.create(commonConfig));
+//addDDoSSupport(agent);
 
 // Enable Axios to retry a request in case of errors
 axiosRetry(agent, {
@@ -287,7 +289,7 @@ export async function fetchGETResponse(
     return success(response);
   } catch (e) {
     const err = e as Error;
-    const message = `(GET) Error ${err.message} occurred while trying to fetch ${url}`;
+    const message = `(GET) Error "${err.message}" occurred while trying to fetch ${url}`;
     shared.logger.error(message);
     const genericError = new GenericAxiosError({
       id: ERROR_CODE.CANNOT_FETCH_GET_RESPONSE,
@@ -328,7 +330,7 @@ export async function fetchPOSTResponse(
     });
     return success(response);
   } catch (e) {
-    const err = `(POST) Error ${e.message} occurred while trying to fetch ${url}`;
+    const err = `(POST) Error "${e.message}" occurred while trying to fetch ${url}`;
     shared.logger.error(err);
     const genericError = new GenericAxiosError({
       id: ERROR_CODE.CANNOT_FETCH_POST_RESPONSE,
@@ -361,7 +363,7 @@ export async function fetchHEADResponse(
     });
     return success(response);
   } catch (e) {
-    const err = `(HEAD) Error ${e.message} occurred while trying to fetch ${url}`;
+    const err = `(HEAD) Error "${e.message}" occurred while trying to fetch ${url}`;
     shared.logger.error(err);
     const genericError = new GenericAxiosError({
       id: ERROR_CODE.CANNOT_FETCH_HEAD_RESPONSE,
@@ -474,7 +476,7 @@ async function getSessionCookies(): Promise<void> {
       }
     });
   } catch (e) {
-    const err = `(GET) Error ${e.message} occurred while trying to fetch session cookies`;
+    const err = `(GET) Error "${e.message}" occurred while trying to fetch session cookies`;
     shared.logger.error(err);
     const genericError = new GenericAxiosError({
       id: ERROR_CODE.CANNOT_FETCH_SESSION_TOKENS,

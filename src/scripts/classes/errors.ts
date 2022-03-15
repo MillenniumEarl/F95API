@@ -27,7 +27,8 @@ export const ERROR_CODE = {
   CANNOT_FETCH_POST_RESPONSE: 301,
   CANNOT_FETCH_HEAD_RESPONSE: 302,
   CANNOT_FETCH_SESSION_TOKENS: 304,
-  UNEXPECTED_HTML_RESPONSE: 305
+  UNEXPECTED_HTML_RESPONSE: 305,
+  INTERCEPTOR_ERROR: 306
 };
 
 export const USER_NOT_LOGGED = "User not authenticated, unable to continue";
@@ -67,6 +68,18 @@ export class BaseAPIError extends Error implements IBaseError {
 }
 
 export class GenericAxiosError extends BaseAPIError {
+  constructor(args: IBaseError) {
+    super(args);
+  }
+}
+
+export class AxiosRequestError extends BaseAPIError {
+  constructor(args: IBaseError) {
+    super(args);
+  }
+}
+
+export class AxiosResponseError extends BaseAPIError {
   constructor(args: IBaseError) {
     super(args);
   }
