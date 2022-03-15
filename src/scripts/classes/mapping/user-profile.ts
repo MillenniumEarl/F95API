@@ -111,6 +111,8 @@ export default class UserProfile extends PlatformUser {
 
     // Cache data
     if (!this._watched) {
+      shared.logger.trace("Fetching watched threads...");
+
       // Prepare the url of the threads followed by
       // extending the selection to the threads already read
       const url = new URL(urls.WATCHED_THREADS);
@@ -136,6 +138,8 @@ export default class UserProfile extends PlatformUser {
 
     // Cache data
     if (!this._bookmarks) {
+      shared.logger.trace("Fetching bookmarks...");
+
       // Prepare the options to use for fetching the data
       const options: IFetchOptions<IBookmarkedPost> = {
         url: urls.BOOKMARKS,
@@ -156,6 +160,8 @@ export default class UserProfile extends PlatformUser {
 
     // Cache data
     if (!this._alerts) {
+      shared.logger.trace("Fetching alerts...");
+
       // Prepare the options to use for fetching the data
       const options: IFetchOptions<IAlert> = {
         url: urls.ALERTS,
@@ -176,6 +182,7 @@ export default class UserProfile extends PlatformUser {
 
     // Cache data
     if (!this._featuredGames) {
+      shared.logger.trace("Fetching featured games...");
       this._featuredGames = await this.fetchFeaturedGames();
     }
     return Promise.resolve(this._featuredGames);
@@ -188,6 +195,8 @@ export default class UserProfile extends PlatformUser {
 
     // Cache data
     if (!this._conversations) {
+      shared.logger.trace("Fetching conversations...");
+
       // Prepare the options to use for fetching the data
       const options: IFetchOptions<IConversation> = {
         url: urls.CONVERSATIONS,
@@ -224,8 +233,10 @@ export default class UserProfile extends PlatformUser {
     // First get the user ID and set it
     const id = await this.fetchUserID();
     const temp = new PlatformUser(id);
+    shared.logger.info(`Got user's ID: ${id}`);
 
     // Than fetch the basic data
+    shared.logger.info("Fetching user information...");
     await temp.fetch();
 
     // Copy the property of the superior class (PlatformUser) to this instance
@@ -237,6 +248,7 @@ export default class UserProfile extends PlatformUser {
 
     // Fetch all the "extra" data of this user
     if (extended) {
+      shared.logger.info("Fetching extended information...");
       const promises = [
         this.watchedThreadsGetWrapper(),
         this.bookmarksGetWrapper(),
@@ -248,6 +260,7 @@ export default class UserProfile extends PlatformUser {
       // Await all the promises. We can use `any`
       // because the values are saved inside the functions.
       await Promise.all<any>(promises);
+      shared.logger.trace("Extended information fetched");
     }
   }
 
