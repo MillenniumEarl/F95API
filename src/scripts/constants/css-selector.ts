@@ -27,6 +27,12 @@ export const GENERIC = {
   LOGIN_MESSAGE_ERROR:
     "div.blockMessage.blockMessage--error.blockMessage--iconic",
   /**
+   * Block containing the text of a security error occurred during the login.
+   *
+   * Usually described as: "Security error occurred. Please press back, refresh the page, and try again."
+   */
+  LOGIN_SECURITY_MESSAGE_ERROR: "div.blockMessage",
+  /**
    * Locate the script containing the tags and prefixes of the platform content in JSON format.
    */
   LATEST_UPDATES_TAGS_SCRIPT: "script:contains('latestUpdates')",

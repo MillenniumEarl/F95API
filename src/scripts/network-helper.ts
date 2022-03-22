@@ -545,10 +545,18 @@ function manageLoginPOSTResponse(response: AxiosResponse<any>) {
   }
 
   // Get the error message (if any) and remove the new line chars
-  let errorMessage = $("body")
+  const genericError = $("body")
     .find(GENERIC.LOGIN_MESSAGE_ERROR)
     .text()
     .replace(/\n/g, "");
+
+  // Check if there is a security error (in another css block)
+  const securityError = $("body")
+    .find(GENERIC.LOGIN_SECURITY_MESSAGE_ERROR)
+    .text()
+    .replace(/\n\t/g, "");
+
+  let errorMessage = genericError !== "" ? genericError : securityError;
 
   // Check if the user ID is available
   const availableUserID = $("body").find(GENERIC.CURRENT_USER_ID).length !== 0;
@@ -559,7 +567,7 @@ function manageLoginPOSTResponse(response: AxiosResponse<any>) {
   const result = errorMessage.trim().length === 0 && availableUserID;
   const message = result ? AUTH_SUCCESSFUL_MESSAGE : errorMessage;
   const code = messageToCode(message);
-  return new LoginResult(result, code, message);
+  return new LoginResult(result, code, message.trim());
 }
 
 /**
