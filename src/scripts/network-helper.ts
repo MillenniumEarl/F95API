@@ -12,7 +12,7 @@ import axios, {
 } from "axios";
 import axiosRetry from "axios-retry";
 import { wrapper as addCookieJarSupport } from "axios-cookiejar-support";
-import cheerio from "cheerio";
+import { load } from "cheerio";
 import { Semaphore } from "await-semaphore";
 
 // Modules from file
@@ -86,7 +86,7 @@ const commonConfig: AxiosRequestConfig = {
  * Axios agent used to send requests.
  */
 const agent: AxiosInstance = addCookieJarSupport(axios.create(commonConfig));
-//addDDoSSupport(agent);
+addDDoSSupport(agent);
 
 // Enable Axios to retry a request in case of errors
 axiosRetry(agent, {
@@ -261,7 +261,7 @@ export async function getF95Token(): Promise<string> {
 
   if (response.isSuccess()) {
     // The response is a HTML page, we need to find the <input> with name "_xfToken"
-    const $ = cheerio.load(response.value.data as string);
+    const $ = load(response.value.data as string);
     return $("body").find(GENERIC.GET_REQUEST_TOKEN).attr("value");
   } else throw response.value;
 }
@@ -533,7 +533,7 @@ async function axiosUrlExists(url: string): Promise<boolean> {
  */
 function manageLoginPOSTResponse(response: AxiosResponse<any>) {
   // Parse the response HTML
-  const $ = cheerio.load(response.data as string);
+  const $ = load(response.data as string);
 
   // Check if 2 factor authentication is required
   if (response.config.url.startsWith(urls.LOGIN_2FA)) {
@@ -602,7 +602,7 @@ function manage2faResponse(
 
   // Wrong provider!
   if (!rightProvider) {
-    const $ = cheerio.load(r.data.html.content);
+    const $ = load(r.data.html.content);
     const expectedProvider = $(GENERIC.EXPECTED_2FA_PROVIDER).attr("value");
     return failure(expectedProvider as TProvider);
   }
