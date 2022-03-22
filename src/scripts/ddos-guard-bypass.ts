@@ -4,7 +4,7 @@
 // https://opensource.org/licenses/MIT
 
 // Public modules from npm
-import axios, { AxiosInstance } from "axios";
+import axios, { AxiosInstance, AxiosRequestConfig } from "axios";
 import { Cookie } from "tough-cookie";
 
 // Modules from file
@@ -15,17 +15,21 @@ import shared from "./shared";
 export default function addDDoSSupport(agent: AxiosInstance): void {
   agent.interceptors.request.use(
     async (config) => {
-      // Try to bypass the guard
-      const result = await bypass(config.url);
+      // Check if the guard was already bypassed
+      const bypassed = await checkIfAlreadyBypassed(config);
+      if (!bypassed) {
+        // Try to bypass the guard
+        const result = await bypass(config.url);
 
-      // Add header and cookies used to bypass DDoS Guard
-      config.headers.referer = result.referer;
-      result.cookies.map((c) => config.jar.setCookie(c, urls.BASE));
+        // Add header and cookies used to bypass DDoS Guard
+        config.headers.referer = result.referer;
+        result.cookies.map((c) => config.jar.setCookie(c, urls.BASE));
+      }
 
       return config;
     },
     (e) => {
-      const message = `""${e.message}"" occurred while trying to bypass DDoS Guard`;
+      const message = `"${e.message}" occurred while trying to bypass DDoS Guard`;
       shared.logger.error(message);
       const error = new GenericAxiosError({
         id: ERROR_CODE.INTERCEPTOR_ERROR,
@@ -88,9 +92,7 @@ async function generateURLforReferer(url: string) {
   // Find referer URL
   const endSlice = url.includes("://") ? 3 : 1;
   const domain = url.split("/").slice(0, endSlice).join("/");
-  shared.logger.trace(
-    `[DDoS Guard] Generated request url for referer to ddos-guard.net's check.js "${domain}"`
-  );
+  shared.logger.trace(`[DDoS Guard] Extracted domain to refer "${domain}"`);
 
   return {
     url: domain,
@@ -148,4 +150,28 @@ async function getBypassCookies(url: string, id: string, cookies: Cookie[]) {
 
 function cookieString(cookies: Cookie[]) {
   return cookies.map((c) => c.cookieString()).join(" ");
+}
+
+async function checkIfAlreadyBypassed(config: AxiosRequestConfig) {
+  // Constant used to determine if the agent has already
+  // done at least one connection to bypass the DDoS Guard
+  const BYPASS_STRING = "DDOS_GUARD_BYPASSED";
+
+  // Check the cookies, if present
+  if (!config[BYPASS_STRING]) {
+    // Get all cookies referred to f95zone.to domain
+    const cookies = await config.jar.getCookies(urls.BASE);
+
+    // Get the DDoS cookies
+    const ddgCookies = cookies.filter((c) => c.key.startsWith("__ddg"));
+
+    // Check if the cookies are expired
+    const expired = (cookie: Cookie) => cookie.TTL() === 0;
+    const invalid = ddgCookies.some(expired);
+
+    // Set the bypass string if all the cookies are valid
+    if (!invalid && ddgCookies.length > 0) config[BYPASS_STRING] = true;
+  }
+
+  return config[BYPASS_STRING] ?? false;
 }
