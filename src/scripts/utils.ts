@@ -5,7 +5,7 @@
 
 /**
  * Gets all dates in the `YYYY-MM-DD` format and
- * sorts them according to the `older` parameter.
+ * sorts them according to the `order` parameter.
  */
 export function getDateFromString(
   s: string,
