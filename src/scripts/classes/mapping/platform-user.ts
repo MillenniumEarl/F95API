@@ -4,7 +4,7 @@
 // https://opensource.org/licenses/MIT
 
 // Public modules from npm
-import cheerio from "cheerio";
+import { load } from "cheerio";
 import { isValidISODateString } from "iso-datestring-validator";
 
 // Modules from files
@@ -174,7 +174,7 @@ export default class PlatformUser implements ILazy {
    */
   private elaborateResponse(html: string): void {
     // Prepare cheerio
-    const $ = cheerio.load(html);
+    const $ = load(html);
 
     // Check if the profile is private
     this._private =

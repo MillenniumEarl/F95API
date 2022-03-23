@@ -9,7 +9,7 @@ import { join } from "path";
 
 // Public module from npm
 import { expect } from "chai";
-import cheerio from "cheerio";
+import { load } from "cheerio";
 
 // Modules from file
 import { extractDataFromFirstThreadPost } from "../../../src/scripts/scrape-data/post-parse-tree";
@@ -25,7 +25,7 @@ export function suite(): void {
       "opening-post-extract.html"
     );
     const html = await fs.readFile(path);
-    const $ = cheerio.load(html);
+    const $ = load(html);
     const node = $("article.message-body > div.bbWrapper").get().shift();
 
     // Act
@@ -78,7 +78,7 @@ export function suite(): void {
       "generic-post-extract.html"
     );
     const html = await fs.readFile(path);
-    const $ = cheerio.load(html);
+    const $ = load(html);
     const node = $("article.message-body > div.bbWrapper").get().shift();
 
     // Act

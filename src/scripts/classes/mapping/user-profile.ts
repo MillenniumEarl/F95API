@@ -5,7 +5,7 @@
 
 // Public modules from npm
 import { isValidISODateString } from "iso-datestring-validator";
-import cheerio, { Cheerio, Node } from "cheerio";
+import { Cheerio, Node, load } from "cheerio";
 
 // Modules from files
 import PlatformUser from "./platform-user";
@@ -279,7 +279,7 @@ export default class UserProfile extends PlatformUser {
     const response = await fetchHTML(url);
     const result = response.applyOnSuccess((html) => {
       // Load page with cheerio
-      const $ = cheerio.load(html);
+      const $ = load(html);
 
       const sid = $(GENERIC.CURRENT_USER_ID).attr("data-user-id");
       if (!sid)
@@ -303,7 +303,7 @@ export default class UserProfile extends PlatformUser {
     if (response.isFailure()) throw response.value;
 
     // Load page in cheerio
-    const $ = cheerio.load(response.value);
+    const $ = load(response.value);
 
     // Fetch the pages (select only the first selector if multiple are found)
     const lastPageText = $(options.selector).first().text().trim();
@@ -372,7 +372,7 @@ export default class UserProfile extends PlatformUser {
     html: string
   ): Promise<IWatchedThread[]> {
     // Local variables
-    const $ = cheerio.load(html);
+    const $ = load(html);
 
     function parseElement(el: Node) {
       // Parse the URL
@@ -402,7 +402,7 @@ export default class UserProfile extends PlatformUser {
     html: string
   ): Promise<IBookmarkedPost[]> {
     // Local variables
-    const $ = cheerio.load(html);
+    const $ = load(html);
 
     async function parseElement(el: Node) {
       // Parse the URL
@@ -471,7 +471,7 @@ export default class UserProfile extends PlatformUser {
 
     if (response.isSuccess()) {
       // Load page with cheerio
-      const $ = cheerio.load(response.value);
+      const $ = load(response.value);
 
       // Get all the <a> elements containing the featured game urls
       const slider = $(GENERIC.FEATURED_GAMES).toArray();

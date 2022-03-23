@@ -5,7 +5,7 @@
 
 // Public module from npm
 import { expect } from "chai";
-import cheerio from "cheerio";
+import { load } from "cheerio";
 
 // Modules from file
 import { nodeType } from "../../../../src/scripts/scrape-data/post-node-parse/node-type";
@@ -14,7 +14,7 @@ export function suite(): void {
   it("Test for formatted node", function () {
     // Arrange
     const html = "<div><b id='test'></b></div>";
-    const $ = cheerio.load(html);
+    const $ = load(html);
     const node = $("#test").get().shift();
 
     // Act
@@ -27,7 +27,7 @@ export function suite(): void {
   it("Test for text node", function () {
     // Arrange
     const html = "<div id='container'>Text</div>";
-    const $ = cheerio.load(html);
+    const $ = load(html);
     const node = $("#container").contents().get().shift();
 
     // Act
@@ -40,7 +40,7 @@ export function suite(): void {
   it("Test for spoiler node", function () {
     // Arrange
     const html = "<div><div id='test' class='bbCodeSpoiler'></div></div>";
-    const $ = cheerio.load(html);
+    const $ = load(html);
     const node = $("#test").get().shift();
 
     // Act
@@ -53,7 +53,7 @@ export function suite(): void {
   it("Test for link node (Link)", function () {
     // Arrange
     const html = "<div><a href='' id='test'></a></div>";
-    const $ = cheerio.load(html);
+    const $ = load(html);
     const node = $("#test").get().shift();
 
     // Act
@@ -66,7 +66,7 @@ export function suite(): void {
   it("Test for link node (Image)", function () {
     // Arrange
     const html = "<div><img id='test'></img></div>";
-    const $ = cheerio.load(html);
+    const $ = load(html);
     const node = $("#test").get().shift();
 
     // Act
@@ -79,7 +79,7 @@ export function suite(): void {
   it("Test for list node", function () {
     // Arrange
     const html = "<div><ul id='test'></ul></div>";
-    const $ = cheerio.load(html);
+    const $ = load(html);
     const node = $("#test").get().shift();
 
     // Act
@@ -92,7 +92,7 @@ export function suite(): void {
   it("Test for noscript node", function () {
     // Arrange
     const html = "<div><noscript id='test'></noscript></div>";
-    const $ = cheerio.load(html);
+    const $ = load(html);
     const node = $("#test").get().shift();
 
     // Act

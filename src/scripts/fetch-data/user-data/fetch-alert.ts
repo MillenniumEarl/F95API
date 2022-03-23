@@ -4,7 +4,7 @@
 // https://opensource.org/licenses/MIT
 
 // Public modules from npm
-import cheerio, { CheerioAPI, Node } from "cheerio";
+import { CheerioAPI, Node, load } from "cheerio";
 
 // Modules from files
 import { TAlertType, TAlertReactionType } from "../../types";
@@ -20,7 +20,7 @@ export default async function fetchAlertElements(
   html: string
 ): Promise<IAlert[]> {
   // Local variables
-  const $ = cheerio.load(html);
+  const $ = load(html);
 
   // Find all the bodies of the alerts in the page
   const bodies = $(ALERT.BODIES).toArray();

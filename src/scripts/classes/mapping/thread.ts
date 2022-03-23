@@ -4,7 +4,7 @@
 // https://opensource.org/licenses/MIT
 
 // Public modules from npm
-import cheerio from "cheerio";
+import { load } from "cheerio";
 
 // Modules from files
 import Post from "./post";
@@ -185,7 +185,7 @@ export default class Thread implements ILazy {
     html: string
   ): AsyncGenerator<Post, void, unknown> {
     // Load the HTML
-    const $ = cheerio.load(html);
+    const $ = load(html);
 
     // Start parsing the posts
     const posts = $(THREAD.POSTS_IN_PAGE)
@@ -241,7 +241,7 @@ export default class Thread implements ILazy {
    */
   private async elaborateResponse(html: string) {
     // Load the HTML
-    const $ = cheerio.load(html);
+    const $ = load(html);
 
     // Fetch data from selectors
     const ownerID = $(THREAD.OWNER_ID).attr("data-user-id");

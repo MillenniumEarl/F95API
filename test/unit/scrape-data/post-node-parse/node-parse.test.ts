@@ -5,7 +5,7 @@
 
 // Public module from npm
 import { expect } from "chai";
-import cheerio from "cheerio";
+import { load } from "cheerio";
 
 // Modules from file
 import parseCheerioNode from "../../../../src/scripts/scrape-data/post-node-parse/node-parse";
@@ -34,7 +34,7 @@ export function suite(): void {
             </div>
         </div>
     </div>`;
-    const $ = cheerio.load(html);
+    const $ = load(html);
     const node = $("div.bbCodeSpoiler").get().shift();
 
     // Act
@@ -50,7 +50,7 @@ export function suite(): void {
   it("Parse text node", function () {
     // Arrange
     const html = "<div id='container'>TEXTVALUE</div>";
-    const $ = cheerio.load(html);
+    const $ = load(html);
     const node = $("#container").contents().get().shift();
 
     // Act
@@ -70,7 +70,7 @@ export function suite(): void {
         <img src="IMAGE_SRC" data-src="DATA_SRC" data-url="" 
         class="bbImage lazyloaded" data-zoom-target="1" alt="TITLE" style="">
     </div>`;
-    const $ = cheerio.load(html);
+    const $ = load(html);
     const node = $("#container > img").get().shift();
 
     // Act
@@ -91,7 +91,7 @@ export function suite(): void {
         <a href="LINK" target="_blank" class="link link--external 
         has-favicon" rel="nofollow noopener">HYPERLINK TEXT</a>
     </div>`;
-    const $ = cheerio.load(html);
+    const $ = load(html);
     const node = $("#container > a").get().shift();
 
     // Act
@@ -113,7 +113,7 @@ export function suite(): void {
             THIS SHOULD PARSE TO A EMPTY NODE
         </ul>
     </div>`;
-    const $ = cheerio.load(html);
+    const $ = load(html);
     const node = $("#container > ul").get().shift();
 
     // Act

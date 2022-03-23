@@ -4,7 +4,7 @@
 // https://opensource.org/licenses/MIT
 
 // Public modules from npm
-import cheerio, { Cheerio, Node, Element } from "cheerio";
+import { Cheerio, Node, Element, load } from "cheerio";
 
 // Modules from file
 import shared from "../shared";
@@ -57,7 +57,7 @@ function mergeJSONLD(data: TJsonLD[]): TJsonLD {
  */
 function parseJSONLD(element: Element): TJsonLD {
   // Get the element HTML
-  const html = cheerio(element).html().trim();
+  const html = load(element).html().trim();
 
   // Obtain the JSON-LD
   const data = html

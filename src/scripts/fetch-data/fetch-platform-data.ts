@@ -7,7 +7,7 @@
 import { promises as fs, constants } from "fs";
 
 // Public modules from npm
-import cheerio from "cheerio";
+import { load } from "cheerio";
 
 // Modules from file
 import shared, { TPrefixDict } from "../shared";
@@ -131,7 +131,7 @@ async function saveCache(path: string): Promise<void> {
  * parse it and return the result.
  */
 function parseLatestPlatformHTML(html: string): ILatestResource {
-  const $ = cheerio.load(html);
+  const $ = load(html);
 
   // Clean the JSON string
   const unparsedText = $(GENERIC.LATEST_UPDATES_TAGS_SCRIPT).html().trim();

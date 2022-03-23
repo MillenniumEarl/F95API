@@ -5,7 +5,7 @@
 
 // Public module from npm
 import { expect } from "chai";
-import cheerio from "cheerio";
+import { load } from "cheerio";
 
 // Modules from file
 import { getJSONLD } from "../../../src/scripts/scrape-data/json-ld";
@@ -30,7 +30,7 @@ export function suite(): void {
         }
         </script>
     </div>`;
-    const $ = cheerio.load(html);
+    const $ = load(html);
     const node = $("#container");
 
     // Act

@@ -4,7 +4,7 @@
 // https://opensource.org/licenses/MIT
 
 // Public modules from npm
-import cheerio, { Cheerio, Node } from "cheerio";
+import { Cheerio, Node, load } from "cheerio";
 
 // Modules from file
 import shared from "../shared";
@@ -51,7 +51,7 @@ async function fetchResultURLs(
   limit: number = 30
 ): Promise<string[]> {
   // Prepare cheerio
-  const $ = cheerio.load(html);
+  const $ = load(html);
 
   // Here we get all the DIV that are the body of the various query results
   const results = $("body").find(THREAD_SEARCH.BODY);

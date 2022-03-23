@@ -4,7 +4,7 @@
 // https://opensource.org/licenses/MIT
 
 // Public modules from npm
-import cheerio, { Cheerio, CheerioAPI, Node } from "cheerio";
+import { Cheerio, CheerioAPI, Node, load } from "cheerio";
 import { isValidISODateString } from "iso-datestring-validator";
 
 // Modules from file
@@ -132,7 +132,7 @@ export default class Post implements ILazy {
    */
   private async elaborateResponse(html: string) {
     // Load cheerio and find post
-    const $ = cheerio.load(html);
+    const $ = load(html);
 
     const post = $(THREAD.POSTS_IN_PAGE)
       .toArray()
