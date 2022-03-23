@@ -120,9 +120,7 @@ async function getDDoSGuardID(url: string, cookies: Cookie[]) {
   const id = (response.data as string)
     .split(`'/.well-known/ddos-guard/id/`)[1]
     .split(`'`)[0];
-  shared.logger.trace(
-    `[DDoS Guard] Retrived id from ddos-guard's check.js "${id}"`
-  );
+  shared.logger.trace(`[DDoS Guard] Retrived id for this URL: "${id}"`);
 
   return id;
 }
