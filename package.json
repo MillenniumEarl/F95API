@@ -71,7 +71,7 @@
     "mocha": "9.2.2",
     "mock-fs": "^5.1.2",
     "nyc": "15.1.0",
-    "prettier": "2.6.0",
+    "prettier": "2.6.1",
     "rewire": "6.0.0",
     "ts-node": "10.7.0",
     "typescript": "4.6.3"
