@@ -63,7 +63,7 @@
     "chai-spies": "1.0.0",
     "dotenv": "16.0.0",
     "electron": "17.2.0",
-    "eslint": "8.11.0",
+    "eslint": "8.12.0",
     "eslint-config-prettier": "8.5.0",
     "eslint-plugin-prettier": "4.0.0",
     "inquirer": "8.2.2",
