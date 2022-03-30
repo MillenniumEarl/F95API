@@ -27,8 +27,7 @@
     "pretest": "npm run build",
     "test": "mocha --require ts-node/register test/{unit,integration}/index.ts",
     "coverage": "nyc --reporter=lcov --reporter=text npm run test",
-    "prebuild": "node -p \"'export const LIB_VERSION = ' + JSON.stringify(require('./package.json').version) + ';'\" > src/version.ts",
-    "build": "npm run prebuild && tsc --project ./",
+    "build": "tsc --project ./",
     "example": "npm run build && node --inspect ./dist/example.js"
   },
   "engines": {

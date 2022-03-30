@@ -4,14 +4,7 @@
 // https://opensource.org/licenses/MIT
 
 // Public modules from npm
-import axios, {
-  AxiosError,
-  AxiosInstance,
-  AxiosRequestConfig,
-  AxiosResponse
-} from "axios";
-import axiosRetry from "axios-retry";
-import { wrapper as addCookieJarSupport } from "axios-cookiejar-support";
+import { AxiosError, AxiosResponse } from "axios";
 import { load } from "cheerio";
 import { Semaphore } from "await-semaphore";
 
@@ -30,8 +23,7 @@ import {
   UnexpectedResponseContentType
 } from "./classes/errors";
 import Credentials from "./classes/credentials";
-import { LIB_VERSION } from "../version";
-import addDDoSSupport from "./ddos-guard-bypass";
+import createAxiosAgent from "./agent";
 
 // Types
 type TLookupMapCode = {
@@ -43,7 +35,6 @@ type TProvider = "auto" | "totp" | "email";
 
 // Global variables
 const MAX_CONCURRENT_REQUESTS = 15;
-const USER_AGENT = `Mozilla/5.0 (compatible; F95API/${LIB_VERSION}; MillenniumEarl@f95zone; https://github.com/MillenniumEarl/F95API)`;
 const AUTH_SUCCESSFUL_MESSAGE = "Authentication successful";
 const INVALID_2FA_CODE_MESSAGE =
   "The two-step verification value could not be confirmed. Please try again";
@@ -52,47 +43,9 @@ const REQUIRE_CAPTCHA_VERIFICATION =
   "You did not complete the CAPTCHA verification properly. Please try again.";
 
 /**
- * Common configuration used to send request via Axios.
- */
-const commonConfig: AxiosRequestConfig = {
-  /**
-   * Headers to add to the request.
-   */
-  headers: {
-    "User-Agent": USER_AGENT,
-    Connection: "keep-alive",
-    "Upgrade-Insecure-Requests": "1"
-  },
-  /**
-   * Specify if send credentials along the request.
-   */
-  withCredentials: true,
-  /**
-   * Jar of cookies to send along the request.
-   */
-  jar: shared.session.cookieJar,
-  validateStatus: function (status: number) {
-    return status < 500; // Resolve only if the status code is less than 500
-  },
-  timeout: 30000,
-  /**
-   * Explicit the HTTP adapter otherwise on Electron the XHR adapter
-   * is used which is not supported by `axios-cookiejar-support`
-   */
-  adapter: require("axios/lib/adapters/http")
-};
-
-/**
  * Axios agent used to send requests.
  */
-const agent: AxiosInstance = addCookieJarSupport(axios.create(commonConfig));
-addDDoSSupport(agent);
-
-// Enable Axios to retry a request in case of errors
-axiosRetry(agent, {
-  retryDelay: axiosRetry.exponentialDelay, // Use exponential back-off retry delay
-  shouldResetTimeout: true // Timer resets after every retry
-});
+const agent = createAxiosAgent();
 
 /**
  * Semaphore used to avoid flooding the platform.
