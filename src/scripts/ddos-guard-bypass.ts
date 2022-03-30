@@ -12,6 +12,9 @@ import { ERROR_CODE, GenericAxiosError } from "./classes/errors";
 import { urls } from "./constants/url";
 import shared from "./shared";
 
+/**
+ * Allows `agent` to bypass the DDOS Guard protection service (https://ddos-guard.net/)
+ */
 export default function addDDoSSupport(agent: AxiosInstance): void {
   agent.interceptors.request.use(
     async (config) => {
@@ -41,6 +44,10 @@ export default function addDDoSSupport(agent: AxiosInstance): void {
   );
 }
 
+/**
+ * Connect to the URL protected by DDoS Guard obtaining the
+ * bypass cookies and the referer url for the requested `url`
+ */
 async function bypass(url: string) {
   // Find referer URL and cookies
   const referer = await generateURLforReferer(url);
@@ -65,6 +72,9 @@ async function bypass(url: string) {
   };
 }
 
+/**
+ * Obtains the top domain for the requested `url` and the response cookies from DDoS Guard
+ */
 async function generateURLforReferer(url: string) {
   // Start by contacting the request page
   const response = await axios({
@@ -100,6 +110,9 @@ async function generateURLforReferer(url: string) {
   };
 }
 
+/**
+ * For the specified `url` obtains the one-time associated ID.
+ */
 async function getDDoSGuardID(url: string, cookies: Cookie[]) {
   // Contact the company page to get the ID requested
   const response = await axios({
@@ -125,6 +138,9 @@ async function getDDoSGuardID(url: string, cookies: Cookie[]) {
   return id;
 }
 
+/**
+ * Obtains cookies that define the agent as "reliable"
+ */
 async function getBypassCookies(url: string, id: string, cookies: Cookie[]) {
   // Contact the URL generated to obtain cookies needed for protection bypass
   const response = await axios({
@@ -146,10 +162,17 @@ async function getBypassCookies(url: string, id: string, cookies: Cookie[]) {
   return response.headers["set-cookie"].map((c) => Cookie.parse(c));
 }
 
+/**
+ * COnvert an array of cookies into a string.
+ */
 function cookieString(cookies: Cookie[]) {
   return cookies.map((c) => c.cookieString()).join(" ");
 }
 
+/**
+ * Check if a request already contains cookies used to bypass DDoS Guard protection.
+ * @param config Configuration of the request
+ */
 async function checkIfAlreadyBypassed(config: AxiosRequestConfig) {
   // Constant used to determine if the agent has already
   // done at least one connection to bypass the DDoS Guard
