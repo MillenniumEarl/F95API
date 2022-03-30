@@ -366,6 +366,7 @@ function parseAuthor(elements: IPostElement[]): TAuthor[] {
 
     // Sometimes there are multiple "support" platform but no name of the author.
     // In these case, usually, the name of the first platform is the author's name.
+    /* istanbul ignore if : Not so important */
     if (author.name === "" && author.platforms.length >= 1)
       author.name = author.platforms[0].name;
 
@@ -414,6 +415,8 @@ function parseChangelog(elements: IPostElement[]): TChangelog[] {
       // Parse the data
       group.forEach((e) => {
         if (e.type === "Empty" || e.type === "Spoiler") {
+          // This element is a collection of element so we
+          // need to parse all the textes inside this element
           const textes = e.content.map((c) => c.text);
           versionChangelog.information.push(...textes);
         } else versionChangelog.information.push(e.text);

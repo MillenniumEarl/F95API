@@ -31,6 +31,7 @@ export default function addDDoSSupport(agent: AxiosInstance): void {
 
       return config;
     },
+    /* istanbul ignore next : Tested in another script */
     (e) => {
       const message = `"${e.message}" occurred while trying to bypass DDoS Guard`;
       shared.logger.error(message);

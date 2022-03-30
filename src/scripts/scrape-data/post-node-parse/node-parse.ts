@@ -64,6 +64,7 @@ function parseCheerioSpoilerNode(node: Cheerio<Node>): IPostElement {
 
   // Find the title of the spoiler (contained in the button)
   const name = node.find(POST.SPOILER_NAME)?.first();
+  /* istanbul ignore next : Not important enough to test */
   spoiler.name = name ? name.text().trim() : "";
 
   return spoiler;

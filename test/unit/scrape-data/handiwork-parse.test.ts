@@ -45,7 +45,7 @@ class MockThread implements MockOf<Thread, "fetch"> {
   modified: Date = mockDate;
   category: TCategory = "games";
   url: string = "www.gameurl.com";
-  headline: string = "Test thread title [version] [author]";
+  headline: string = "Test thread title [v2.0.0] [MillenniumEarl]";
   //#endregion Fields
 
   getPost(index: number): Promise<Post> {
@@ -142,6 +142,148 @@ class MockThread implements MockOf<Thread, "fetch"> {
             name: "",
             text: "The changes of this version go here",
             content: []
+          },
+          {
+            type: "Spoiler",
+            name: "Container element",
+            text: "In this spoiler there are nested elements",
+            content: [
+              {
+                type: "Text",
+                name: "",
+                text: "This is a nested element in the changelog data",
+                content: []
+              }
+            ]
+          }
+        ]
+      }
+    ];
+
+    return Promise.resolve(post as Post);
+  }
+}
+
+/**
+ * Mock with no `version` data in the body, used to simulate
+ * old thread where no standardization was present.
+ */
+class MockOldThread implements MockOf<MockThread> {
+  //#region  Fields
+  id: number = 0;
+  title: string = "Test thread title";
+  tags: string[] = ["Tag 1", "Tag 2", "Tag 3"];
+  prefixes: string[] = ["Unity", "Completed"];
+  rating: TRating = { average: 4, best: 5, count: 10 };
+  owner: PlatformUser = new PlatformUser(0);
+  publication: Date = mockDate;
+  modified: Date = mockDate;
+  category: TCategory = "games";
+  url: string = "www.gameurl.com";
+  headline: string = "Test thread title [2.0.0] [MillenniumEarl]";
+  //#endregion Fields
+
+  getPost(index: number): Promise<Post> {
+    const post = new MockPost();
+    post.id = index;
+    post.number = 1;
+    post.bookmarked = false;
+    post.owner = new PlatformUser(0);
+    post.published = mockDate;
+    post.lastEdit = mockDate;
+    post.body = [
+      {
+        type: "Image",
+        name: "Cover",
+        text: "cover.jpg",
+        href: "https://website.com/cover.jpg",
+        content: []
+      } as ILink,
+      {
+        type: "Text",
+        name: "Overview",
+        text: "This is the game overview",
+        content: []
+      },
+      {
+        type: "Text",
+        name: "Thread Updated",
+        text: "2021-04-27",
+        content: []
+      },
+      {
+        type: "Text",
+        name: "Release Date",
+        text: "2021-04-25",
+        content: []
+      },
+      {
+        type: "Text",
+        name: "Developer",
+        text: "MillenniumEarl",
+        content: [
+          {
+            type: "Link",
+            name: "",
+            text: "Patreon",
+            href: "www.thiscouldbeapatreonurl.com",
+            content: []
+          } as ILink
+        ]
+      },
+      {
+        type: "Text",
+        name: "Censored",
+        text: "No",
+        content: []
+      },
+      {
+        type: "Text",
+        name: "OS",
+        text: "Windows, Linux, Mac",
+        content: []
+      },
+      {
+        type: "Text",
+        name: "Language",
+        text: "English",
+        content: []
+      },
+      {
+        type: "Text",
+        name: "Installation",
+        text: "1. Extract and run.",
+        content: []
+      },
+      {
+        type: "Text",
+        name: "Changelog",
+        text: "Changelog",
+        content: [
+          {
+            type: "Text",
+            name: "",
+            text: "v2.0.0",
+            content: []
+          },
+          {
+            type: "Text",
+            name: "",
+            text: "The changes of this version go here",
+            content: []
+          },
+          {
+            type: "Spoiler",
+            name: "Container element",
+            text: "In this spoiler there are nested elements",
+            content: [
+              {
+                type: "Text",
+                name: "",
+                text: "This is a nested element in the changelog data",
+                content: []
+              }
+            ]
           }
         ]
       }
@@ -199,6 +341,25 @@ export function suite(): void {
   it("Create handiwork from game thread", async function () {
     // Arrange
     const thread = new MockThread();
+
+    // Act
+    const hw = await getHandiworkInformation<Game>(thread as Thread, Game);
+
+    // Assert
+    expect(hw.censored).to.be.false;
+    expect(hw.status).to.be.equal("Completed");
+    expect(hw.engine).to.be.equal("Unity");
+    expect(hw.cover).to.be.equal("https://website.com/cover.jpg");
+    expect(hw.category === "mods").to.be.false;
+    expect(hw.os.length).to.be.equal(3);
+    expect(hw.version).to.be.equal("2.0.0");
+    expect(hw.authors.length).to.be.equal(1);
+    expect(hw.authors[0].name).to.be.equal("MillenniumEarl");
+  });
+
+  it("Create handiwork from old game thread", async function () {
+    // Arrange
+    const thread = new MockOldThread();
 
     // Act
     const hw = await getHandiworkInformation<Game>(thread as Thread, Game);
