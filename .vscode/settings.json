@@ -5,5 +5,10 @@
         "**/node_modules": true,
         "**/coverage": true,
         ".dccache": true
-    }
+    },
+    "npm.scriptExplorerExclude": [
+      "build",
+      "^pre[\\w-]+",
+      "^typecheck[\\w-]+"
+    ],
 }
