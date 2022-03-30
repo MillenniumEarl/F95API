@@ -3,7 +3,7 @@
 // This software is released under the MIT License.
 // https://opensource.org/licenses/MIT
 
-/* istanbul ignore file */
+/* c8 ignore start */
 
 // Core modules
 import { tmpdir } from "os";
@@ -80,3 +80,4 @@ export default abstract class Shared {
 
   //#endregion Setters
 }
+/* c8 ignore stop */

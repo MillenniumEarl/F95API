@@ -3,7 +3,7 @@
 // This software is released under the MIT License.
 // https://opensource.org/licenses/MIT
 
-/* istanbul ignore file */
+/* c8 ignore start */
 
 export type Result<L, A> = Failure<L, A> | Success<L, A>;
 
@@ -55,3 +55,5 @@ export const failure = <L, A>(l: L): Result<L, A> => {
 export const success = <L, A>(a: A): Result<L, A> => {
   return new Success<L, A>(a);
 };
+
+/* c8 ignore stop */

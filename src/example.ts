@@ -4,7 +4,6 @@
 // https://opensource.org/licenses/MIT
 
 /* eslint-disable no-console */
-/* istanbul ignore file */
 
 /*
 to use this example, create an .env file

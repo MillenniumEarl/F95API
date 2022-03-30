@@ -59,15 +59,16 @@ export async function login(
     }
   }
 
-  /* istanbul ignore if : Tested in another script */
+  /* c8 ignore start*/
   if (loginResult.success) {
     // Load platform data
     await fetchPlatformData();
 
     shared.logger.info("User logged in through the platform");
-  } /* istanbul ignore else : It is only a log message */ else {
+  } else {
     shared.logger.warn(`Error during authentication: ${loginResult.message}`);
   }
+  /* c8 ignore stop */
 
   // Set login status
   shared.setIsLogged(loginResult.success);

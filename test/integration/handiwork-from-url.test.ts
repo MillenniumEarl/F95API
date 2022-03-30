@@ -27,13 +27,13 @@ export function suite(): void {
 
   it("Get handiwork from invalid URL", function () {
     // Local variable
-    const URL = "www.thisurlhastoomanylevels.too.many";
+    const URL = "www.thisurlhastoofewlevels";
 
     // Set the session as logged
     Shared.setIsLogged(true);
 
     expect(getHandiworkFromURL(URL, HandiWork)).to.be.rejectedWith(
-      /(is not a valid url)$/
+      /(is not a valid url)/
     );
   });
 

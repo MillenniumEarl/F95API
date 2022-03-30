@@ -96,7 +96,7 @@ export default async function getHandiworkInformation<T extends Basic>(
 /**
  * Extracts the work's unique ID from its URL.
  */
-/* istanbul ignore next : it will not be called in tests*/
+/* c8 ignore next */
 function extractIDFromURL(url: string): number {
   shared.logger.trace("Extracting ID from URL...");
 
@@ -189,12 +189,13 @@ async function getThread(t: Thread | string): Promise<Thread> {
   let thread = null;
 
   // Fetch thread data
-  /* istanbul ignore if */
+  /* c8 ignore start */
   if (typeof t === "string") {
     const id = extractIDFromURL(t);
     thread = new Thread(id);
     await thread.fetch();
   } else thread = t as Thread;
+  /* c8 ignore stop */
 
   return thread;
 }
@@ -366,7 +367,7 @@ function parseAuthor(elements: IPostElement[]): TAuthor[] {
 
     // Sometimes there are multiple "support" platform but no name of the author.
     // In these case, usually, the name of the first platform is the author's name.
-    /* istanbul ignore if : Not so important */
+    /* c8 ignore next */
     if (author.name === "" && author.platforms.length >= 1)
       author.name = author.platforms[0].name;
 

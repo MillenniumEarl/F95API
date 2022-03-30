@@ -31,6 +31,6 @@ export async function getHandiworkFromURL<T extends Basic>(
   if (!isF95URL(url)) throw new Error(`${url} is not a valid F95Zone URL`);
 
   // Get game data
-  /* istanbul ignore next : Tested in another script */
+  /* c8 ignore next */
   return getHandiworkInformation<T>(url, type);
 }

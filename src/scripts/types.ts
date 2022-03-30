@@ -3,8 +3,6 @@
 // This software is released under the MIT License.
 // https://opensource.org/licenses/MIT
 
-/* istanbul ignore file */
-
 /**
  * Data relating to an external platform (i.e. Patreon).
  */
