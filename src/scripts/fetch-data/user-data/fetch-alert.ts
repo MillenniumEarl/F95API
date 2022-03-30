@@ -57,7 +57,7 @@ function isSummarized($: CheerioAPI, el: Node): boolean {
 /**
  * Given the partial URL of a summarized alert, it obtains the data of all summarized alerts.
  */
-/* c8 ignore next */
+/* c8 ignore start */
 async function fetchSummarizedAlerts(partialURL: string) {
   // Find the URL
   const url = new URL(partialURL, urls.BASE);
@@ -69,6 +69,7 @@ async function fetchSummarizedAlerts(partialURL: string) {
   if (response.isSuccess()) return await fetchAlertElements(response.value);
   else throw response.value;
 }
+/* c8 ignore stop */
 
 /**
  * Given the text message identifies the type of alert.

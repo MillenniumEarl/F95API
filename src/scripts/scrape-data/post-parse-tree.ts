@@ -100,7 +100,7 @@ function createTree($: CheerioAPI, node: Node, parent?: TreeNode): TreeNode {
 /**
  * Debug function used to display the elements that make up a tree in the console.
  */
-/* c8 ignore next */
+/* c8 ignore start */
 function printTree(root: TreeNode, nindent = 0) {
   // Define the indent
   const indent = `${" ".repeat(nindent)}└─ `;
@@ -116,8 +116,9 @@ function printTree(root: TreeNode, nindent = 0) {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   root.children.forEach((child) => printTree(child, nindent + 1));
 }
+/* c8 ignore stop */
 
-/* c8 ignore next */
+/* c8 ignore start */
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 function printPairs(pairs: IPostElement[]) {
   for (const pair of pairs) {
@@ -128,6 +129,7 @@ function printPairs(pairs: IPostElement[]) {
     console.log(`+ [${pair.name}]: ${text} ${childData}`);
   }
 }
+/* c8 ignore stop */
 
 //#endregion Tree methods
 

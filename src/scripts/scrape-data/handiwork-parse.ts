@@ -96,7 +96,7 @@ export default async function getHandiworkInformation<T extends Basic>(
 /**
  * Extracts the work's unique ID from its URL.
  */
-/* c8 ignore next */
+/* c8 ignore start */
 function extractIDFromURL(url: string): number {
   shared.logger.trace("Extracting ID from URL...");
 
@@ -112,6 +112,7 @@ function extractIDFromURL(url: string): number {
   // Parse and return number
   return parseInt(match[0], 10);
 }
+/* c8 ignore stop */
 
 /**
  * Makes an array of strings uppercase.
