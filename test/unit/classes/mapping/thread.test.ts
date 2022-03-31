@@ -3,8 +3,6 @@
 // This software is released under the MIT License.
 // https://opensource.org/licenses/MIT
 
-"use strict";
-
 // Public module from npm
 import chai from "chai";
 import chaiAsPromised from "chai-as-promised";

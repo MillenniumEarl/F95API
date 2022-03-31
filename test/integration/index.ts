@@ -3,8 +3,6 @@
 // This software is released under the MIT License.
 // https://opensource.org/licenses/MIT
 
-"use strict";
-
 // Import suites
 import { suite as credentials } from "./classes/credentials.test";
 import { suite as prefixParser } from "./classes/prefix-parser.test";

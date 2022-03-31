@@ -3,8 +3,6 @@
 // This software is released under the MIT License.
 // https://opensource.org/licenses/MIT
 
-"use strict";
-
 // Import suites
 import { suite as basicClass } from "./classes/handiwork/basic.test";
 import { suite as assetClass } from "./classes/handiwork/asset.test";
