@@ -46,7 +46,7 @@ export default class PlatformUser implements ILazy {
   //#endregion Fields
 
   //#region Getters
-
+  /* c8 ignore start */
   /**
    * Unique user ID.
    */
@@ -137,7 +137,7 @@ export default class PlatformUser implements ILazy {
   public get donation(): number {
     return this._amountDonated;
   }
-
+  /* c8 ignore stop */
   //#endregion Getters
 
   constructor(id?: number) {
@@ -169,8 +169,8 @@ export default class PlatformUser implements ILazy {
   //#region Private methods
 
   /**
-   * Process the HTML code received as
-   * an answer and gets the data contained in it.
+   * Process the HTML code received as an
+   * answer and gets the data contained in it.
    */
   private elaborateResponse(html: string): void {
     // Prepare cheerio

@@ -7,7 +7,9 @@
 import { promises as fs } from "fs";
 
 // Public modules from npm
-import { expect } from "chai";
+import { Cookie } from "tough-cookie";
+import chai, { expect } from "chai";
+import spies from "chai-spies";
 import mock from "mock-fs";
 
 // Local modules
@@ -18,6 +20,9 @@ import Session from "../../../src/scripts/classes/session";
 const USERNAME = "User";
 const PASSWORD = "Password";
 const TOKEN = "test-token";
+
+// Allow chai to use chai-spies
+chai.use(spies);
 
 export function suite(): void {
   //#region Setup
@@ -101,6 +106,28 @@ export function suite(): void {
     // Verify test
     const exists = await fileExists(path);
     expect(exists).to.be.false;
+  });
+
+  it("Session - deleteSessionCookies", async () => {
+    // Arrange
+    const path = "./session";
+    const keys = ["xf_user", "test_key", "test_key_bis"];
+    const cookies = keys.map(
+      (k) => new Cookie({ key: k, domain: "f95zone.to" })
+    );
+
+    // Act
+    const session = createSession(path);
+    chai.spy.on(session.cookieJar, "getCookies", () => cookies);
+
+    await session.deleteSessionCookies();
+
+    chai.spy.restore(); // Restore cookiejar methods
+    const cs = await session.cookieJar.getCookies(urls.BASE);
+    const remaining = cs.length;
+
+    // Assert
+    expect(remaining).to.be.equal(1, "There should be only one cookie");
   });
 
   it("Session - isValid", () => {
