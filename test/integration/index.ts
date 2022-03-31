@@ -10,6 +10,7 @@ import { suite as handiworkfromurl } from "./handiwork-from-url.test";
 import { suite as postparsetree } from "./scrape-data/post-parse-tree.test";
 import { suite as fetchalert } from "./fetch-data/fetch-alert.test";
 import { suite as login } from "./login.test";
+import { suite as platformuser } from "./classes/mapping/platform-user.test";
 
 describe("Integration Tests", function testBasic() {
   //#region Set-up
@@ -21,6 +22,7 @@ describe("Integration Tests", function testBasic() {
   describe("Test login", login.bind(this));
   describe("Test class Credentials", credentials.bind(this));
   describe("Test class PrefixParser", prefixParser.bind(this));
+  describe("Test class PlatformUser", platformuser.bind(this));
   describe("Fetch handiwork from URL", handiworkfromurl.bind(this));
   describe("Test post parsing", postparsetree.bind(this));
   describe("Test alert parsing", fetchalert.bind(this));
