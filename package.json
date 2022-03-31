@@ -28,7 +28,7 @@
     "test": "mocha --require ts-node/register test/{unit,integration}/index.ts",
     "coverage": "c8 --reporter=lcov --reporter=text npm run test",
     "build": "tsc --project ./",
-    "example": "npm run build && node --inspect ./dist/example.js"
+    "example": "npm run build && node --inspect ./dist/src/example.js"
   },
   "engines": {
     "node": ">=14.0"

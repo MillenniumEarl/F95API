@@ -3,7 +3,6 @@
 .vscode/
 test/
 coverage/
-.nyc_output/
 src/
 
 # Files
@@ -21,4 +20,4 @@ renovate.json
 .dccache
 
 # Example files
-dist/example.*
+dist/src/example.*
