@@ -20,9 +20,7 @@ export function suite(): void {
     // Set the session as not logged
     Shared.setIsLogged(false);
 
-    expect(getHandiworkFromURL(URL, HandiWork)).to.be.rejectedWith(
-      USER_NOT_LOGGED
-    );
+    expect(getHandiworkFromURL(URL, HandiWork)).to.be.rejectedWith(USER_NOT_LOGGED);
   });
 
   it("Get handiwork from invalid URL", function () {
@@ -32,9 +30,7 @@ export function suite(): void {
     // Set the session as logged
     Shared.setIsLogged(true);
 
-    expect(getHandiworkFromURL(URL, HandiWork)).to.be.rejectedWith(
-      /(is not a valid url)/
-    );
+    expect(getHandiworkFromURL(URL, HandiWork)).to.be.rejectedWith(/(is not a valid url)/);
   });
 
   it("Get handiwork from not existing URL", function () {
@@ -44,9 +40,7 @@ export function suite(): void {
     // Set the session as logged
     Shared.setIsLogged(true);
 
-    expect(getHandiworkFromURL(URL, HandiWork)).to.be.rejectedWith(
-      /(does not exists)/
-    );
+    expect(getHandiworkFromURL(URL, HandiWork)).to.be.rejectedWith(/(does not exists)/);
   });
 
   it("Get handiwork from non-F95Zone URL", function () {
@@ -56,8 +50,6 @@ export function suite(): void {
     // Set the session as logged
     Shared.setIsLogged(true);
 
-    expect(getHandiworkFromURL(URL, HandiWork)).to.be.rejectedWith(
-      /(is not a valid F95Zone URL)/
-    );
+    expect(getHandiworkFromURL(URL, HandiWork)).to.be.rejectedWith(/(is not a valid F95Zone URL)/);
   });
 }

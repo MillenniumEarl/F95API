@@ -185,9 +185,7 @@ function assignLatestPlatformData(data: ILatestResource): void {
 function objectToMap(data: Record<number | string, string>) {
   // file deepcode ignore CollectionUpdatedButNeverQueried: This map doesn't need to be queried here
   const map = new Map<number, string>();
-  Object.entries(data).forEach(([key, value]) =>
-    map.set(parseInt(key, 10), value)
-  );
+  Object.entries(data).forEach(([key, value]) => map.set(parseInt(key, 10), value));
 
   return map as TPrefixDict;
 }

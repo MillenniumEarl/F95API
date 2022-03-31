@@ -58,11 +58,7 @@ async function bypass(url: string) {
   const id = await getDDoSGuardID(referer.url, referer.cookies);
 
   // Obtains the cookies used to bypass the protection
-  const bypassCookies = await getBypassCookies(
-    referer.url,
-    id,
-    referer.cookies
-  );
+  const bypassCookies = await getBypassCookies(referer.url, id, referer.cookies);
 
   // Add cookies used for the bypass to the list of cookies of the request
   const cookies = referer.cookies;
@@ -132,9 +128,7 @@ async function getDDoSGuardID(url: string, cookies: Cookie[]) {
   });
 
   // Gets the user ID for the search page
-  const id = (response.data as string)
-    .split(`'/.well-known/ddos-guard/id/`)[1]
-    .split(`'`)[0];
+  const id = (response.data as string).split(`'/.well-known/ddos-guard/id/`)[1].split(`'`)[0];
   shared.logger.trace(`[DDoS Guard] Retrived id for this URL: "${id}"`);
 
   return id;

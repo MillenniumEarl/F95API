@@ -71,14 +71,10 @@ export async function fetchHTML(
     const unexpectedResponseError = new UnexpectedResponseContentType({
       id: ERROR_CODE.UNEXPECTED_HTML_RESPONSE,
       message: `Expected HTML but received ${response.value["content-type"]}`,
-      error: new Error(
-        `Expected HTML but received ${response.value["content-type"]}`
-      )
+      error: new Error(`Expected HTML but received ${response.value["content-type"]}`)
     });
 
-    return isHTML
-      ? success(response.value.data as string)
-      : failure(unexpectedResponseError);
+    return isHTML ? success(response.value.data as string) : failure(unexpectedResponseError);
   } else return failure(response.value as GenericAxiosError);
 }
 
@@ -96,8 +92,7 @@ export async function authenticate(
   captchaToken?: string
 ): Promise<LoginResult> {
   shared.logger.info(`Authenticating with user ${credentials.username}`);
-  if (!credentials.token)
-    throw new InvalidF95Token(`Invalid token for auth: ${credentials.token}`);
+  if (!credentials.token) throw new InvalidF95Token(`Invalid token for auth: ${credentials.token}`);
 
   // Secure the URL
   const secureURL = enforceHttpsUrl(urls.LOGIN);
@@ -150,8 +145,7 @@ export async function send2faCode(
   // Prepare the parameters to send via POST request
   const params = {
     _xfRedirect: urls.BASE,
-    _xfRequestUri:
-      "/login/two-step?_xfRedirect=https%3A%2F%2Ff95zone.to%2F&remember=1",
+    _xfRequestUri: "/login/two-step?_xfRedirect=https%3A%2F%2Ff95zone.to%2F&remember=1",
     _xfResponseType: "json",
     _xfToken: token,
     _xfWithData: "1",
@@ -228,8 +222,7 @@ export async function fetchGETResponse(
   url: string
 ): Promise<Result<GenericAxiosError, AxiosResponse<any>>> {
   // Validate URL
-  if (!isStringAValidURL(url))
-    throw new URIError(`'${url}' is not a valid URL`);
+  if (!isStringAValidURL(url)) throw new URIError(`'${url}' is not a valid URL`);
 
   // Get a token from the semaphore
   const release = await semaphore.acquire();
@@ -266,8 +259,7 @@ export async function fetchPOSTResponse(
   params: { [s: string]: string }
 ): Promise<Result<GenericAxiosError, AxiosResponse<any>>> {
   // Validate URL
-  if (!isStringAValidURL(url))
-    throw new URIError(`'${url}' is not a valid URL`);
+  if (!isStringAValidURL(url)) throw new URIError(`'${url}' is not a valid URL`);
 
   // Prepare the parameters for the POST request
   const urlParams = new URLSearchParams();
@@ -304,8 +296,7 @@ export async function fetchHEADResponse(
   url: string
 ): Promise<Result<GenericAxiosError, AxiosResponse<any>>> {
   // Validate URL
-  if (!isStringAValidURL(url))
-    throw new URIError(`'${url}' is not a valid URL`);
+  if (!isStringAValidURL(url)) throw new URIError(`'${url}' is not a valid URL`);
 
   // Get a token from the semaphore
   const release = await semaphore.acquire();
@@ -343,8 +334,7 @@ export function enforceHttpsUrl(url: string): string {
  */
 export function isF95URL(url: string): boolean {
   // Validate URL
-  if (!isStringAValidURL(url))
-    throw new URIError(`'${url}' is not a valid URL`);
+  if (!isStringAValidURL(url)) throw new URIError(`'${url}' is not a valid URL`);
 
   return url.startsWith(urls.BASE);
 }
@@ -370,10 +360,7 @@ export function isStringAValidURL(url: string): boolean {
  * If `true`, the function will consider redirects a violation and return `false`.
  * Default: `false`
  */
-export async function urlExists(
-  url: string,
-  checkRedirect: boolean = false
-): Promise<boolean> {
+export async function urlExists(url: string, checkRedirect: boolean = false): Promise<boolean> {
   // Local variables
   let valid = false;
 
@@ -396,8 +383,7 @@ export async function urlExists(
  */
 export async function getUrlRedirect(url: string): Promise<string> {
   // Validate URL
-  if (!isStringAValidURL(url))
-    throw new URIError(`'${url}' is not a valid URL`);
+  if (!isStringAValidURL(url)) throw new URIError(`'${url}' is not a valid URL`);
 
   const response = await fetchHEADResponse(url);
 
@@ -459,8 +445,7 @@ async function getUserCookieString(): Promise<string> {
  */
 async function axiosUrlExists(url: string): Promise<boolean> {
   // Validate URL
-  if (!isStringAValidURL(url))
-    throw new URIError(`'${url}' is not a valid URL`);
+  if (!isStringAValidURL(url)) throw new URIError(`'${url}' is not a valid URL`);
 
   // Local variables
   const ERROR_CODES = ["ENOTFOUND", "ETIMEDOUT"];
@@ -475,8 +460,7 @@ async function axiosUrlExists(url: string): Promise<boolean> {
   const errorCode = error?.code ?? "";
 
   if (r.isSuccess()) valid = r.value && !/4\d\d/.test(status.toString());
-  else if (r.isFailure() && !ERROR_CODES.includes(errorCode))
-    throw r.value.error;
+  else if (r.isFailure() && !ERROR_CODES.includes(errorCode)) throw r.value.error;
 
   return valid;
 }
@@ -498,10 +482,7 @@ function manageLoginPOSTResponse(response: AxiosResponse<any>) {
   }
 
   // Get the error message (if any) and remove the new line chars
-  const genericError = $("body")
-    .find(GENERIC.LOGIN_MESSAGE_ERROR)
-    .text()
-    .replace(/\n/g, "");
+  const genericError = $("body").find(GENERIC.LOGIN_MESSAGE_ERROR).text().replace(/\n/g, "");
 
   // Check if there is a security error (in another css block)
   const securityError = $("body")
@@ -513,8 +494,7 @@ function manageLoginPOSTResponse(response: AxiosResponse<any>) {
 
   // Check if the user ID is available
   const availableUserID = $("body").find(GENERIC.CURRENT_USER_ID).length !== 0;
-  if (!availableUserID && !errorMessage)
-    errorMessage = "Successful request but user not logged in";
+  if (!availableUserID && !errorMessage) errorMessage = "Successful request but user not logged in";
 
   // Return the result of the authentication
   const result = errorMessage.trim().length === 0 && availableUserID;
@@ -555,9 +535,7 @@ function messageToCode(message: string): number {
 /**
  * Manage the response given by the platform when the 2FA is required.
  */
-function manage2faResponse(
-  r: AxiosResponse<any>
-): Result<TProvider, LoginResult> {
+function manage2faResponse(r: AxiosResponse<any>): Result<TProvider, LoginResult> {
   // The html property exists only if the provider is wrong
   const rightProvider = !("html" in r.data);
 
@@ -570,9 +548,7 @@ function manage2faResponse(
 
   // r.data.status is 'ok' if the authentication is successful
   const result = r.data.status === "ok";
-  const message: string = result
-    ? AUTH_SUCCESSFUL_MESSAGE
-    : r.data.errors.join(",");
+  const message: string = result ? AUTH_SUCCESSFUL_MESSAGE : r.data.errors.join(",");
   const loginCode = messageToCode(message);
   return success(new LoginResult(result, loginCode, message));
 }

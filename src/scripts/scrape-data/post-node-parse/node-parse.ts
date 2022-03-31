@@ -10,18 +10,12 @@ import { CheerioAPI, Cheerio, Node } from "cheerio";
 import { POST } from "../../constants/css-selector";
 import { ILink, IPostElement } from "../../interfaces";
 import { nodeType } from "./node-type";
-import {
-  cleanTextFromInvisibleCharacters,
-  createEmptyElement
-} from "./node-utility";
+import { cleanTextFromInvisibleCharacters, createEmptyElement } from "./node-utility";
 
 /**
  * Given a Cheerio node, it extracts the information into an IPostElement structure.
  */
-export default function parseCheerioNode(
-  $: CheerioAPI,
-  node: Node
-): IPostElement {
+export default function parseCheerioNode($: CheerioAPI, node: Node): IPostElement {
   // Function mapping
   const functionMap: Record<string, (node: Cheerio<Node>) => IPostElement> = {
     Text: (node: Cheerio<Node>) => parseCheerioTextNode(node),

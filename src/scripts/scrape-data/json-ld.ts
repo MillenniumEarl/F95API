@@ -60,9 +60,7 @@ function parseJSONLD(element: Element): TJsonLD {
   const html = load(element).html().trim();
 
   // Obtain the JSON-LD
-  const data = html
-    .replace('<script type="application/ld+json">', "")
-    .replace("</script>", "");
+  const data = html.replace('<script type="application/ld+json">', "").replace("</script>", "");
 
   // Convert the string to an object
   return JSON.parse(data);

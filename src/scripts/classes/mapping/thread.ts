@@ -12,11 +12,7 @@ import PlatformUser from "./platform-user";
 import { ILazy } from "../../interfaces";
 import { urls } from "../../constants/url";
 import { POST, THREAD } from "../../constants/css-selector";
-import {
-  fetchHTML,
-  fetchPOSTResponse,
-  getUrlRedirect
-} from "../../network-helper";
+import { fetchHTML, fetchPOSTResponse, getUrlRedirect } from "../../network-helper";
 import {
   InvalidID,
   InvalidResponseParsing,
@@ -69,9 +65,7 @@ export default class Thread implements ILazy {
    * It may vary depending on any versions of the contained product.
    */
   public get url(): string {
-    return this._url !== ""
-      ? this._url
-      : new URL(`${this.id}/`, urls.THREADS).toString();
+    return this._url !== "" ? this._url : new URL(`${this.id}/`, urls.THREADS).toString();
   }
   /**
    * Thread title.
@@ -181,9 +175,7 @@ export default class Thread implements ILazy {
   /**
    * Fetch one at a time the posts on the current page.
    */
-  private async *parsePostsInPage(
-    html: string
-  ): AsyncGenerator<Post, void, unknown> {
+  private async *parsePostsInPage(html: string): AsyncGenerator<Post, void, unknown> {
     // Load the HTML
     const $ = load(html);
 
@@ -252,8 +244,7 @@ export default class Thread implements ILazy {
     const modified = getDateFromString(JSONLD["dateModified"] as string);
 
     // Throws error if no ID is found
-    if (!ownerID)
-      throw new InvalidResponseParsing("Cannot get ID from HTML response");
+    if (!ownerID) throw new InvalidResponseParsing("Cannot get ID from HTML response");
 
     // Parse the thread's data
     this._headline = JSONLD["headline"] as string;
@@ -320,8 +311,7 @@ export default class Thread implements ILazy {
    */
   public async getPost(index: number): Promise<Post | undefined> {
     // Validate parameters
-    if (index < 1)
-      throw new ParameterError("Index must be greater or equal than 1");
+    if (index < 1) throw new ParameterError("Index must be greater or equal than 1");
 
     // Reduce the maximum number of posts per page to POST_FOR_PAGE
     await this.setMaximumPostsForPage(this.POST_FOR_PAGE);

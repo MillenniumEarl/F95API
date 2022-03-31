@@ -41,10 +41,7 @@ interface TreeNode {
 /**
  * Given a post of a thread page it extracts the information contained in the body.
  */
-export function extractDataFromFirstThreadPost(
-  $: CheerioAPI,
-  post: Node
-): IPostElement[] {
+export function extractDataFromFirstThreadPost($: CheerioAPI, post: Node): IPostElement[] {
   // Reset the global counter of the IDs
   idcounter = 0;
 
@@ -106,9 +103,7 @@ function printTree(root: TreeNode, nindent = 0) {
   const indent = `${" ".repeat(nindent)}└─ `;
 
   // Print the data of this node
-  const data = `[${root.element.type}] (${root.id}) ${
-    root.element.text || root.element.name
-  }`;
+  const data = `[${root.element.type}] (${root.id}) ${root.element.text || root.element.name}`;
   // eslint-disable-next-line no-console
   console.log(`${indent}${data}`);
 
@@ -122,8 +117,7 @@ function printTree(root: TreeNode, nindent = 0) {
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 function printPairs(pairs: IPostElement[]) {
   for (const pair of pairs) {
-    const childData =
-      pair.content.length > 0 ? `(children: ${pair.content.length})` : "";
+    const childData = pair.content.length > 0 ? `(children: ${pair.content.length})` : "";
     const text = pair.text || "No Text";
     // eslint-disable-next-line no-console
     console.log(`+ [${pair.name}]: ${text} ${childData}`);
@@ -145,9 +139,7 @@ function purgeNode(node: TreeNode) {
   if (!node.parent) throw new Error("This node must have a parent");
 
   // Find the index of this node in the array of children of its parent
-  const cloneIndex = node.parent.children.findIndex(
-    (child) => child.id === node.id
-  );
+  const cloneIndex = node.parent.children.findIndex((child) => child.id === node.id);
 
   // Remove this node from the array of children of its parent
   node.parent.children.splice(cloneIndex, 1);
@@ -205,8 +197,7 @@ function pruneTreeNode(node: TreeNode): TreeNode | null {
   // Determines if the node should be removed
   // from the tree (resulting in moving children)
   const isEmpty = node.element.type === "Empty";
-  const toBePurged =
-    (isUninformativeNode(node) || isEmpty) && node.parent !== null;
+  const toBePurged = (isUninformativeNode(node) || isEmpty) && node.parent !== null;
 
   // If in this node `element` has no information value, remove this node
   // as parent and link all the children to this node parent
@@ -232,8 +223,7 @@ function pruneNodesWithUnnecessaryValues(node: TreeNode) {
 
   const functionMap = [
     // Used to remove spoilers without children
-    (node: TreeNode) =>
-      node.element.type === "Spoiler" && node.children.length === 0,
+    (node: TreeNode) => node.element.type === "Spoiler" && node.children.length === 0,
     // Used to remove text elements without text
     (node: TreeNode) => node.element.type === "Text" && cleanText === ""
   ];
@@ -260,8 +250,7 @@ function isUninformativeNode(node: TreeNode): boolean {
   // Alias used for cleaner coding
   const e = node.element;
 
-  const hasInformation =
-    e.text.trim() !== "" || e.name.trim() !== "" || e.content.length > 0;
+  const hasInformation = e.text.trim() !== "" || e.name.trim() !== "" || e.content.length > 0;
   const hasChildren = node.children.length !== 0;
 
   return !hasInformation && !hasChildren;
@@ -282,17 +271,14 @@ function pairUpTitleWithContent(root: TreeNode): IPostElement[] {
   const rootClone = Object.assign({}, root);
 
   // Only the root of the tree can be used to pair up the elements
-  if (rootClone.element.type !== "Root")
-    throw new ParameterError("The node must be a root node");
+  if (rootClone.element.type !== "Root") throw new ParameterError("The node must be a root node");
 
   // Get the cover and the previews
   const coverAndPrevies = parseCoverAndPreviews(rootClone);
   pairs.push(...coverAndPrevies);
 
   // Remove all the images from the root
-  rootClone.children = rootClone.children.filter(
-    (c) => c.element.type !== "Image"
-  );
+  rootClone.children = rootClone.children.filter((c) => c.element.type !== "Image");
 
   // The scheme is as follows:
   //  + Textual element "TITLE"
@@ -343,13 +329,10 @@ function parseCoverAndPreviews(root: TreeNode): IPostElement[] {
   const returnValue: IPostElement[] = [];
 
   // Only the root of the tree can be used to pair up the elements
-  if (root.element.type !== "Root")
-    throw new ParameterError("The node must be a root node");
+  if (root.element.type !== "Root") throw new ParameterError("The node must be a root node");
 
   // Find all the images that are direct children of the root node
-  const images = root.children
-    .filter((c) => c.element.type === "Image")
-    .map((i) => i.element);
+  const images = root.children.filter((c) => c.element.type === "Image").map((i) => i.element);
 
   if (images.length > 0) {
     // The first image is the cover
@@ -427,11 +410,7 @@ function isTitle(element: IPostElement, next: IPostElement | null): boolean {
   const thisEndsWithColon = RX_ENDS_COLON.test(element.text);
   const nextStartsWithColon = next?.text.trim().startsWith(":");
 
-  return (
-    thisIsText &&
-    !thisIsPunctuation &&
-    (nextStartsWithColon || thisEndsWithColon)
-  );
+  return thisIsText && !thisIsPunctuation && (nextStartsWithColon || thisEndsWithColon);
 }
 
 /**
@@ -476,16 +455,12 @@ function parseSpoilers(root: TreeNode): TreeNode {
  */
 function parseSingleSpoiler(node: TreeNode): TreeNode {
   // Check the node type
-  if (node.element.type !== "Spoiler")
-    throw new ParameterError("This node is not a spoiler");
+  if (node.element.type !== "Spoiler") throw new ParameterError("This node is not a spoiler");
 
   // Remove the "title" element that is "Spoiler" when there is no title
   const index = node.children
     .filter((child) => child.element)
-    .findIndex(
-      (child) =>
-        child.element.type === "Text" && child.element.text === "Spoiler"
-    );
+    .findIndex((child) => child.element.type === "Text" && child.element.text === "Spoiler");
   node.children.splice(index, 1);
 
   return node;
@@ -517,17 +492,14 @@ function cleanLinkNode(node: TreeNode): TreeNode {
  */
 function cleanLinkTextChildren(node: TreeNode): TreeNode {
   // Check the node type
-  if (node.element.type != "Link")
-    throw new ParameterError("This node is not a link");
+  if (node.element.type != "Link") throw new ParameterError("This node is not a link");
 
   // Create a clone of the parameter object
   const clone = Object.assign({}, node);
 
   // Find the index of the children that contains a
   // "Text" element with the same text as this link node
-  const index = clone.children.findIndex(
-    (child) => child.element.text === clone.element.text
-  );
+  const index = clone.children.findIndex((child) => child.element.text === clone.element.text);
 
   // Remove the child
   clone.children.splice(index, 1);
@@ -541,8 +513,7 @@ function cleanLinkTextChildren(node: TreeNode): TreeNode {
  */
 function cleanLinkImage(node: TreeNode) {
   // Check the node type
-  if (node.element.type != "Link")
-    throw new ParameterError("This node is not a link");
+  if (node.element.type != "Link") throw new ParameterError("This node is not a link");
 
   if (node.element.text.startsWith("<img")) purgeNode(node);
 }

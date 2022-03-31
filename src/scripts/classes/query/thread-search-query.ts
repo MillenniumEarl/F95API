@@ -63,9 +63,7 @@ export default class ThreadSearchQuery implements IQuery {
   //#region Getters/Setters
   public set page(v: number) {
     if (v < ThreadSearchQuery.MIN_PAGE)
-      throw new Error(
-        `Page must be greater or equal to ${ThreadSearchQuery.MIN_PAGE}`
-      );
+      throw new Error(`Page must be greater or equal to ${ThreadSearchQuery.MIN_PAGE}`);
   }
 
   public get page(): number {
@@ -78,9 +76,7 @@ export default class ThreadSearchQuery implements IQuery {
   //#endregion Getters/Setters
 
   //#region Public methods
-  public async execute(): Promise<
-    Result<GenericAxiosError, AxiosResponse<any>>
-  > {
+  public async execute(): Promise<Result<GenericAxiosError, AxiosResponse<any>>> {
     // Define the POST parameters
     const params = this.preparePOSTParameters();
 
@@ -124,12 +120,10 @@ export default class ThreadSearchQuery implements IQuery {
 
     // Set included and excluded tags (joined with a comma)
     if (this.includedTags) params["c[tags]"] = this.includedTags.join(",");
-    if (this.excludedTags)
-      params["c[excludeTags]"] = this.excludedTags.join(",");
+    if (this.excludedTags) params["c[excludeTags]"] = this.excludedTags.join(",");
 
     // Set minimum reply number
-    if (this.minimumReplies > 0)
-      params["c[min_reply_count]"] = this.minimumReplies.toString();
+    if (this.minimumReplies > 0) params["c[min_reply_count]"] = this.minimumReplies.toString();
 
     // Add prefixes
     const parser = new PrefixParser();

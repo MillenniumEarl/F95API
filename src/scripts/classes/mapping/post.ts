@@ -138,9 +138,7 @@ export default class Post implements ILazy {
       .toArray()
       .find((el) => {
         // Fetch the ID and check if it is what we are searching
-        const sid = findAttribute($(el), POST.ID, "id")
-          .replace("post-", "")
-          .trim();
+        const sid = findAttribute($(el), POST.ID, "id").replace("post-", "").trim();
         const id = parseInt(sid, 10);
 
         if (id === this.id) return el;
@@ -170,8 +168,7 @@ export default class Post implements ILazy {
 
     // Find post's publishing date
     const sPublishing = findAttribute(post, POST.PUBLISH_DATE, "datetime");
-    if (isValidISODateString(sPublishing))
-      this._published = new Date(sPublishing);
+    if (isValidISODateString(sPublishing)) this._published = new Date(sPublishing);
 
     // Find post's last edit date (could not exists if the post was never edited)
     const sLastEdit = findAttribute(post, POST.LAST_EDIT, "datetime", false);

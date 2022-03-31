@@ -42,10 +42,7 @@ describe("Unit tests", function testBasic() {
   describe("Test class LoginResult", loginresult.bind(this));
   describe("Test for Cheerio node types", nodetype.bind(this));
   describe("Test for IPosteElement utility", nodeutility.bind(this));
-  describe(
-    "Test parsing from Cheerio node to IPosteElement",
-    nodeparse.bind(this)
-  );
+  describe("Test parsing from Cheerio node to IPosteElement", nodeparse.bind(this));
   describe("Test JSON+LD parsing", jsonldparse.bind(this));
   describe("Test parsing of handiwork", handiworkparse.bind(this));
   describe("Test utils module", utils.bind(this));

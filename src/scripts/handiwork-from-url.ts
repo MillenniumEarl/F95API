@@ -24,8 +24,7 @@ export async function getHandiworkFromURL<T extends Basic>(
   if (!shared.isLogged) throw new UserNotLogged(USER_NOT_LOGGED);
 
   // Check URL validity
-  if (!isStringAValidURL(url))
-    throw new URIError(`'${url}' is not a valid URL`);
+  if (!isStringAValidURL(url)) throw new URIError(`'${url}' is not a valid URL`);
   const exists = await urlExists(url);
   if (!exists) throw new URIError(`${url} does not exists`);
   if (!isF95URL(url)) throw new Error(`${url} is not a valid F95Zone URL`);

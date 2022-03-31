@@ -41,9 +41,7 @@ export async function getLatestUpdates<T extends Basic>(
   const urls = await fetchLatestHandiworkURLs(query, limit);
 
   // Get the data from urls
-  const promiseList = urls.map((u: string) =>
-    getHandiworkInformation<T>(u, type)
-  );
+  const promiseList = urls.map((u: string) => getHandiworkInformation<T>(u, type));
   return Promise.all(promiseList);
 }
 
@@ -52,9 +50,7 @@ export async function getLatestUpdates<T extends Basic>(
  *
  * You **must** be logged in to the portal before calling this method.
  */
-export async function checkIfHandiworkHasUpdate<T extends Basic>(
-  hw: T
-): Promise<boolean> {
+export async function checkIfHandiworkHasUpdate<T extends Basic>(hw: T): Promise<boolean> {
   // Local variables
   let hasUpdate = false;
 
@@ -78,8 +74,7 @@ export async function checkIfHandiworkHasUpdate<T extends Basic>(
     } else if (lastRelease != DEFAULT_DATE) {
       hasUpdate = onlineHw.lastRelease.getTime() !== lastRelease.getTime();
     } else {
-      hasUpdate =
-        onlineHw.lastThreadUpdate.getTime() !== hw.lastThreadUpdate.getTime();
+      hasUpdate = onlineHw.lastThreadUpdate.getTime() !== hw.lastThreadUpdate.getTime();
     }
   }
 

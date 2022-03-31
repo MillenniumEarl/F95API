@@ -26,12 +26,7 @@ import {
 } from "../errors";
 import shared from "../../shared";
 import Game from "../handiwork/game";
-import {
-  IAlert,
-  IBookmarkedPost,
-  IConversation,
-  IWatchedThread
-} from "../../interfaces";
+import { IAlert, IBookmarkedPost, IConversation, IWatchedThread } from "../../interfaces";
 import fetchAlertElements from "../../fetch-data/user-data/fetch-alert";
 import Thread from "./thread";
 import { getHandiworkFromURL } from "../../handiwork-from-url";
@@ -106,8 +101,7 @@ export default class UserProfile extends PlatformUser {
 
   async watchedThreadsGetWrapper(): Promise<IWatchedThread[]> {
     // Checks if basic data has already been retrieved
-    if (!this.id)
-      throw new InvalidID("First you need to call the fetch() method");
+    if (!this.id) throw new InvalidID("First you need to call the fetch() method");
 
     // Cache data
     if (!this._watched) {
@@ -133,8 +127,7 @@ export default class UserProfile extends PlatformUser {
 
   async bookmarksGetWrapper(): Promise<IBookmarkedPost[]> {
     // Checks if basic data has already been retrieved
-    if (!this.id)
-      throw new InvalidID("First you need to call the fetch() method");
+    if (!this.id) throw new InvalidID("First you need to call the fetch() method");
 
     // Cache data
     if (!this._bookmarks) {
@@ -155,8 +148,7 @@ export default class UserProfile extends PlatformUser {
 
   async alertsGetWrapper(): Promise<IAlert[]> {
     // Checks if basic data has already been retrieved
-    if (!this.id)
-      throw new InvalidID("First you need to call the fetch() method");
+    if (!this.id) throw new InvalidID("First you need to call the fetch() method");
 
     // Cache data
     if (!this._alerts) {
@@ -177,8 +169,7 @@ export default class UserProfile extends PlatformUser {
 
   async featuredGamesGetWrapper(): Promise<Game[]> {
     // Checks if basic data has already been retrieved
-    if (!this.id)
-      throw new InvalidID("First you need to call the fetch() method");
+    if (!this.id) throw new InvalidID("First you need to call the fetch() method");
 
     // Cache data
     if (!this._featuredGames) {
@@ -190,8 +181,7 @@ export default class UserProfile extends PlatformUser {
 
   async conversationsGetWrapper(): Promise<IConversation[]> {
     // Checks if basic data has already been retrieved
-    if (!this.id)
-      throw new InvalidID("First you need to call the fetch() method");
+    if (!this.id) throw new InvalidID("First you need to call the fetch() method");
 
     // Cache data
     if (!this._conversations) {
@@ -282,8 +272,7 @@ export default class UserProfile extends PlatformUser {
       const $ = load(html);
 
       const sid = $(GENERIC.CURRENT_USER_ID).attr("data-user-id");
-      if (!sid)
-        throw new MissingOrInvalidParsingAttribute("Cannot extract user's ID");
+      if (!sid) throw new MissingOrInvalidParsingAttribute("Cannot extract user's ID");
       return parseInt(sid.trim(), 10);
     });
 
@@ -295,9 +284,7 @@ export default class UserProfile extends PlatformUser {
    * Gets all the elements that solve a specific
    * selector in a list on multiple web pages.
    */
-  private async fetchElementsInPages<T>(
-    options: IFetchOptions<T>
-  ): Promise<T[]> {
+  private async fetchElementsInPages<T>(options: IFetchOptions<T>): Promise<T[]> {
     // Fetch page
     const response = await fetchHTML(options.url);
     if (response.isFailure()) throw response.value;
@@ -336,11 +323,7 @@ export default class UserProfile extends PlatformUser {
    * @param n Total number of pages
    * @param s Page to start from
    */
-  private async *fetchPages(
-    url: string,
-    n: number,
-    s = 1
-  ): AsyncGenerator<string, void, unknown> {
+  private async *fetchPages(url: string, n: number, s = 1): AsyncGenerator<string, void, unknown> {
     // Local variables
     const u = new URL(url);
     const pipeline = [];
@@ -368,9 +351,7 @@ export default class UserProfile extends PlatformUser {
   /**
    * Gets thread data starting from the source code of the page passed by parameter.
    */
-  private async fetchPageThreadElements(
-    html: string
-  ): Promise<IWatchedThread[]> {
+  private async fetchPageThreadElements(html: string): Promise<IWatchedThread[]> {
     // Local variables
     const $ = load(html);
 
@@ -378,10 +359,7 @@ export default class UserProfile extends PlatformUser {
       // Parse the URL
       const partialURL = findAttribute($(el), WATCHED_THREAD.URL, "href");
 
-      const url = new URL(
-        partialURL.replace("unread", ""),
-        urls.BASE
-      ).toString();
+      const url = new URL(partialURL.replace("unread", ""), urls.BASE).toString();
 
       return {
         url: url.toString(),
@@ -398,9 +376,7 @@ export default class UserProfile extends PlatformUser {
   /**
    * Gets bookmarks data starting from the source code of the page passed by parameter.
    */
-  private async fetchBookmarkElements(
-    html: string
-  ): Promise<IBookmarkedPost[]> {
+  private async fetchBookmarkElements(html: string): Promise<IBookmarkedPost[]> {
     // Local variables
     const $ = load(html);
 
@@ -423,26 +399,16 @@ export default class UserProfile extends PlatformUser {
       }
 
       // Find the savedate
-      const sDate = findAttribute(
-        $(el),
-        BOOKMARKED_POST.BOOKMARK_TIME,
-        "datetime"
-      );
+      const sDate = findAttribute($(el), BOOKMARKED_POST.BOOKMARK_TIME, "datetime");
 
       // Find the owner ID
-      const sOwnerID = findAttribute(
-        $(el),
-        BOOKMARKED_POST.OWNER_ID,
-        "data-user-id"
-      );
+      const sOwnerID = findAttribute($(el), BOOKMARKED_POST.OWNER_ID, "data-user-id");
 
       return {
         id: foundID,
         userid: parseInt(sOwnerID, 10),
         description: $(el).find(BOOKMARKED_POST.DESCRIPTION).text().trim(),
-        savedate: isValidISODateString(sDate)
-          ? new Date(sDate)
-          : new Date(DEFAULT_DATE),
+        savedate: isValidISODateString(sDate) ? new Date(sDate) : new Date(DEFAULT_DATE),
         labels: $(el)
           .find(BOOKMARKED_POST.LABELS)
           .map((_, label) => $(label).text())
@@ -482,9 +448,7 @@ export default class UserProfile extends PlatformUser {
         .filter((url) => url !== undefined);
 
       // Prepare the unique URLs
-      const gameURLs = [...new Set(partialURLs)].map((pu) =>
-        new URL(pu, urls.BASE).toString()
-      );
+      const gameURLs = [...new Set(partialURLs)].map((pu) => new URL(pu, urls.BASE).toString());
 
       // fetch the games
       const promises = gameURLs.map((url) => {

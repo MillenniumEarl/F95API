@@ -75,8 +75,7 @@ export default class Session {
    * Initializes the session by setting the path for saving information to disk.
    */
   constructor(p: string) {
-    if (!p || p === "")
-      throw new ParameterError("Invalid path for the session file");
+    if (!p || p === "") throw new ParameterError("Invalid path for the session file");
     this._path = p;
     this._isMapped = existsSync(this.path);
     this._created = new Date(Date.now());
@@ -219,9 +218,7 @@ export default class Session {
     const hashValid = sha256(value) === this._hash;
 
     // Verify if the user cookie is valid
-    const xfUser = this._cookieJar
-      .getCookiesSync(urls.BASE)
-      .find((c) => c.key === "xf_user");
+    const xfUser = this._cookieJar.getCookiesSync(urls.BASE).find((c) => c.key === "xf_user");
     const cookieCreation = xfUser ? xfUser.creation : DEFAULT_DATE;
     const cookieDateDiff = this.dateDiffInDays(now, cookieCreation);
 

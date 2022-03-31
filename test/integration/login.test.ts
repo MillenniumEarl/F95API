@@ -51,9 +51,7 @@ export function suite(): void {
       login(USERNAME, PASSWORD, CAPTCHA_RETRIEVE, CB_2FA)
         .then((result) => {
           chai.expect(result.success).to.be.true;
-          chai
-            .expect(result.code)
-            .to.be.equal(LoginResult.ALREADY_AUTHENTICATED);
+          chai.expect(result.code).to.be.equal(LoginResult.ALREADY_AUTHENTICATED);
           chai.expect(shared.isLogged).to.be.true;
         })
         .finally(done);
@@ -85,8 +83,7 @@ export function suite(): void {
     validValue = false;
 
     // Change mock method to return negative result
-    const privateLoginMock = () =>
-      new LoginResult(false, LoginResult.UNKNOWN_ERROR, "TEST_LOGIN");
+    const privateLoginMock = () => new LoginResult(false, LoginResult.UNKNOWN_ERROR, "TEST_LOGIN");
     rewiredLogin.__set__("loginInTheRemotePlatform", privateLoginMock);
 
     // Try to log-in
@@ -131,8 +128,7 @@ function rewireLoginScript() {
   const rewiredLogin = rewire("../../src/scripts/login");
 
   // Mock the internal methods of "login.ts"
-  const privateLoginMock = () =>
-    new LoginResult(true, LoginResult.AUTH_SUCCESSFUL, "TEST_LOGIN");
+  const privateLoginMock = () => new LoginResult(true, LoginResult.AUTH_SUCCESSFUL, "TEST_LOGIN");
   const createCredentialsMock = () => new Credentials(USERNAME, PASSWORD);
   //const fetchDataMock = () => undefined;
 

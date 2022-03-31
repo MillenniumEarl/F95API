@@ -22,10 +22,7 @@ export default async function fetchLatestHandiworkURLs(
   limit: number = 30
 ): Promise<string[]> {
   // Local variables
-  const shallowQuery: LatestSearchQuery = Object.assign(
-    new LatestSearchQuery(),
-    query
-  );
+  const shallowQuery: LatestSearchQuery = Object.assign(new LatestSearchQuery(), query);
   const resultURLs = [];
   let fetchedResults = 0;
   let noMorePages = false;

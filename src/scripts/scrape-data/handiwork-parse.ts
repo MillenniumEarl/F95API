@@ -13,14 +13,7 @@ import { isF95URL, isStringAValidURL } from "../network-helper";
 import { metadata as md } from "../constants/ot-metadata-values";
 import Basic from "../classes/handiwork/basic";
 import { getDateFromString } from "../utils";
-import {
-  TAuthor,
-  TChangelog,
-  TCategory,
-  TEngine,
-  TStatus,
-  TExternalPlatform
-} from "../types";
+import { TAuthor, TChangelog, TCategory, TEngine, TStatus, TExternalPlatform } from "../types";
 
 /**
  * Gets information of a particular handiwork from its thread.
@@ -101,8 +94,7 @@ function extractIDFromURL(url: string): number {
   shared.logger.trace("Extracting ID from URL...");
 
   // Validate URL
-  if (!isStringAValidURL(url))
-    throw new URIError(`'${url}' is not a valid URL`);
+  if (!isStringAValidURL(url)) throw new URIError(`'${url}' is not a valid URL`);
 
   // URL are in the format https://f95zone.to/threads/GAMENAME-VERSION-DEVELOPER.ID/
   // or https://f95zone.to/threads/ID/
@@ -251,10 +243,8 @@ function extractPrefixes(prefixes: string[], category: TCategory) {
     const prefix = item.replace("[", "").replace("]", "");
 
     // Check what the prefix indicates
-    if (stringInDict(prefix, shared.prefixes["engines"]))
-      engine = prefix as TEngine;
-    else if (stringInDict(prefix, shared.prefixes["statuses"]))
-      status = prefix as TStatus;
+    if (stringInDict(prefix, shared.prefixes["engines"])) engine = prefix as TEngine;
+    else if (stringInDict(prefix, shared.prefixes["statuses"])) status = prefix as TStatus;
 
     // Anyway add the prefix to list
     parsedPrefixes.push(prefix);
@@ -369,8 +359,7 @@ function parseAuthor(elements: IPostElement[]): TAuthor[] {
     // Sometimes there are multiple "support" platform but no name of the author.
     // In these case, usually, the name of the first platform is the author's name.
     /* c8 ignore next */
-    if (author.name === "" && author.platforms.length >= 1)
-      author.name = author.platforms[0].name;
+    if (author.name === "" && author.platforms.length >= 1) author.name = author.platforms[0].name;
 
     // Clean the author name from special chars at the end
     const regex = /(?<=\w\b)[\s-/]+$/gi;
@@ -410,9 +399,7 @@ function parseChangelog(elements: IPostElement[]): TChangelog[] {
       // Fetch the group of data of this version tag
       const group = changelogElement.content.slice(i, diff);
       const hasElements = group.length !== 0;
-      versionChangelog.version = hasElements
-        ? group[0].text.replace("v", "").trim()
-        : "";
+      versionChangelog.version = hasElements ? group[0].text.replace("v", "").trim() : "";
 
       // Parse the data
       group.forEach((e) => {

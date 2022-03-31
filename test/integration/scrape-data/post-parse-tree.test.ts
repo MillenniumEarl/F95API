@@ -18,12 +18,7 @@ import { ILink } from "../../../src/scripts/interfaces";
 export function suite(): void {
   it("Parse opening post", async function () {
     // Arrange
-    const path = join(
-      __dirname,
-      "..",
-      "resources",
-      "opening-post-extract.html"
-    );
+    const path = join(__dirname, "..", "resources", "opening-post-extract.html");
     const html = await fs.readFile(path);
     const $ = load(html);
     const node = $("article.message-body > div.bbWrapper").get().shift();
@@ -46,8 +41,7 @@ export function suite(): void {
     const previews = data.find((e) => e.name === "Previews");
     expect(previews).to.not.be.undefined;
     expect(previews.content.length).to.be.equal(18);
-    const allImages =
-      previews.content.find((e) => e.type !== "Image") === undefined;
+    const allImages = previews.content.find((e) => e.type !== "Image") === undefined;
     expect(allImages).to.be.true;
 
     // Assert date
@@ -71,12 +65,7 @@ export function suite(): void {
 
   it("Parse generic post", async function () {
     // Arrange
-    const path = join(
-      __dirname,
-      "..",
-      "resources",
-      "generic-post-extract.html"
-    );
+    const path = join(__dirname, "..", "resources", "generic-post-extract.html");
     const html = await fs.readFile(path);
     const $ = load(html);
     const node = $("article.message-body > div.bbWrapper").get().shift();

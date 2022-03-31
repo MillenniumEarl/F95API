@@ -88,9 +88,7 @@ export function suite(): void {
 
     // Verify test
     expect(sessionSave.hash).to.be.equal(sessionLoad.hash);
-    expect(sessionSave.created.toISOString()).to.be.equal(
-      sessionLoad.created.toISOString()
-    );
+    expect(sessionSave.created.toISOString()).to.be.equal(sessionLoad.created.toISOString());
     expect(sessionSave.token).to.be.equal(sessionLoad.token);
   });
 
@@ -112,9 +110,7 @@ export function suite(): void {
     // Arrange
     const path = "./session";
     const keys = ["xf_user", "test_key", "test_key_bis"];
-    const cookies = keys.map(
-      (k) => new Cookie({ key: k, domain: "f95zone.to" })
-    );
+    const cookies = keys.map((k) => new Cookie({ key: k, domain: "f95zone.to" }));
 
     // Act
     const session = createSession(path);

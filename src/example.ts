@@ -140,9 +140,7 @@ async function fetchLatestGameInfo(): Promise<void> {
     const gamename = latestUpdates[0].name;
     const tags = latestQuery.includedTags.join();
 
-    console.log(
-      `"${gamename}" was the last "${tags}" tagged game to be updated\n`
-    );
+    console.log(`"${gamename}" was the last "${tags}" tagged game to be updated\n`);
   } else console.log("No game found with the specified tags");
 }
 
@@ -166,9 +164,7 @@ async function fetchGameData(games: string[]): Promise<void> {
       // Extract first game
       const gamedata = searchResult[0];
       const authors = gamedata.authors.map((a) => a.name).join(", ");
-      console.log(
-        `Found: ${gamedata.name} (${gamedata.version}) by ${authors}\n`
-      );
+      console.log(`Found: ${gamedata.name} (${gamedata.version}) by ${authors}\n`);
     } else console.log(`No data found for '${gamename}'\n`);
   }
 }

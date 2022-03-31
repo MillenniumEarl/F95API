@@ -67,9 +67,7 @@ export default class LatestSearchQuery implements IQuery {
   //#region Getters/Setters
   public set page(v: number) {
     if (v < LatestSearchQuery.MIN_PAGE)
-      throw new Error(
-        `Page must be greater or equal to ${LatestSearchQuery.MIN_PAGE}`
-      );
+      throw new Error(`Page must be greater or equal to ${LatestSearchQuery.MIN_PAGE}`);
   }
 
   public get page(): number {
@@ -78,9 +76,7 @@ export default class LatestSearchQuery implements IQuery {
 
   public set includedTags(v: string[]) {
     if (v.length > LatestSearchQuery.MAX_TAGS)
-      throw new Error(
-        `The included tags must be less or equal to ${LatestSearchQuery.MAX_TAGS}`
-      );
+      throw new Error(`The included tags must be less or equal to ${LatestSearchQuery.MAX_TAGS}`);
 
     this.#includedTags = v;
   }
@@ -96,9 +92,7 @@ export default class LatestSearchQuery implements IQuery {
 
   //#region Public methods
 
-  public async execute(): Promise<
-    Result<GenericAxiosError, AxiosResponse<any>>
-  > {
+  public async execute(): Promise<Result<GenericAxiosError, AxiosResponse<any>>> {
     // Prepare the URL
     const url = this.prepareGETurl();
     const decoded = decodeURIComponent(url.toString());

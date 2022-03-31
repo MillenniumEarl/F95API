@@ -36,10 +36,7 @@ export function suite(): void {
     expect(result.name).to.be.equal(NAME, "Name value must be equal");
     expect(result.tags).to.be.equal(TAGS, "Tags value must be equal");
     expect(result.cover).to.be.equal(COVER, "Cover value must be equal");
-    expect(result.overview).to.be.equal(
-      OVERVIEW,
-      "Overview value must be equal"
-    );
+    expect(result.overview).to.be.equal(OVERVIEW, "Overview value must be equal");
     expect(result.url).to.be.equal(URL, "URL value must be equal");
   });
 
@@ -63,14 +60,8 @@ export function suite(): void {
     expect(result.name).to.be.equal(NAME, "Name value must be equal");
     expect(result.tags).to.be.equal(TAGS, "Tags value must be equal");
     expect(result.cover).to.be.equal(COVER, "Cover value must be equal");
-    expect(result.overview).to.be.equal(
-      OVERVIEW,
-      "Overview value must be equal"
-    );
+    expect(result.overview).to.be.equal(OVERVIEW, "Overview value must be equal");
     expect(result.url).to.be.equal(URL, "URL value must be equal");
-    expect(result.language).to.be.equal(
-      LANGUAGE,
-      "Language value must be equal"
-    );
+    expect(result.language).to.be.equal(LANGUAGE, "Language value must be equal");
   });
 }

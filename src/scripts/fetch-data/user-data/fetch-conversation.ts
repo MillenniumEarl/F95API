@@ -18,9 +18,7 @@ import { IConversation } from "../../interfaces";
  * `IConversation` interface.
  * @param html HTML source code of a page that contains a list of conversations
  */
-export default async function fetchPageConversations(
-  html: string
-): Promise<IConversation[]> {
+export default async function fetchPageConversations(html: string): Promise<IConversation[]> {
   // Load the HTML string of the page
   const $ = load(html);
 
@@ -53,9 +51,7 @@ function parseConversationElement(e: Cheerio<Node>): IConversation {
   const sAuthorID = e.find(CONVERSATION.AUTHOR).attr("data-user-id");
   conversation.authorid = parseInt(sAuthorID, 10);
 
-  const sLastResponseUserID = e
-    .find(CONVERSATION.LAST_RESPONSE_USER)
-    .attr("data-user-id");
+  const sLastResponseUserID = e.find(CONVERSATION.LAST_RESPONSE_USER).attr("data-user-id");
   conversation.lastResponseUser = parseInt(sLastResponseUserID, 10);
 
   conversation.lastRecipients = e
@@ -73,13 +69,9 @@ function parseConversationElement(e: Cheerio<Node>): IConversation {
   // Parse dates
   const sCreationDate = e.find(CONVERSATION.START_DATE).attr("datetime");
   conversation.creation =
-    sCreationDate && isValidISODateString(sCreationDate)
-      ? new Date(sCreationDate)
-      : null;
+    sCreationDate && isValidISODateString(sCreationDate) ? new Date(sCreationDate) : null;
 
-  const sLastResponseDate = e
-    .find(CONVERSATION.LAST_RESPONSE_TIME)
-    .attr("datetime");
+  const sLastResponseDate = e.find(CONVERSATION.LAST_RESPONSE_TIME).attr("datetime");
   conversation.lastResponseTime =
     sLastResponseDate && isValidISODateString(sLastResponseDate)
       ? new Date(sLastResponseDate)

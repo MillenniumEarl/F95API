@@ -40,10 +40,7 @@ export function suite(): void {
     expect(merged.name).to.be.equal(NAME, "Name value must be equal");
     expect(merged.tags).to.be.equal(TAGS, "Tags value must be equal");
     expect(merged.cover).to.be.equal(COVER, "Cover value must be equal");
-    expect(merged.overview).to.be.equal(
-      OVERVIEW,
-      "Overview value must be equal"
-    );
+    expect(merged.overview).to.be.equal(OVERVIEW, "Overview value must be equal");
     expect(merged.url).to.be.equal(URL, "URL value must be equal");
   });
 }

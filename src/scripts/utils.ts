@@ -20,9 +20,7 @@ export function getDateFromString(
   const orderCrescent = (a: Date, b: Date) => a.getTime() - b.getTime();
   const orderDecrescent = (a: Date, b: Date) => b.getTime() - a.getTime();
   const array = match.map((s) => new Date(s));
-  order === "decrescent"
-    ? array.sort(orderDecrescent)
-    : array.sort(orderCrescent);
+  order === "decrescent" ? array.sort(orderDecrescent) : array.sort(orderCrescent);
 
   // Return the first
   return array.shift();
