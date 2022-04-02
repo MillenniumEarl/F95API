@@ -42,7 +42,7 @@ export default class Post implements ILazy {
   //#endregion Fields
 
   //#region Getters
-
+  /* c8 ignore start */
   /**
    * Unique ID of the post on the F95Zone platform.
    */
@@ -91,7 +91,7 @@ export default class Post implements ILazy {
   public get body(): IPostElement[] {
     return this._body;
   }
-
+  /* c8 ignore stop */
   //#endregion Getters
 
   constructor(id: number) {

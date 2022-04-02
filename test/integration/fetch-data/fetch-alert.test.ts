@@ -4,7 +4,7 @@
 // https://opensource.org/licenses/MIT
 
 // Core modules
-import { promises as fs } from "fs";
+import fs from "fs/promises";
 import { join } from "path";
 
 // Public module from npm
