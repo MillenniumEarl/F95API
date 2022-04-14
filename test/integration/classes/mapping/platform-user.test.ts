@@ -41,7 +41,7 @@ export function suite(): void {
     await user.fetch();
 
     // Assert
-    expect(user.avatar).to.be.equal("/data/avatars/l/1470/1470797.jpg?1600005951");
+    expect(user.avatar.includes("data/avatars/l/1470/1470797.jpg")).to.be.true;
     expect(user.banners.length).to.be.equal(0);
     expect(user.donation).to.be.equal(0);
     expect(user.messages).to.be.equal(53);
