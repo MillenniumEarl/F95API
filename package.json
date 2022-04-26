@@ -65,7 +65,7 @@
     "eslint": "8.14.0",
     "eslint-config-prettier": "8.5.0",
     "eslint-plugin-prettier": "4.0.0",
-    "inquirer": "8.2.2",
+    "inquirer": "8.2.3",
     "log4js": "6.4.6",
     "mocha": "9.2.2",
     "mock-fs": "^5.1.2",
