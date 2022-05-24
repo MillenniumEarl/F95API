@@ -72,7 +72,7 @@
     "prettier": "2.6.2",
     "rewire": "6.0.0",
     "ts-node": "10.8.0",
-    "typescript": "4.6.4"
+    "typescript": "4.7.2"
   },
   "bugs": {
     "url": "https://github.com/MillenniumEarl/F95API/issues"
