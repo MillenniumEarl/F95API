@@ -64,7 +64,7 @@
     "dotenv": "16.0.1",
     "eslint": "8.18.0",
     "eslint-config-prettier": "8.5.0",
-    "eslint-plugin-prettier": "4.1.0",
+    "eslint-plugin-prettier": "4.2.1",
     "inquirer": "9.0.0",
     "log4js": "6.5.2",
     "mocha": "10.0.0",
