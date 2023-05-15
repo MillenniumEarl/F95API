@@ -4,7 +4,7 @@
 // https://opensource.org/licenses/MIT
 
 // Public modules from npm
-import { Cheerio, Node, load } from "cheerio";
+import { Cheerio, AnyNode, load } from "cheerio";
 
 // Modules from file
 import shared from "../shared";
@@ -69,7 +69,7 @@ async function fetchResultURLs(html: string, limit: number = 30): Promise<string
  * @param {cheerio.Cheerio} selector Element to search
  * @returns {String} URL to thread
  */
-function extractLinkFromResult(selector: Cheerio<Node>): string {
+function extractLinkFromResult(selector: Cheerio<AnyNode>): string {
   shared.logger.trace("Extracting thread link from result...");
 
   const partialLink = selector.find(THREAD_SEARCH.THREAD_TITLE).attr("href").trim();

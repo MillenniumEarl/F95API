@@ -4,7 +4,7 @@
 // https://opensource.org/licenses/MIT
 
 // Public modules from npm
-import { CheerioAPI, Cheerio, Node } from "cheerio";
+import { CheerioAPI, Cheerio, AnyNode } from "cheerio";
 
 // Modules from file
 import { POST } from "../../constants/css-selector";
@@ -15,12 +15,12 @@ import { cleanTextFromInvisibleCharacters, createEmptyElement } from "./node-uti
 /**
  * Given a Cheerio node, it extracts the information into an IPostElement structure.
  */
-export default function parseCheerioNode($: CheerioAPI, node: Node): IPostElement {
+export default function parseCheerioNode($: CheerioAPI, node: AnyNode): IPostElement {
   // Function mapping
-  const functionMap: Record<string, (node: Cheerio<Node>) => IPostElement> = {
-    Text: (node: Cheerio<Node>) => parseCheerioTextNode(node),
-    Spoiler: (node: Cheerio<Node>) => parseCheerioSpoilerNode(node),
-    Link: (node: Cheerio<Node>) => parseCheerioLinkNode(node)
+  const functionMap: Record<string, (node: Cheerio<AnyNode>) => IPostElement> = {
+    Text: (node: Cheerio<AnyNode>) => parseCheerioTextNode(node),
+    Spoiler: (node: Cheerio<AnyNode>) => parseCheerioSpoilerNode(node),
+    Link: (node: Cheerio<AnyNode>) => parseCheerioLinkNode(node)
   };
 
   // Get the type of node
@@ -42,7 +42,7 @@ export default function parseCheerioNode($: CheerioAPI, node: Node): IPostElemen
  * Process a spoiler element by getting its text broken
  * down by any other spoiler elements present.
  */
-function parseCheerioSpoilerNode(node: Cheerio<Node>): IPostElement {
+function parseCheerioSpoilerNode(node: Cheerio<AnyNode>): IPostElement {
   // A spoiler block is composed of a div with class "bbCodeSpoiler",
   // containing a div "bbCodeSpoiler-content" containing, in cascade,
   // a div with class "bbCodeBlock--spoiler" and a div with class "bbCodeBlock-content".
@@ -66,7 +66,7 @@ function parseCheerioSpoilerNode(node: Cheerio<Node>): IPostElement {
 /**
  * Process a node that contains a link or image.
  */
-function parseCheerioLinkNode(element: Cheerio<Node>): ILink {
+function parseCheerioLinkNode(element: Cheerio<AnyNode>): ILink {
   // Local variable
   const link: ILink = {
     type: "Link",
@@ -92,7 +92,7 @@ function parseCheerioLinkNode(element: Cheerio<Node>): ILink {
 /**
  * Process a text only node.
  */
-function parseCheerioTextNode(node: Cheerio<Node>): IPostElement {
+function parseCheerioTextNode(node: Cheerio<AnyNode>): IPostElement {
   const content: IPostElement = {
     type: "Text",
     name: "",
@@ -106,7 +106,7 @@ function parseCheerioTextNode(node: Cheerio<Node>): IPostElement {
  * Gets the text of the node only, excluding child nodes.
  * Also includes formatted text elements (i.e. `<b>`).
  */
-function getCheerioNonChildrenText(node: Cheerio<Node>): string {
+function getCheerioNonChildrenText(node: Cheerio<AnyNode>): string {
   // Get text
   const text = node.first().text();
 

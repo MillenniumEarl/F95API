@@ -4,7 +4,7 @@
 // https://opensource.org/licenses/MIT
 
 // Public modules from npm
-import { Cheerio, Node, load } from "cheerio";
+import { Cheerio, AnyNode, load } from "cheerio";
 import { isValidISODateString } from "iso-datestring-validator";
 
 // Modules from files
@@ -34,7 +34,7 @@ export default async function fetchPageConversations(html: string): Promise<ICon
  * about a conversation by returning an element
  * that follows the `IConversation` interface.
  */
-function parseConversationElement(e: Cheerio<Node>): IConversation {
+function parseConversationElement(e: Cheerio<AnyNode>): IConversation {
   // Define the conversation element to return
   const conversation: IConversation = {} as IConversation;
 

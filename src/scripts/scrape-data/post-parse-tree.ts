@@ -4,7 +4,7 @@
 // https://opensource.org/licenses/MIT
 
 // Public modules from npm
-import { CheerioAPI, Node } from "cheerio";
+import { CheerioAPI, AnyNode } from "cheerio";
 import { ParameterError } from "../classes/errors";
 
 // Modules from file
@@ -41,7 +41,7 @@ interface TreeNode {
 /**
  * Given a post of a thread page it extracts the information contained in the body.
  */
-export function extractDataFromFirstThreadPost($: CheerioAPI, post: Node): IPostElement[] {
+export function extractDataFromFirstThreadPost($: CheerioAPI, post: AnyNode): IPostElement[] {
   // Reset the global counter of the IDs
   idcounter = 0;
 
@@ -70,7 +70,7 @@ export function extractDataFromFirstThreadPost($: CheerioAPI, post: Node): IPost
  * Create recursively a tree with the information contained in a Cheerio node.
  * @returns Tree root
  */
-function createTree($: CheerioAPI, node: Node, parent?: TreeNode): TreeNode {
+function createTree($: CheerioAPI, node: AnyNode, parent?: TreeNode): TreeNode {
   // Create the element
   const treenode = {
     id: idcounter,

@@ -4,7 +4,7 @@
 // https://opensource.org/licenses/MIT
 
 // Public modules from npm
-import { CheerioAPI, Node, load } from "cheerio";
+import { CheerioAPI, AnyNode, load } from "cheerio";
 
 // Modules from files
 import { TAlertType, TAlertReactionType } from "../../types";
@@ -46,7 +46,7 @@ export default async function fetchAlertElements(html: string): Promise<IAlert[]
  * Indicates whether the requested element is summarized,
  * ie if it is a grouping of other alerts.
  */
-function isSummarized($: CheerioAPI, el: Node): boolean {
+function isSummarized($: CheerioAPI, el: AnyNode): boolean {
   return $(el).find(ALERT.SUMMARIZED_BUTTON).length === 1;
 }
 
@@ -143,7 +143,7 @@ function parseReactionTypeFromAlert(text: string): TAlertReactionType {
  * @param $ Cheerio root identifing the page where the element is in
  * @param el Element to parse
  */
-function parseAlertElement($: CheerioAPI, el: Node): IAlert {
+function parseAlertElement($: CheerioAPI, el: AnyNode): IAlert {
   // Find the ID of the user that caused the alert
   const sid = $(el).find(ALERT.ACTOR).attr("data-user-id");
 

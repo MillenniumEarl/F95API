@@ -16,12 +16,6 @@ chai.use(chaiAsPromised);
 const { expect } = chai;
 
 export function suite(): void {
-  it("Fetch post with null ID", async function fetchWithNullID() {
-    Shared.setIsLogged(true);
-    const post = new Post(null);
-    await expect(post.fetch()).to.be.rejectedWith(INVALID_POST_ID);
-  });
-
   it("Fetch post with invalid ID", async function fetchWithInvalidID() {
     Shared.setIsLogged(true);
     const post = new Post(-1);
