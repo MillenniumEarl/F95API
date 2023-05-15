@@ -33,8 +33,10 @@ export function suite(): void {
 
     // Set the session as logged
     Shared.setIsLogged(true);
-    
-    await expect(getHandiworkFromURL(URL, HandiWork)).to.be.rejectedWith(`'${URL}' is not a valid URL`);
+
+    await expect(getHandiworkFromURL(URL, HandiWork)).to.be.rejectedWith(
+      `'${URL}' is not a valid URL`
+    );
   });
 
   it("Get handiwork from not existing URL", async function () {
@@ -43,7 +45,7 @@ export function suite(): void {
 
     // Set the session as logged
     Shared.setIsLogged(true);
-    
+
     await expect(getHandiworkFromURL(URL, HandiWork)).to.be.rejectedWith(`${URL} does not exists`);
   });
 
@@ -53,7 +55,9 @@ export function suite(): void {
 
     // Set the session as logged
     Shared.setIsLogged(true);
-    
-    await expect(getHandiworkFromURL(URL, HandiWork)).to.be.rejectedWith(`${URL} is not a valid F95Zone URL`);
+
+    await expect(getHandiworkFromURL(URL, HandiWork)).to.be.rejectedWith(
+      `${URL} is not a valid F95Zone URL`
+    );
   });
 }

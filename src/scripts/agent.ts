@@ -42,7 +42,7 @@ const commonConfig: AxiosRequestConfig = {
    */
   headers: {
     "User-Agent": USER_AGENT,
-    "Connection": "keep-alive",
+    Connection: "keep-alive",
     "Upgrade-Insecure-Requests": "1"
   },
   /**
@@ -68,7 +68,7 @@ const commonConfig: AxiosRequestConfig = {
 export default function createAxiosAgent(): AxiosInstance {
   // Create the agent with the custom configuration
   let agent: AxiosInstance = axios.create(commonConfig);
-  
+
   // Add support for cookies with tough-cookies
   agent = addCookieJarSupport(agent);
 
