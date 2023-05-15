@@ -7,7 +7,10 @@
       "description": "Automatically merge minor and patch-level updates",
       "matchUpdateTypes": ["minor", "patch", "digest"],
       "automerge": true,
-      "automergeType": "branch"
+      "automergeType": "branch",
+      "excludePackageNames": [
+        "inquirer"
+      ]
     }
   ],
   "schedule": [
