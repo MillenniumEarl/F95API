@@ -17,7 +17,7 @@ jobs:
           node-version: 14.x
 
       - name: Cache npm dependencies
-        uses: actions/cache@v3.2.6
+        uses: actions/cache@v3.3.1
         with:
           path: '~/.npm'
           key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
@@ -31,7 +31,7 @@ jobs:
           npm run coverage
 
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v3.1.1
+        uses: codecov/codecov-action@v3.1.3
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           directory: ./coverage
