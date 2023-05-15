@@ -4,7 +4,8 @@
 // https://opensource.org/licenses/MIT
 
 // Public modules from npm
-import { Cheerio, CheerioAPI, Element, Node } from "cheerio";
+import { Cheerio, CheerioAPI, Element, AnyNode } from "cheerio";
+import { ElementType } from "domelementtype";
 
 /**
  * Possible kind of a Cheerio node.
@@ -14,7 +15,7 @@ export type TNodeType = "Text" | "Formatted" | "Spoiler" | "Link" | "List" | "No
 /**
  * Identify the type of node passed by parameter.
  */
-export function nodeType($: CheerioAPI, node: Node): TNodeType {
+export function nodeType($: CheerioAPI, node: AnyNode): TNodeType {
   // !!! Cheerio Element type is a Node type with children !!!
   const element = node as Element;
 
@@ -46,14 +47,14 @@ function isFormattingNode(node: Element): boolean {
 /**
  * Check if the node passed as a parameter is of text type.
  */
-function isTextNode(node: Element): boolean {
-  return node.type === "text";
+function isTextNode(node: AnyNode): boolean {
+  return node.type === ElementType.Text;
 }
 
 /**
  * Check if the node is a spoiler.
  */
-function isSpoilerNode(node: Cheerio<Node>): boolean {
+function isSpoilerNode(node: Cheerio<AnyNode>): boolean {
   return node.attr("class") === "bbCodeSpoiler";
 }
 
@@ -61,14 +62,14 @@ function isSpoilerNode(node: Cheerio<Node>): boolean {
  * Check if the node is a link or a image.
  */
 function isLinkNode(node: Element): boolean {
-  return node.type === "tag" && (node.name === "a" || node.name === "img");
+  return node.type === ElementType.Tag && (node.name === "a" || node.name === "img");
 }
 
 /**
  * Check if the node is a `noscript` tag.
  */
 function isNoScriptNode(node: Element): boolean {
-  return node.type === "tag" && node.name === "noscript";
+  return node.type === ElementType.Tag && node.name === "noscript";
 }
 
 /**
@@ -81,7 +82,7 @@ function isListNode(node: Element): boolean {
 /**
  * Check if the element is textual and nestled in a `noscript` tag.
  */
-function isImageTextNode(node: Element): boolean {
+function isImageTextNode(node: AnyNode): boolean {
   return node.type === "text" && isNoScriptNode(node.parent as Element);
 }
 

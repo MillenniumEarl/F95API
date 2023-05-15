@@ -4,7 +4,7 @@
 // https://opensource.org/licenses/MIT
 
 // Public modules from npm
-import { Cheerio, Node, Element, load } from "cheerio";
+import { Cheerio, AnyNode, Element, load } from "cheerio";
 
 // Modules from file
 import shared from "../shared";
@@ -17,10 +17,10 @@ export type TJsonLD = { [s: string]: string | TJsonLD };
 
 /**
  * Extracts and processes the JSON-LD values of the page.
- * @param {Cheerio<Node>} body Page `body` selector
+ * @param {Cheerio<AnyNode>} body Page `body` selector
  * @returns {TJsonLD[]} List of data obtained from the page
  */
-export function getJSONLD(body: Cheerio<Node>): TJsonLD {
+export function getJSONLD(body: Cheerio<AnyNode>): TJsonLD {
   shared.logger.trace("Extracting JSON-LD data...");
 
   // Fetch the JSON-LD data

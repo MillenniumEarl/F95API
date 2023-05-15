@@ -4,7 +4,7 @@
 // https://opensource.org/licenses/MIT
 
 // Public modules from npm
-import { Cheerio, CheerioAPI, Node, load } from "cheerio";
+import { Cheerio, CheerioAPI, AnyNode, load } from "cheerio";
 import { isValidISODateString } from "iso-datestring-validator";
 
 // Modules from file
@@ -157,7 +157,7 @@ export default class Post implements ILazy {
    * These information could not exists:
    * `last edit date`, `owner id`
    */
-  private async parsePost($: CheerioAPI, post: Cheerio<Node>): Promise<void> {
+  private async parsePost($: CheerioAPI, post: Cheerio<AnyNode>): Promise<void> {
     // Find post's ID
     const sid: string = findAttribute(post, POST.ID, "id").replace("post-", "");
     this._id = parseInt(sid, 10);
@@ -202,7 +202,7 @@ export default class Post implements ILazy {
  * Return empty string if no attribute is found and `raise` if false.
  */
 function findAttribute(
-  e: Cheerio<Node>,
+  e: Cheerio<AnyNode>,
   selector: string,
   attribute: string,
   raise: boolean = true

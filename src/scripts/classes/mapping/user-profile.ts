@@ -5,7 +5,7 @@
 
 // Public modules from npm
 import { isValidISODateString } from "iso-datestring-validator";
-import { Cheerio, Node, load } from "cheerio";
+import { Cheerio, AnyNode, load } from "cheerio";
 
 // Modules from files
 import PlatformUser from "./platform-user";
@@ -355,7 +355,7 @@ export default class UserProfile extends PlatformUser {
     // Local variables
     const $ = load(html);
 
-    function parseElement(el: Node) {
+    function parseElement(el: AnyNode) {
       // Parse the URL
       const partialURL = findAttribute($(el), WATCHED_THREAD.URL, "href");
 
@@ -380,7 +380,7 @@ export default class UserProfile extends PlatformUser {
     // Local variables
     const $ = load(html);
 
-    async function parseElement(el: Node) {
+    async function parseElement(el: AnyNode) {
       // Parse the URL
       const url = findAttribute($(el), BOOKMARKED_POST.URL, "href");
 
@@ -468,7 +468,7 @@ export default class UserProfile extends PlatformUser {
  * Return empty string if no attribute is found and `raise` if false.
  */
 function findAttribute(
-  e: Cheerio<Node>,
+  e: Cheerio<AnyNode>,
   selector: string,
   attribute: string,
   raise: boolean = true
