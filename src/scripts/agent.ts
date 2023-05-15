@@ -14,6 +14,7 @@ import shared from "./shared";
 import axios, { AxiosRequestConfig, AxiosInstance } from "axios";
 import axiosRetry from "axios-retry";
 import { wrapper as addCookieJarSupport } from "axios-cookiejar-support";
+import { urls } from "./constants/url";
 
 /**
  * Explicit the HTTP adapter otherwise on Electron the XHR adapter
@@ -33,11 +34,15 @@ const USER_AGENT = `Mozilla/5.0 (compatible; F95API/${version}; MillenniumEarl@f
  */
 const commonConfig: AxiosRequestConfig = {
   /**
+   * This URL will be used as a base for every request to a non-complete URL.
+   */
+  baseURL: urls.BASE,
+  /**
    * Headers to add to the request.
    */
   headers: {
     "User-Agent": USER_AGENT,
-    Connection: "keep-alive",
+    "Connection": "keep-alive",
     "Upgrade-Insecure-Requests": "1"
   },
   /**
@@ -51,6 +56,9 @@ const commonConfig: AxiosRequestConfig = {
   validateStatus: function (status: number) {
     return status < 500; // Resolve only if the status code is less than 500
   },
+  /**
+   * Maximum number of milliseconds to wait for a response.
+   */
   timeout: 30000
 };
 
@@ -60,7 +68,7 @@ const commonConfig: AxiosRequestConfig = {
 export default function createAxiosAgent(): AxiosInstance {
   // Create the agent with the custom configuration
   let agent: AxiosInstance = axios.create(commonConfig);
-
+  
   // Add support for cookies with tough-cookies
   agent = addCookieJarSupport(agent);
 
