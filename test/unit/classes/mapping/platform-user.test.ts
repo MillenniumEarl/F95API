@@ -24,7 +24,7 @@ export function suite(): void {
 
   it("Fetch platform user with null ID", async function fetchWithNullID() {
     Shared.setIsLogged(true);
-    const user = new PlatformUser(null);
+    const user = new PlatformUser(undefined);
     await expect(user.fetch()).to.be.rejectedWith(INVALID_USER_ID);
   });
 
