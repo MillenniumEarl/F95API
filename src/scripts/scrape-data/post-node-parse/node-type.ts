@@ -41,7 +41,7 @@ export function nodeType($: CheerioAPI, node: AnyNode): TNodeType {
  */
 function isFormattingNode(node: Element): boolean {
   const formattedTags = ["b", "i"];
-  return node.type === "tag" && formattedTags.includes(node.name);
+  return node.type === ElementType.Tag && formattedTags.includes(node.name);
 }
 
 /**
@@ -76,14 +76,14 @@ function isNoScriptNode(node: Element): boolean {
  * Check if the node is a list element, i.e. `<li>` or `<ul>` tag.
  */
 function isListNode(node: Element): boolean {
-  return node.type === "tag" && (node.name === "ul" || node.name === "li");
+  return node.type === ElementType.Tag && (node.name === "ul" || node.name === "li");
 }
 
 /**
  * Check if the element is textual and nestled in a `noscript` tag.
  */
 function isImageTextNode(node: AnyNode): boolean {
-  return node.type === "text" && isNoScriptNode(node.parent as Element);
+  return node.type === ElementType.Text && isNoScriptNode(node.parent as Element);
 }
 
 //#endregion Utility
