@@ -18,7 +18,7 @@ import { wrapper as addCookieJarSupport } from "axios-cookiejar-support";
 /**
  * Explicit the HTTP adapter otherwise on Electron the XHR adapter
  * is used which is not supported by `axios-cookiejar-support`
- * 
+ *
  * From v1.0, the adapters are not exposed to API, waiting for patch...
  */
 axios.defaults.adapter = "http";
@@ -51,7 +51,7 @@ const commonConfig: AxiosRequestConfig = {
   validateStatus: function (status: number) {
     return status < 500; // Resolve only if the status code is less than 500
   },
-  timeout: 30000,
+  timeout: 30000
 };
 
 /**
