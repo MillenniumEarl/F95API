@@ -51,7 +51,7 @@
     "@types/chai-spies": "1.0.4",
     "@types/mocha": "^10.0.1",
     "@types/mock-fs": "4.13.2",
-    "@types/node": "18.18.1",
+    "@types/node": "18.18.3",
     "@types/rewire": "2.5.28",
     "@types/tough-cookie": "4.0.3",
     "@typescript-eslint/eslint-plugin": "6.7.3",
